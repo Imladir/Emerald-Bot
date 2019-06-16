@@ -2,7 +2,6 @@
 @using Microsoft.AspNetCore.Authorization;
 @namespace EmeraldBot.Blazor.Client
 @inherits PageBases.SendMessageBase
-@*@attribute [Authorize]*@
 
 <h1>Send a new message</h1>
 <input @bind=@Title placeholder="@(Character?.Name ?? "Message Title")" />

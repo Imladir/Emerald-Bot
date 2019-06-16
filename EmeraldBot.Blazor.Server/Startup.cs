@@ -1,5 +1,6 @@
 using EmeraldBot.Model;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,24 +9,42 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace EmeraldBot.Blazor.Server
 {
     public class Startup
     {
-        private IConfiguration _configuration;
+        private IConfiguration Configuration;
 
         public Startup(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Authentication
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration["JwtIssuer"],
+                    ValidAudience = Configuration["JwtIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSecurityKey"]))
+                };
+            });
+
             services.AddMvc().AddNewtonsoftJson();
             services.AddRazorPages();
             services.AddResponseCompression(opts =>
@@ -47,11 +66,11 @@ namespace EmeraldBot.Blazor.Server
             }*/);
             services.AddSignalR();
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
-            {
-                options.Cookie.Name = "EmeraldBot";
-                options.ReturnUrlParameter = new PathString("/login");
-            });
+            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+            //{
+            //    options.Cookie.Name = "EmeraldBot";
+            //    options.ReturnUrlParameter = new PathString("/login");
+            //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,12 +80,12 @@ namespace EmeraldBot.Blazor.Server
 
             if (env.IsDevelopment())
             {
-                EmeraldBotContext.ConnectionString = _configuration.GetConnectionString("local");
+                EmeraldBotContext.ConnectionString = Configuration.GetConnectionString("local");
                 app.UseDeveloperExceptionPage();
                 app.UseBlazorDebugging();
             } else
             {
-                EmeraldBotContext.ConnectionString = _configuration.GetConnectionString("azure");
+                EmeraldBotContext.ConnectionString = Configuration.GetConnectionString("azure");
             }
 
             app.UseClientSideBlazorFiles<Client.Startup>();

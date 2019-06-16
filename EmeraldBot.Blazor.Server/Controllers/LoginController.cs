@@ -3,19 +3,25 @@ using EmeraldBot.Model;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EmeraldBot.Blazor.Server.Controllers
 {
     public class LoginController : Controller
     {
+        private IConfiguration _config;
         private EmeraldBotContext _ctx;
-        public LoginController(EmeraldBotContext dbContext)
+        public LoginController(IConfiguration config, EmeraldBotContext dbContext)
         {
+            _config = config;
             _ctx = dbContext;
         }
 
@@ -55,20 +61,34 @@ namespace EmeraldBot.Blazor.Server.Controllers
                 claims.Add(new Claim("GmOnServers", string.Join(";", player.IsGMOn.Select(x => x.ServerID))));
             }
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            var authProperties = new AuthenticationProperties
-            {
-                AllowRefresh = true,
-                IssuedUtc = DateTime.UtcNow
-            };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSecurityKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expiry = DateTime.Now.AddDays(Convert.ToInt32(_config["JwtExpiryInDays"]));
+            var token = new JwtSecurityToken(
+                _config["JwtIssuer"],
+                _config["JwtIssuer"],
+                claims,
+                expires: expiry,
+                signingCredentials: creds
+            );
+
+            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+
+            //var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            //var authProperties = new AuthenticationProperties
+            //{
+            //    AllowRefresh = true,
+            //    IssuedUtc = DateTime.UtcNow
+            //};
 
 
-            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                                          new ClaimsPrincipal(claimsIdentity),
-                                          authProperties);
+            //HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+            //                              new ClaimsPrincipal(claimsIdentity),
+            //                              authProperties);
 
-            return Ok(true);
+            //return Ok(true);
         }
     }
 }
