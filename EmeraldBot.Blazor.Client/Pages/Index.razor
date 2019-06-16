@@ -1,0 +1,21 @@
+﻿@page "/"
+@using EmeraldBot.Blazor.Shared
+@inherits IndexBase
+
+<h1>Server list</h1>
+
+
+@foreach (var s in Servers)
+{
+    <ServerDetails Server=@s />
+}
+
+@if (ShowFailedLogin)
+{
+    <div class="alert alert-danger">
+        Login attempt failed.
+    </div>
+}
+<input placeholder="Discord Username" @bind="@LoginDetails.Username" />
+<input placeholder="Login token" @bind="@LoginDetails.Password" type="password" />
+<button @onclick="@Login">Login</button>

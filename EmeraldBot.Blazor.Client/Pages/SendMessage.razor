@@ -1,0 +1,12 @@
+﻿@page  "/messages/send"
+@using Microsoft.AspNetCore.Authorization;
+@namespace EmeraldBot.Blazor.Client
+@inherits PageBases.SendMessageBase
+@*@attribute [Authorize]*@
+
+<h1>Send a new message</h1>
+<input @bind=@Title placeholder="@(Character?.Name ?? "Message Title")" />
+<br />
+<textarea @bind=@Text onkeyup="this.dispatchEvent(new Event('change', { 'bubbles': true }));" placeholder="Message text" rows="15" cols="100"></textarea>
+<div>@(Text?.Length ?? 0) Characters</div>
+<button class="btn btn-primary float-right" @onclick="@SendMessage">Send</button>

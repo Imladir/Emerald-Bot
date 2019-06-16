@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>EmeraldBot.Model</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20190610055254_Rokugan2.cs" />
+    <Compile Remove="Migrations\20190610055254_Rokugan2.Designer.cs" />
+    <Compile Remove="Migrations\20190611162416_Rokugan3.cs" />
+    <Compile Remove="Migrations\20190611162416_Rokugan3.Designer.cs" />
+    <Compile Remove="Migrations\20190612051316_Rokugan4.cs" />
+    <Compile Remove="Migrations\20190612051316_Rokugan4.Designer.cs" />
+    <Compile Remove="Migrations\20190612144938_Fix2.cs" />
+    <Compile Remove="Migrations\20190612144938_Fix2.Designer.cs" />
+    <Compile Remove="Migrations\20190612151520_Initial2.cs" />
+    <Compile Remove="Migrations\20190612151520_Initial2.Designer.cs" />
+    <Compile Remove="Migrations\20190615113840_MovedClan.cs" />
+    <Compile Remove="Migrations\20190615113840_MovedClan.Designer.cs" />
+    <Compile Remove="Migrations\20190615114022_MovedClan.cs" />
+    <Compile Remove="Migrations\20190615114022_MovedClan.Designer.cs" />
+    <Compile Remove="Migrations\20190615114225_MovedClan.cs" />
+    <Compile Remove="Migrations\20190615114225_MovedClan.Designer.cs" />
+    <Compile Remove="Migrations\20190615114541_MovedClan.cs" />
+    <Compile Remove="Migrations\20190615114541_MovedClan.Designer.cs" />
+    <Compile Remove="Migrations\20190615192812_CharactersOnMessages.cs" />
+    <Compile Remove="Migrations\20190615192812_CharactersOnMessages.Designer.cs" />
+    <Compile Remove="Migrations\20190615193340_CharactersOnMessages.cs" />
+    <Compile Remove="Migrations\20190615193340_CharactersOnMessages.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EfCore.GenericServices" Version="2.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0-preview5.19227.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="3.0.0-preview5.19227.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0-preview5.19227.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0-preview5.19227.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation">
+      <HintPath>..\..\..\..\..\..\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.0.0-preview6.19307.2\ref\netcoreapp3.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

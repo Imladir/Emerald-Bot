@@ -1,0 +1,34 @@
+﻿@page  "/messages/{id}"
+@using  EmeraldBot.Blazor.Shared;
+@using EmeraldBot.Blazor.Shared.Characters;
+@inject HttpClient _client
+@layout MainLayout
+
+@if (PC != null)
+{
+    <img src="@PC.Icon" alt="@PC.Name" style="float: right; width: 300px; height:auto;" />
+}
+@if (message == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>@message.Title</h1>
+    <p>@(DateTime.SpecifyKind(message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+    <p>@message.Text</p>
+}
+
+@code {
+[Parameter] private string id { get; set; }
+private Message message;
+private PC PC;
+
+protected override async Task OnInitAsync()
+{
+    message = await _client.GetJsonAsync<Message>(Urls.Message.Replace("{id}", id));
+    Console.WriteLine(message.CharacterID);
+    PC = await _client.GetJsonAsync<PC>(Urls.GetPC.Replace("{id}", $"{message.CharacterID}"));
+    Console.WriteLine($"Sender: {PC.Name}");
+}
+}

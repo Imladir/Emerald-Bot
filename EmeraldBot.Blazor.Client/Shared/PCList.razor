@@ -1,0 +1,29 @@
+﻿@using Blazor.Shared
+@using Blazor.Shared.Characters
+@namespace EmeraldBot.Blazor.Client
+@inherits PCListBase
+
+<p>Details for server @ServerID</p>
+<table>
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Clan</td>
+            <td>Family</td>
+            <td>School</td>
+            <td>Player</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pc in PCs)
+        {
+            <tr>
+                <td><NavLink href="@($"characters/{pc.ID}")">@pc.Name</NavLink></td>
+                <td>@pc.Clan.Name</td>
+                <td>@pc.Family</td>
+                <td>@pc.School</td>
+                <td><a href="#">@pc.Player.Name</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
