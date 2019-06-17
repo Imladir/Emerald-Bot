@@ -44,8 +44,8 @@ namespace EmeraldBot.Bot
             {
                 EmeraldBotContext.ConnectionString = Configuration.GetConnectionString("azure");
                 app.UseExceptionHandler("/Error");
-
             }
+
 
             app.UseStaticFiles();
 

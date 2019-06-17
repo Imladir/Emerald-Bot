@@ -15,7 +15,6 @@ namespace EmeraldBot.Blazor.Pages.Messages
 {
     public class SendBase : ComponentBase
     {
-        [Inject] private EmeraldBotContext _ctx { get; set; }
         [Inject] private IUriHelper _uri { get; set; }
         [Parameter] protected Character Character { get; set; }
         [Parameter] protected long ChannelID { get; set; }
@@ -28,14 +27,10 @@ namespace EmeraldBot.Blazor.Pages.Messages
             if (string.IsNullOrWhiteSpace(Title) || string.IsNullOrWhiteSpace(Text)) return;
 
             Console.WriteLine($"Title = '{Title}', Text = '{Text}'");
-            var newMessage = new Message()
-            {
-                DiscordChannelID = 578453800470446091,
-                Character = _ctx.PCs.Find(367),
-                Server = _ctx.Servers.Find(2),
-                Title = Title,
-                Text = Text
-            };
+            int serverID = 2;
+            ulong channelID = 578453800470446091;
+            int userID = 3;
+            int characterID = 367;
 
             // Send the post
             HubConnection connection = new HubConnectionBuilder()
@@ -50,9 +45,16 @@ namespace EmeraldBot.Blazor.Pages.Messages
             await connection.StartAsync();
 
             var str = await connection.InvokeAsync<string>("GreetAll");
-            var msgID = await connection.InvokeAsync<int>("SendMessage", newMessage);
+            var msgID = await connection.InvokeAsync<int>("SendPCMessage", serverID, channelID, userID, characterID, Title, Text);
+            if (msgID > 0)
+            {
+                _uri.NavigateTo($"messages/{msgID}");
 
-            _uri.NavigateTo($"messages/{msgID}");
+            } else
+            {
+                Console.WriteLine("Couldn't send the message for some reason?");
+            }
+
         }
     }
 }

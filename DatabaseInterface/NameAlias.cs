@@ -28,6 +28,13 @@ namespace EmeraldBot.Model
         [Required]
         public virtual Server Server { get; set; }
 
+        public NameAlias()
+        {
+            Alias = "";
+            Name = "";
+            Server = null;
+        }
+
         public virtual void Update(EmeraldBotContext ctx, Dictionary<string, string> args)
         {
             foreach (var kv in args) UpdateField(ctx, kv.Key, kv.Value);

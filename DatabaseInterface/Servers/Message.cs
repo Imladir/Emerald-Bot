@@ -14,16 +14,16 @@ namespace EmeraldBot.Model.Servers
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Column(Order = 0)]
         public int ID { get; set; }
-        public virtual Server Server { get; set; }
-        public virtual User Player { get; set; }
-        public virtual PC Character { get; set; }
-        public long DiscordChannelID { get; set; }
-        public long DiscordMessageID { get; set; }
+        public virtual Server Server { get; set; } = null;
+        public virtual User Player { get; set; } = null;
+        public virtual PC Character { get; set; } = null;
+        public long DiscordChannelID { get; set; } = 0;
+        public long DiscordMessageID { get; set; } = 0;
         public DateTime CreatedDate { get; set; }
         public DateTime LastUpdated { get; set; }
-        public string Title { get; set; }
-        public string Text { get; set; }
-        public string Data { get; set; }
+        public string Title { get; set; } = "";
+        public string Text { get; set; } = "";
+        public string Data { get; set; } = "";
 
         public Message()
         {

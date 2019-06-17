@@ -1,4 +1,4 @@
-﻿@page  "/characters/{id}"
+﻿@page  "/characters/{id:int}"
 @using EmeraldBot.Model
 @using EmeraldBot.Model.Characters
 @inject EmeraldBotContext _ctx
@@ -21,7 +21,7 @@ else
             <td>Rank</td>
         </tr>
         <tr>
-            <td>@pc.Clan.Name</td>
+            <td><img src="@pc.Clan.Icon" alt="@pc.Clan.Name" style="width: 30px; height: auto;" /> @pc.Clan.Name</td>
             <td>@pc.Family</td>
             <td>@pc.School</td>
             <td>@pc.Rank</td>

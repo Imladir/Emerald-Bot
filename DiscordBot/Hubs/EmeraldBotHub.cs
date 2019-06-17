@@ -65,34 +65,39 @@ namespace EmeraldBot.Bot.Hubs
             }
         }
 
-        public async Task<int> SendMessage(string title, string text, int serverID, long channelID, int playerID, int characterID)
+        public async Task<int> SendPCMessage(int serverID, ulong channelID, int userID, int characterID, string title, string text)
         {
-            using var ctx = new EmeraldBotContext();
-            var target = ctx.PCs.Find(characterID);
-            var emd = AutoFormater.Format(target, text);
-            emd.Title += title;
-
-            var channel = WebServiceServer.DiscordClient.GetChannel((ulong)channelID) as ISocketMessageChannel;
-            var res = await channel.SendMessageAsync("", false, emd.Build());
-
-            var server = ctx.Servers.Find(serverID);
-            var player = ctx.Users.Find(playerID);
-            ctx.Entry(player).Collection(x => x.Messages).Load();
-
-            var message = new Message()
+            try
             {
-                Data = JsonConvert.SerializeObject(emd),
-                DiscordChannelID = (long)channelID,
-                DiscordMessageID = (long)res.Id,
-                LastUpdated = DateTime.UtcNow,
-                Server = server,
-                Player = player,
-            };
-            if (characterID > 0) message.Character = ctx.PCs.Find(characterID);
-            ctx.Messages.Add(message);
-            ctx.SaveChanges();
+                using var ctx = new EmeraldBotContext();
+                var pc = ctx.PCs.Find(characterID);
+                var emd = AutoFormater.Format(pc, text);
+                emd.Title = title;
 
-            return message.ID;
+                var newMessage = new Message()
+                {
+                    DiscordChannelID = (long)channelID,
+                    Character = pc,
+                    Server = ctx.Servers.Find(serverID),
+                    Player = ctx.Users.Find(userID),
+                    Title = title,
+                    Text = text,
+                    Data = JsonConvert.SerializeObject(emd)
+                };
+
+                var channel = WebServiceServer.DiscordClient.GetChannel(channelID) as ISocketMessageChannel;
+                var res = await channel.SendMessageAsync("", false, emd.Build());
+                newMessage.DiscordMessageID = (long)res.Id;
+
+                ctx.Messages.Add(newMessage);
+                ctx.SaveChanges();
+
+                return newMessage.ID;
+            } catch (Exception e)
+            {
+                Console.WriteLine($"Sending message failed: {e.Message}\n{e.StackTrace}");
+                return -1;
+            }
         }
 
         /******************

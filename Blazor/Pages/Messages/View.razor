@@ -1,4 +1,4 @@
-﻿@page  "/messages/{id}"
+﻿@page  "/messages/{id:int}"
 @using EmeraldBot.Model
 @using EmeraldBot.Model.Servers
 
@@ -6,7 +6,7 @@
 
 @if (_message == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Message wasn't found. Has it been deleted?</em></p>
 }
 else
 {
@@ -24,7 +24,7 @@ else
     protected override void OnInit()
     {
         _message = _ctx.Messages.SingleOrDefault(x => x.ID == id);
-        Console.WriteLine(_message.Character.ID);
+        if (_message == null) return;
         if (_message.Character != null)
             _icon = _message.Character.Icon;
     }
