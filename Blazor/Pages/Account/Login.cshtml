@@ -1,0 +1,32 @@
+@page "/Account/Login"
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <form id="account" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4 offset-md-4">
+                            <div class="editor">
+                                <input type="text" name="Username" placeholder="Username" /><br />
+                                <input type="password" name="Password" placeholder="Password" /><br />
+                                <input type="checkbox" name="RememberMe" /> Remember me<br />
+                                <button id="login-submit" type="submit" class="btn btn-primary">Log in</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+<p>Your username is the you use on Discord (for login, not your server's nickname)<br />
+    To know your password, go on Discord, and ask it from EmeraldBot with <em>!player password</em></p>

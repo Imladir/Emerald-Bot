@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Identity;
+using Blazor.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace EmeraldBot.Blazor
 {
@@ -31,17 +32,19 @@ namespace EmeraldBot.Blazor
         {
             services.AddDbContext<EmeraldBotContext>();
 
-            services.AddIdentity<User, Role>(
-                  config =>
-                  {
-                      config.SignIn.RequireConfirmedEmail = true;
-                  })
-            .AddDefaultTokenProviders();
+            services.AddIdentity<User, Role>().AddDefaultTokenProviders();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSignalR();
+
             services.AddTransient<IUserStore<User>, UserStore>();
             services.AddTransient<IRoleStore<Role>, RoleStore>();
+
+            //services.AddLogging(builder => builder
+            //    .AddBrowserConsole() // Add Blazor.Extensions.Logging.BrowserConsoleLogger
+            //    .SetMinimumLevel(LogLevel.Trace)
+            //);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

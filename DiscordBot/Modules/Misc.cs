@@ -7,6 +7,7 @@ using EmeraldBot.Model.Game;
 using EmeraldBot.Model.Identity;
 using EmeraldBot.Model.Rolls;
 using EmeraldBot.Model.Servers;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -130,7 +131,11 @@ namespace EmeraldBot.Bot.Modules
 
                 string path = @"C:\Users\imlad\source\repos\GameData";
 
-                // Skills
+
+
+                /////////////////////////////
+                //         Skills          //
+                /////////////////////////////
                 var skillDef = new[] { new { Alias = "", Name = "", Group = 0 } };
                 var skills = JsonConvert.DeserializeAnonymousType(File.ReadAllText(Path.Combine(path, "skills.json")), skillDef);
                 var newSkills = new List<Skill>();
@@ -150,7 +155,11 @@ namespace EmeraldBot.Bot.Modules
                 ctx.SaveChanges();
                 await ReplyAsync("Skills are in.");
 
-                // Advantages
+
+
+                /////////////////////////////
+                //      Advantages         //
+                /////////////////////////////
                 var advClass = new Dictionary<int, string>()
                 {
                     { 1, "Distinction" },
@@ -201,7 +210,11 @@ namespace EmeraldBot.Bot.Modules
                 ctx.SaveChanges();
                 await ReplyAsync("Advantages are in.");
 
-                // Techniques
+
+
+                /////////////////////////////
+                //       Techniques        //
+                /////////////////////////////
                 var techTypes = new Dictionary<int, string>()
                 {
 	                { 1, "Kata" },
@@ -248,7 +261,9 @@ namespace EmeraldBot.Bot.Modules
                 ctx.SaveChanges();
                 await ReplyAsync("Techniques are in.");
 
-                // Players
+                /////////////////////////////
+                //        Players          //
+                /////////////////////////////
                 server = new Server()
                 {
                     DiscordID = 577923638422929408,
@@ -258,6 +273,7 @@ namespace EmeraldBot.Bot.Modules
                 var playersPath = Path.Combine(path, "Players");
                 var playerDef = new { Identity = new { ServerID = (long)0, UserID = (long)0 }, Username = "", DefaultCharacter = new Guid(), PrivateChannelID = (long)0 };
                 var players = new List<User>();
+
                 foreach (String f in Directory.EnumerateFiles(playersPath))
                 {
                     var p = JsonConvert.DeserializeAnonymousType(File.ReadAllText(f), playerDef);
@@ -276,11 +292,18 @@ namespace EmeraldBot.Bot.Modules
                     {
                         newP.Roles.Add(new UserRole() { User = newP, Role = ctx.Roles.Single(x => x.Name.Equals("Admin")), Server = server });
                         newP.Roles.Add(new UserRole() { User = newP, Role = ctx.Roles.Single(x => x.Name.Equals("GM")), Server = server });
+                        newP.Claims.Add(new UserClaim() { ClaimType = $"Server-{server.DiscordID}", ClaimValue = "GM" });
                     }
                     else if (newP.DiscordID == 158005236550598656)
+                    {
                         newP.Roles.Add(new UserRole() { User = newP, Role = ctx.Roles.Single(x => x.Name.Equals("ServerOwner")), Server = server });
+                        newP.Claims.Add(new UserClaim() { ClaimType = $"Server-{server.DiscordID}", ClaimValue = "ServerOwner" });
+                    }
                     else if (newP.DiscordID == 374387705368281089)
+                    {
                         newP.Roles.Add(new UserRole() { User = newP, Role = ctx.Roles.Single(x => x.Name.Equals("GM")), Server = server });
+                        newP.Claims.Add(new UserClaim() { ClaimType = $"Server-{server.DiscordID}", ClaimValue = "GM" });
+                    }
                     Console.WriteLine($"Finished reading player {newP.UserName}");
                     players.Add(newP);
                 }
@@ -288,7 +311,11 @@ namespace EmeraldBot.Bot.Modules
                 ctx.SaveChanges();
                 await ReplyAsync("Players are in.");
 
-                // Characters
+
+
+                /////////////////////////////
+                //      Characters         //
+                /////////////////////////////
                 var charactersPath = Path.Combine(path, "Characters");
                 var characterDef = new {
                     UserID = (long)0,

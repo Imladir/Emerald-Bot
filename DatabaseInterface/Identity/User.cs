@@ -20,27 +20,25 @@ namespace EmeraldBot.Model.Identity
         [PersonalData]
         public int ID { get; set; }
         [ProtectedPersonalData]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = "";
         [Required]
-        public long DiscordID { get; set; }
-        public string PasswordSalt { get; set; }
-        public string PasswordHash { get; set; }
-        public bool Verbose { get; set; }
-        public DateTime LastUpdate { get; set; }
-        public int AccessFailedCount { get; set; }
+        public long DiscordID { get; set; } = 0;
+        public string NormalizedUserName { get; set; } = "";
+        public string PasswordHash { get; set; } = "";
+        public bool Verbose { get; set; } = false;
+        public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
+        public int AccessFailedCount { get; set; } = 0;
         public virtual ICollection<PC> Characters { get; set; }
         public virtual ICollection<PrivateChannel> PrivateChannels { get; set; }
         public virtual ICollection<DefaultCharacter> DefaultCharacters { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
         public virtual ICollection<UserRole> Roles { get; set; }
         public virtual ICollection<UserToken> Tokens { get; set; }
-        public virtual ICollection<UserClaim> Claims { get; set; }
+        public virtual ICollection<UserClaim> Claims { get; set; } = new List<UserClaim>();
 
         public User()
         {
-            Verbose = false;
             GenerateToken();
-            LastUpdate = DateTime.UtcNow;
         }
 
         public void LoadDefaultCharacters(EmeraldBotContext ctx)
@@ -76,9 +74,9 @@ namespace EmeraldBot.Model.Identity
                 password = new string(stringChars);
             }
 
-            var salt = Pbkdf2Hasher.GenerateRandomSalt();
-            PasswordSalt = Convert.ToBase64String(salt);
-            PasswordHash = Pbkdf2Hasher.ComputeHash(password, salt);
+            var passwordHasher = new PasswordHasher<User>();
+            PasswordHash = passwordHasher.HashPassword(this, password);
+
             return password;
         }
 

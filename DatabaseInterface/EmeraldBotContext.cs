@@ -99,6 +99,7 @@ namespace EmeraldBot.Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            ConnectionString = "Data Source=DESKTOP-GDL9OB1;Initial Catalog=Rokugan;Persist Security Info=True;User ID=EmeraldBotLogin;Password=MotDePasse;MultipleActiveResultSets=True;App=EntityFramework";
             optionsBuilder.UseSqlServer(ConnectionString)
                 .EnableDetailedErrors()
                 .UseLazyLoadingProxies(true)
@@ -799,6 +800,9 @@ If the specified event does not occur this round, you may perform one action of 
                     new Role() { Name = "ServerOwner", Description = "Discord Server Owner" },
                     new Role() { Name = "GM", Description = "Game Master" }
                 };
+                roles[0].Claims.Add(new RoleClaim() { Role = roles[0], ClaimType = "AuthorizationLevel", ClaimValue = "Admin" });
+                roles[1].Claims.Add(new RoleClaim() { Role = roles[1], ClaimType = "AuthorizationLevel", ClaimValue = "ServerOwner" });
+                roles[2].Claims.Add(new RoleClaim() { Role = roles[2], ClaimType = "AuthorizationLevel", ClaimValue = "GM" });
                 Roles.AddRange(roles);
                 SaveChanges();
 

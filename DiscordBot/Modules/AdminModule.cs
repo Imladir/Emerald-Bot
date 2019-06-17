@@ -38,6 +38,7 @@ namespace EmeraldBot.Bot.Modules
                         player = new User() { DiscordID = (long)newGM.Id };
 
                     player.Roles.Add(new UserRole() { User = player, Role = ctx.Roles.Single(x => x.Name.Equals("GM")), Server = server });
+                    player.Claims.Add(new UserClaim() { User = player, ClaimType = $"Server-{server.DiscordID}", ClaimValue = "GM" });
                     ctx.SaveChanges();
                     await ReplyAsync($"{newGM.Nickname} is now a GM on the server.");
 
@@ -72,6 +73,8 @@ namespace EmeraldBot.Bot.Modules
                                                          && x.User.ID == player.ID
                                                          && x.Server.ID == server.ID);
                         player.Roles.Remove(res);
+                        var claim = player.Claims.Single(x => x.ClaimType.Equals($"Server-{server.DiscordID}") && x.ClaimValue.Equals(res.Role.Name));
+                        player.Claims.Remove(claim);
                         ctx.SaveChanges();
                         await ReplyAsync($"{gm.Nickname} is no longer a GM on the server.");
                     }
