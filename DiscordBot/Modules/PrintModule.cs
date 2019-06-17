@@ -94,7 +94,7 @@ namespace EmeraldBot.Bot.Modules
                 foreach (var c in pcs.OrderBy(x => x.Name))
                 {
                     // Is it a default character?
-                    bool def = ctx.Players.SingleOrDefault(x => x == c.Player
+                    bool def = ctx.Users.SingleOrDefault(x => x == c.Player
                                                              && x.DefaultCharacters.Any(y => y.Server.DiscordID == (long)Context.Guild.Id
                                                                                           && y.Player.ID == x.ID
                                                                                           && y.Character.ID == c.ID)) != null;

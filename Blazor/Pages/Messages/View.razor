@@ -1,0 +1,31 @@
+﻿@page  "/messages/{id}"
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBotContext _ctx
+
+@if (_message == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <img src="@_icon" alt="@_message?.Character.Name" style="float: right; width: 300px; height:auto;" />
+    <h1>@_message.Title</h1>
+    <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+    <p>@_message.Text</p>
+}
+
+@code {
+    [Parameter] private int id { get; set; }
+    private Message _message;
+    private string _icon;
+
+    protected override void OnInit()
+    {
+        _message = _ctx.Messages.SingleOrDefault(x => x.ID == id);
+        Console.WriteLine(_message.Character.ID);
+        if (_message.Character != null)
+            _icon = _message.Character.Icon;
+    }
+}

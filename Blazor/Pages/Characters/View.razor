@@ -1,0 +1,42 @@
+﻿@page  "/characters/{id}"
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@inject EmeraldBotContext _ctx
+
+@*@attribute [Authorize]*@
+
+@if (pc == null)
+{
+    <p><em>Character not found.</em></p>
+}
+else
+{
+    <img src="@pc.Icon" alt="@pc.Name" style="float: right; width: 300px; height:auto;" />
+    <h1>@pc.Name</h1>
+    <table width="75%">
+        <tr>
+            <td>Clan</td>
+            <td>Family</td>
+            <td>School</td>
+            <td>Rank</td>
+        </tr>
+        <tr>
+            <td>@pc.Clan.Name</td>
+            <td>@pc.Family</td>
+            <td>@pc.School</td>
+            <td>@pc.Rank</td>
+        </tr>
+    </table>
+    <h2>Description</h2>
+    <p>@pc.Description</p>
+}
+
+@code {
+    [Parameter] private int id { get; set; }
+    private PC pc;
+
+    protected override void OnInit()
+    {
+        pc = _ctx.PCs.SingleOrDefault(x => x.ID == id);
+    }
+}

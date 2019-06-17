@@ -22,7 +22,7 @@ namespace EmeraldBot.Model.Characters
         public string Ability { get; set; }
 
         public virtual Source Source { get; set; }
-        public virtual ICollection<CharacterSkillGroup> SkillGroups { get; set; }
+        public virtual ICollection<NPCSkillGroup> SkillGroups { get; set; }
 
         public NPC() : base()
         {
@@ -87,7 +87,7 @@ namespace EmeraldBot.Model.Characters
             }
             else
             {
-                SkillGroups.Add(new CharacterSkillGroup() { SkillGroup = ctx.SkillGroups.Single(x => x.Name.Equals(name)), Value = value });
+                SkillGroups.Add(new NPCSkillGroup() { SkillGroup = ctx.SkillGroups.Single(x => x.Name.Equals(name)), Value = value });
                 return true;
             }
         }
@@ -103,7 +103,7 @@ namespace EmeraldBot.Model.Characters
                 if (value > 0) skillGroup.Value = value;
                 else SkillGroups.Remove(skillGroup);
             }
-            else SkillGroups.Add(new CharacterSkillGroup() { SkillGroup = sg, Value = value });
+            else SkillGroups.Add(new NPCSkillGroup() { SkillGroup = sg, Value = value });
             return true;
         }
     }

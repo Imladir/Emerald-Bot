@@ -1,5 +1,6 @@
 ﻿using EmeraldBot.Model.Characters;
 using EmeraldBot.Model.Game;
+using EmeraldBot.Model.Identity;
 using EmeraldBot.Model.Servers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -26,7 +27,7 @@ namespace EmeraldBot.Model.Rolls
         [Required]
         public virtual Server Server { get; set; }
         [Required]
-        public virtual Player Player { get; set; }
+        public virtual User Player { get; set; }
         [Required]
         public virtual Character Character { get; set; }
 

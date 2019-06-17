@@ -63,7 +63,7 @@ namespace EmeraldBot.Bot.Modules
                 var emd = AutoFormater.Format(target, text);
                 var res = await Context.Channel.SendMessageAsync("", false, emd.Build());
 
-                var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                 var server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
                 ctx.Entry(player).Collection(x => x.Messages).Load();
 

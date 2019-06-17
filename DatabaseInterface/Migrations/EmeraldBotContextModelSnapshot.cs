@@ -15,7 +15,7 @@ namespace EmeraldBot.Model.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.0-preview5.19227.1")
+                .HasAnnotation("ProductVersion", "3.0.0-preview6.19304.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -45,36 +45,6 @@ namespace EmeraldBot.Model.Migrations
                     b.HasIndex("RingID");
 
                     b.ToTable("CharacterRings");
-                });
-
-            modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterSkill", b =>
-                {
-                    b.Property<int>("PCID");
-
-                    b.Property<int>("SkillID");
-
-                    b.Property<int>("Value");
-
-                    b.HasKey("PCID", "SkillID");
-
-                    b.HasIndex("SkillID");
-
-                    b.ToTable("CharacterSkills");
-                });
-
-            modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterSkillGroup", b =>
-                {
-                    b.Property<int>("NPCID");
-
-                    b.Property<int>("SkillGroupID");
-
-                    b.Property<int>("Value");
-
-                    b.HasKey("NPCID", "SkillGroupID");
-
-                    b.HasIndex("SkillGroupID");
-
-                    b.ToTable("CharacterSkillGroups");
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.Demeanor", b =>
@@ -142,6 +112,21 @@ namespace EmeraldBot.Model.Migrations
                     b.ToTable("JournalTypes");
                 });
 
+            modelBuilder.Entity("EmeraldBot.Model.Characters.NPCSkillGroup", b =>
+                {
+                    b.Property<int>("NPCID");
+
+                    b.Property<int>("SkillGroupID");
+
+                    b.Property<int>("Value");
+
+                    b.HasKey("NPCID", "SkillGroupID");
+
+                    b.HasIndex("SkillGroupID");
+
+                    b.ToTable("CharacterSkillGroups");
+                });
+
             modelBuilder.Entity("EmeraldBot.Model.Characters.NPCType", b =>
                 {
                     b.Property<int>("ID")
@@ -172,6 +157,21 @@ namespace EmeraldBot.Model.Migrations
                     b.HasIndex("PCID");
 
                     b.ToTable("PCAdvantage");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Characters.PCSkill", b =>
+                {
+                    b.Property<int>("PCID");
+
+                    b.Property<int>("SkillID");
+
+                    b.Property<int>("Value");
+
+                    b.HasKey("PCID", "SkillID");
+
+                    b.HasIndex("SkillID");
+
+                    b.ToTable("CharacterSkills");
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.PCTechnique", b =>
@@ -591,6 +591,122 @@ namespace EmeraldBot.Model.Migrations
                     b.ToTable("WeaponTypes");
                 });
 
+            modelBuilder.Entity("EmeraldBot.Model.Identity.Role", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description");
+
+                    b.Property<DateTime>("LastUpdate");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.RoleClaim", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ClaimType");
+
+                    b.Property<string>("ClaimValue");
+
+                    b.Property<int?>("RoleID");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("RoleID");
+
+                    b.ToTable("RoleClaims");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.User", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("AccessFailedCount");
+
+                    b.Property<long>("DiscordID");
+
+                    b.Property<DateTime>("LastUpdate");
+
+                    b.Property<string>("PasswordHash");
+
+                    b.Property<string>("PasswordSalt");
+
+                    b.Property<string>("UserName");
+
+                    b.Property<bool>("Verbose");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.UserClaim", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ClaimType");
+
+                    b.Property<string>("ClaimValue");
+
+                    b.Property<int?>("UserID");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("UserClaims");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.UserRole", b =>
+                {
+                    b.Property<int>("UserID");
+
+                    b.Property<int>("RoleID");
+
+                    b.Property<int?>("ServerID");
+
+                    b.HasKey("UserID", "RoleID");
+
+                    b.HasIndex("RoleID");
+
+                    b.HasIndex("ServerID");
+
+                    b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.UserToken", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name");
+
+                    b.Property<int?>("UserID");
+
+                    b.Property<string>("Value");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("UserTokens");
+                });
+
             modelBuilder.Entity("EmeraldBot.Model.NameAlias", b =>
                 {
                     b.Property<int>("ID")
@@ -749,19 +865,6 @@ namespace EmeraldBot.Model.Migrations
                     b.ToTable("Emotes");
                 });
 
-            modelBuilder.Entity("EmeraldBot.Model.Servers.GM", b =>
-                {
-                    b.Property<int>("ServerID");
-
-                    b.Property<int>("PlayerID");
-
-                    b.HasKey("ServerID", "PlayerID");
-
-                    b.HasIndex("PlayerID");
-
-                    b.ToTable("GMs");
-                });
-
             modelBuilder.Entity("EmeraldBot.Model.Servers.Message", b =>
                 {
                     b.Property<int>("ID")
@@ -784,6 +887,10 @@ namespace EmeraldBot.Model.Migrations
 
                     b.Property<int?>("ServerID");
 
+                    b.Property<string>("Text");
+
+                    b.Property<string>("Title");
+
                     b.HasKey("ID");
 
                     b.HasIndex("CharacterID");
@@ -793,32 +900,6 @@ namespace EmeraldBot.Model.Migrations
                     b.HasIndex("ServerID");
 
                     b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("EmeraldBot.Model.Servers.Player", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long>("DiscordID");
-
-                    b.Property<DateTime>("LastUpdated");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("Password")
-                        .HasMaxLength(128);
-
-                    b.Property<string>("Salt")
-                        .HasMaxLength(128);
-
-                    b.Property<bool>("Verbose");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Servers.PrivateChannel", b =>
@@ -872,6 +953,36 @@ namespace EmeraldBot.Model.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Source");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("LoginProvider");
+
+                    b.Property<string>("ProviderDisplayName");
+
+                    b.Property<string>("ProviderKey");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("IdentityUserLogin<string>");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("LoginProvider");
+
+                    b.Property<string>("Name");
+
+                    b.Property<string>("Value");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("IdentityUserToken<string>");
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.Character", b =>
@@ -1139,36 +1250,6 @@ namespace EmeraldBot.Model.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterSkill", b =>
-                {
-                    b.HasOne("EmeraldBot.Model.Characters.PC", "PC")
-                        .WithMany("Skills")
-                        .HasForeignKey("PCID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EmeraldBot.Model.Game.Skill", "Skill")
-                        .WithMany("Characters")
-                        .HasForeignKey("SkillID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterSkillGroup", b =>
-                {
-                    b.HasOne("EmeraldBot.Model.Characters.NPC", "NPC")
-                        .WithMany("SkillGroups")
-                        .HasForeignKey("NPCID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EmeraldBot.Model.Game.SkillGroup", "SkillGroup")
-                        .WithMany()
-                        .HasForeignKey("SkillGroupID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("EmeraldBot.Model.Characters.JournalEntry", b =>
                 {
                     b.HasOne("EmeraldBot.Model.Characters.JournalType", "Journal")
@@ -1181,6 +1262,21 @@ namespace EmeraldBot.Model.Migrations
                         .WithMany("JournalEntries")
                         .HasForeignKey("PCID")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Characters.NPCSkillGroup", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Characters.NPC", "NPC")
+                        .WithMany("SkillGroups")
+                        .HasForeignKey("NPCID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmeraldBot.Model.Game.SkillGroup", "SkillGroup")
+                        .WithMany()
+                        .HasForeignKey("SkillGroupID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.PCAdvantage", b =>
@@ -1201,6 +1297,21 @@ namespace EmeraldBot.Model.Migrations
                         .WithMany("Advantages")
                         .HasForeignKey("PCID")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Characters.PCSkill", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Characters.PC", "PC")
+                        .WithMany("Skills")
+                        .HasForeignKey("PCID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmeraldBot.Model.Game.Skill", "Skill")
+                        .WithMany("Characters")
+                        .HasForeignKey("SkillID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.PCTechnique", b =>
@@ -1419,6 +1530,50 @@ namespace EmeraldBot.Model.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EmeraldBot.Model.Identity.RoleClaim", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Identity.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleID")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.UserClaim", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Identity.User", "User")
+                        .WithMany("Claims")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.UserRole", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Identity.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmeraldBot.Model.Servers.Server", "Server")
+                        .WithMany("Roles")
+                        .HasForeignKey("ServerID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EmeraldBot.Model.Identity.User", "User")
+                        .WithMany("Roles")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Identity.UserToken", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Identity.User", "User")
+                        .WithMany("Tokens")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("EmeraldBot.Model.NameAlias", b =>
                 {
                     b.HasOne("EmeraldBot.Model.Servers.Server", "Server")
@@ -1444,7 +1599,7 @@ namespace EmeraldBot.Model.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EmeraldBot.Model.Servers.Player", "Player")
+                    b.HasOne("EmeraldBot.Model.Identity.User", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerID")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1492,7 +1647,7 @@ namespace EmeraldBot.Model.Migrations
                         .HasForeignKey("CharacterID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EmeraldBot.Model.Servers.Player", "Player")
+                    b.HasOne("EmeraldBot.Model.Identity.User", "Player")
                         .WithMany("DefaultCharacters")
                         .HasForeignKey("PlayerID")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1514,21 +1669,6 @@ namespace EmeraldBot.Model.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EmeraldBot.Model.Servers.GM", b =>
-                {
-                    b.HasOne("EmeraldBot.Model.Servers.Player", "Player")
-                        .WithMany("IsGMOn")
-                        .HasForeignKey("PlayerID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EmeraldBot.Model.Servers.Server", "Server")
-                        .WithMany("GMs")
-                        .HasForeignKey("ServerID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("EmeraldBot.Model.Servers.Message", b =>
                 {
                     b.HasOne("EmeraldBot.Model.Characters.PC", "Character")
@@ -1536,7 +1676,7 @@ namespace EmeraldBot.Model.Migrations
                         .HasForeignKey("CharacterID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EmeraldBot.Model.Servers.Player", "Player")
+                    b.HasOne("EmeraldBot.Model.Identity.User", "Player")
                         .WithMany("Messages")
                         .HasForeignKey("PlayerID")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1549,7 +1689,7 @@ namespace EmeraldBot.Model.Migrations
 
             modelBuilder.Entity("EmeraldBot.Model.Servers.PrivateChannel", b =>
                 {
-                    b.HasOne("EmeraldBot.Model.Servers.Player", "Player")
+                    b.HasOne("EmeraldBot.Model.Identity.User", "Player")
                         .WithMany("PrivateChannels")
                         .HasForeignKey("PlayerID")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1645,7 +1785,7 @@ namespace EmeraldBot.Model.Migrations
                         .HasForeignKey("ClanID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EmeraldBot.Model.Servers.Player", "Player")
+                    b.HasOne("EmeraldBot.Model.Identity.User", "Player")
                         .WithMany("Characters")
                         .HasForeignKey("PlayerID")
                         .OnDelete(DeleteBehavior.Restrict);

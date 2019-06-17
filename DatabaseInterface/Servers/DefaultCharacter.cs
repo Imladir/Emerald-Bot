@@ -1,4 +1,5 @@
 ﻿using EmeraldBot.Model.Characters;
+using EmeraldBot.Model.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,7 +16,7 @@ namespace EmeraldBot.Model.Servers
         public virtual Server Server { get; set; }
         public int PlayerID { get; set; }
 
-        public virtual Player Player { get; set; }
+        public virtual User Player { get; set; }
         public virtual Character Character { get; set; }
     }
 }

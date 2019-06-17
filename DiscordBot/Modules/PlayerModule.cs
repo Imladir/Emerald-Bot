@@ -23,7 +23,7 @@ namespace EmeraldBot.Bot.Modules
             {
                 try
                 {
-                    var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     player.LoadDefaultCharacters(ctx);
                     var character = ctx.GetPlayerCharacter(Context.Guild.Id, Context.User.Id, nameOrAlias);
                     var defChar = player.DefaultCharacters.SingleOrDefault(x => x.Server.DiscordID == (long)Context.Guild.Id);
@@ -56,7 +56,7 @@ namespace EmeraldBot.Bot.Modules
             {
                 try
                 {
-                    var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     //player.LoadPrivateChannels(ctx);
                     var privateChannel = player.PrivateChannels.SingleOrDefault(x => x.Server.DiscordID == (long)Context.Guild.Id);
                     if (privateChannel == null)
@@ -88,7 +88,7 @@ namespace EmeraldBot.Bot.Modules
             {
                 try
                 {
-                    var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     player.LoadPrivateChannels(ctx);
                     var privateChannel = player.PrivateChannels.SingleOrDefault(x => x.Server.DiscordID == (long)Context.Guild.Id);
                     if (privateChannel == null)
@@ -120,7 +120,7 @@ namespace EmeraldBot.Bot.Modules
             {
                 try
                 {
-                    var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     player.Verbose = !player.Verbose;
                     ctx.SaveChanges();
 
@@ -143,7 +143,7 @@ namespace EmeraldBot.Bot.Modules
             {
                 try
                 {
-                    var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     var newPassword = player.GenerateToken();
                     ctx.SaveChanges();
 

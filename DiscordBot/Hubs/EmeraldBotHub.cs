@@ -2,6 +2,7 @@
 using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Characters;
+using EmeraldBot.Model.Identity;
 using EmeraldBot.Model.Servers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -22,31 +23,16 @@ namespace EmeraldBot.Bot.Hubs
             return "Server says hi";
         }
 
-        public async Task FindAndAuthenticatePlayer(string connection, string token)
-        {
-            Player player = null;
-            using (var ctx = new EmeraldBotContext())
-            {
-                player = ctx.Players.SingleOrDefault(x => x.Password.Equals(token));
-            }
-
-            if (player == null) await Clients.Caller.SendAsync("FailedLogin", connection);
-            else
-            {
-                await GetUserGuilds(player.ID);
-            }
-        }
-
         public async Task GetUserGuilds(int id)
         {
             using (var ctx = new EmeraldBotContext())
             {
-                var player = ctx.Players.Find(id);
+                var player = ctx.Users.Find(id);
                 // Retrieve the player's characters
                 var query =
                 from servers in ctx.Servers
                 join pcs in ctx.Characters.OfType<PC>() on servers.ID equals pcs.Server.ID
-                join p in ctx.Players on pcs.Player.ID equals p.ID
+                join p in ctx.Users on pcs.Player.ID equals p.ID
                 where p.ID == player.ID
                 select new { servers.ID, servers.Name };
                 var res = query.ToDictionary(x => x.ID, x => x.Name);
@@ -59,7 +45,7 @@ namespace EmeraldBot.Bot.Hubs
             using (var ctx = new EmeraldBotContext())
             {
                 var server = ctx.Servers.Find(serverID);
-                var player = ctx.Players.Find(userID);
+                var player = ctx.Users.Find(userID);
                 var discordUser = WebServiceServer.DiscordClient.GetUser((ulong)player.DiscordID);
                 var discordGuild = WebServiceServer.DiscordClient.GetGuild((ulong)server.DiscordID);
                 var channels = discordGuild.Channels.ToList().FindAll(x => x.Users.Contains(discordUser));
@@ -84,13 +70,13 @@ namespace EmeraldBot.Bot.Hubs
             using var ctx = new EmeraldBotContext();
             var target = ctx.PCs.Find(characterID);
             var emd = AutoFormater.Format(target, text);
-            emd.Title = title;
+            emd.Title += title;
 
             var channel = WebServiceServer.DiscordClient.GetChannel((ulong)channelID) as ISocketMessageChannel;
             var res = await channel.SendMessageAsync("", false, emd.Build());
 
             var server = ctx.Servers.Find(serverID);
-            var player = ctx.Players.Find(playerID);
+            var player = ctx.Users.Find(playerID);
             ctx.Entry(player).Collection(x => x.Messages).Load();
 
             var message = new Message()

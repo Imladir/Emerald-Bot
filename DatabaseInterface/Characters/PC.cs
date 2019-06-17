@@ -1,4 +1,5 @@
 ﻿using EmeraldBot.Model.Game;
+using EmeraldBot.Model.Identity;
 using EmeraldBot.Model.Servers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,7 +19,7 @@ namespace EmeraldBot.Model.Characters
         public static new readonly List<string> AcceptedFields = new List<string>()
             { "age", "clan", "family", "school", "rank", "description", "ninjo", "giri", "add", "remove", "any skill name"}.Concat(Character.AcceptedFields).OrderBy(s => s).ToList();
 
-        public virtual Player Player { get; set; }
+        public virtual User Player { get; set; }
         public virtual Clan Clan { get; set; }
         public string Family { get; set; }
         public string School { get; set; }
@@ -47,7 +48,7 @@ namespace EmeraldBot.Model.Characters
 
         public virtual ICollection<PCAdvantage> Advantages { get; set; }
         public virtual ICollection<PCTechnique> Techniques { get; set; }
-        public virtual ICollection<CharacterSkill> Skills { get; set; }
+        public virtual ICollection<PCSkill> Skills { get; set; }
         public virtual ICollection<JournalEntry> JournalEntries { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
 
@@ -61,7 +62,8 @@ namespace EmeraldBot.Model.Characters
             Giri = "";
             Advantages = new List<PCAdvantage>();
             Techniques = new List<PCTechnique>();
-            Skills = new List<CharacterSkill>();
+            Skills = new List<PCSkill>();
+            JournalEntries = new List<JournalEntry>();
         }
 
         public override void FullLoad(EmeraldBotContext ctx)
@@ -206,7 +208,7 @@ namespace EmeraldBot.Model.Characters
                 if (value > 0) skill.Value = value;
                 else Skills.Remove(skill);
             }
-            else Skills.Add(new CharacterSkill() { Skill = s, Value = value });
+            else Skills.Add(new PCSkill() { Skill = s, Value = value });
             return true;
         }
 
@@ -233,7 +235,7 @@ namespace EmeraldBot.Model.Characters
         public bool Add(Skill s)
         {
             if (Skills.Any(x => x.Skill == s)) return false;
-            Skills.Add(new CharacterSkill() { Skill = s, PC = this, Value = 1 });
+            Skills.Add(new PCSkill() { Skill = s, PC = this, Value = 1 });
             return true;
         }
         public bool Remove(Advantage adv) {
@@ -273,13 +275,15 @@ namespace EmeraldBot.Model.Characters
                 .Include(x => x.Journal)
                 .Load();
 
-            var journalType = ctx.JournalTypes.First(x => x.Name.Equals(type, StringComparison.OrdinalIgnoreCase));
+            var journalType = ctx.JournalTypes.Single(x => x.Name == type);
             return CurrentJournalValue(journalType);
         }
 
         public int CurrentJournalValue(JournalType type)
         {
-            return JournalEntries.Where(x => x.Journal == type).Sum(x => x.Amount);
+            var entries = JournalEntries.Where(x => x.Journal == type);
+            if (entries.Count() == 0) return 0;
+            else return entries.Sum(x => x.Amount);
         }
     }
 }

@@ -14,6 +14,8 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using GenericServices;
 using System.Collections;
+using EmeraldBot.Model.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace EmeraldBot.Model
 {
@@ -30,8 +32,8 @@ namespace EmeraldBot.Model
         public DbSet<NPC> NPCs { get; set; }
         public DbSet<NPCType> NPCTypes { get; set; }
         public DbSet<CharacterRing> CharacterRings { get; set; }
-        public DbSet<CharacterSkill> CharacterSkills { get; set; }
-        public DbSet<CharacterSkillGroup> CharacterSkillGroups { get; set; }
+        public DbSet<PCSkill> CharacterSkills { get; set; }
+        public DbSet<NPCSkillGroup> CharacterSkillGroups { get; set; }
 
         // Game
         public DbSet<Armour> Armours { get; set; }
@@ -63,15 +65,24 @@ namespace EmeraldBot.Model
         //Servers
         public DbSet<NameAlias> NameAliases { get; set; }
         public DbSet<Server> Servers { get; set; }
-        public DbSet<Player> Players { get; set; }
         //public DbSet<DefaultCharacter> DefaultCharacters { get; set; }
         public DbSet<PrivateChannel> PrivateChannels { get; set; }
         public DbSet<Emote> Emotes { get; set; }
         public DbSet<Message> Messages { get; set; }
 
+        // Identity
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<RoleClaim> RoleClaims { get; set; }
+        public DbSet<UserClaim> UserClaims { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; }
+
+
         public EmeraldBotContext(DbContextOptions<EmeraldBotContext> options)
           : base(options)
-        { }
+        {
+        }
 
         public EmeraldBotContext() : base()
         {
@@ -108,14 +119,14 @@ namespace EmeraldBot.Model
             //    .HasForeignKey(x => x.CharacterID);
 
             //mb.Entity<CharacterCondition>()
-            //    .HasRequired(x => x.Condition)
+            //    .HasKey(x => x.Condition)
             //    .WithMany(x => x.Characters)
             //    .HasForeignKey(x => x.ConditionID);
 
 
             mb.Entity<CharacterRing>().HasKey(x => new { x.CharacterID, x.RingID });
-            mb.Entity<CharacterSkill>().HasKey(x => new { x.PCID, x.SkillID });
-            mb.Entity<CharacterSkillGroup>().HasKey(x => new { x.NPCID, x.SkillGroupID });
+            mb.Entity<PCSkill>().HasKey(x => new { x.PCID, x.SkillID });
+            mb.Entity<NPCSkillGroup>().HasKey(x => new { x.NPCID, x.SkillGroupID });
             mb.Entity<CharacterCondition>().HasKey(x => new { x.CharacterID, x.ConditionID });
 
             mb.Entity<PCAdvantage>().HasKey(x => new { x.CharacterID, x.AdvantageID });
@@ -130,11 +141,10 @@ namespace EmeraldBot.Model
             mb.Entity<TechniqueSkillGroup>().HasKey(x => new { x.TechniqueID, x.SkillGroupID });
             mb.Entity<WeaponGripsWeapon>().HasKey(x => new { x.WeaponID, x.WeaponGripID });
             mb.Entity<DefaultCharacter>().HasKey(x => new { x.ServerID, x.PlayerID });
-            mb.Entity<GM>().HasKey(x => new { x.ServerID, x.PlayerID });
             mb.Entity<PrivateChannel>().HasKey(x => new { x.PlayerID, x.ServerID });
-            //mb.Entity<DieType>().HasOne(x => x.Blank).WithMany(x => x.DieTypeBlanks);
-            //mb.Entity<DieType>().HasOne(x => x.Gif).WithMany(x => x.DieTypeGifs);
-            //mb.Entity<DieDefinition>().HasOne(x => x.Emote).WithMany(x => x.Dice);
+            mb.Entity<IdentityUserLogin<string>>().HasKey(x => x.UserId);
+            mb.Entity<IdentityUserToken<string>>().HasKey(x => x.UserId);
+            mb.Entity<UserRole>().HasKey(x => new { x.UserID, x.RoleID });
 
             // mb.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
             foreach (var relationship in mb.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
@@ -215,7 +225,10 @@ namespace EmeraldBot.Model
         public Character GetCommandTarget(ulong serverID, ulong userID, string aliasOrName = "")
         {
             Character target;
-            if (Players.Single(x => x.DiscordID == (long)userID).IsGM(serverID) && aliasOrName != "")
+            if (UserRoles.SingleOrDefault(x => x.Role == Roles.Single(y => y.Name.Equals("GM"))
+                                            && x.User.DiscordID == (long)userID
+                                            && x.Server.DiscordID == (long)serverID) != null 
+                && aliasOrName != "")
                 target = Characters.Where(x => (x.Name.Equals(aliasOrName) || x.Alias.Equals(aliasOrName))
                                              && (x.Server.DiscordID == (long)serverID || x.Server.DiscordID == 0)).Single();
             else
@@ -225,7 +238,7 @@ namespace EmeraldBot.Model
 
         public NameAlias GetNameAliasEntity(ulong serverID, string nameOrAlias)
         {
-            return NameAliases.AsNoTracking().FromSqlInterpolated($"usp_getNameAliasEntity {(long)serverID}, {nameOrAlias}").SingleOrDefault();
+            return NameAliases.FromSqlInterpolated($"usp_getNameAliasEntity {(long)serverID}, {nameOrAlias}").AsNoTracking().SingleOrDefault();
         }
 
         #region Save Changes
@@ -244,7 +257,8 @@ namespace EmeraldBot.Model
                             where a.ID == entry.Entity.ID
                             select s;
 
-                        var na = GetNameAliasEntity((ulong)server.Single().DiscordID, entry.Entity.Alias);
+                        if (server.Count() == 0) continue; // Seeding
+                        var na = GetNameAliasEntity((ulong)server.SingleOrDefault()?.DiscordID, entry.Entity.Alias);
                         if (na != null && na.ID != entry.Entity.ID)
                             throw new ValidationException($"there is already something registered with the alias '{na.Alias}'. Pick something else.");
                     }
@@ -273,27 +287,20 @@ namespace EmeraldBot.Model
                     }
                 }
 
-                var playerChanges = ChangeTracker.Entries<Player>().Where(x => x.State != EntityState.Unchanged).ToList();
-                if (playerChanges != null)
-                {
-                    for (int i = 0; i < playerChanges.Count; i++)
-                    {
-                        playerChanges[i].Entity.LastUpdated = DateTime.UtcNow;
-                    }
-                }
-
                 var res = base.SaveChanges();
 
                 return res;
             }
             catch (DbUpdateException e)
             {
-                Console.WriteLine("That's a database exception alright");
                 //This either returns a error string, or null if it can’t handle that error
                 var error = SaveChangesExceptionHandler(e, this);
                 if (error != null)
                 {
                     Console.WriteLine(error); //return the error string
+                } else
+                {
+                    Console.WriteLine($"That's a database exception I don't know what to do with: {e.Message}");
                 }
                 throw; //couldn’t handle that error, so rethrow
             }
@@ -377,11 +384,11 @@ namespace EmeraldBot.Model
 
         public void Seed()
         {
-            using var dbTransaction = Database.BeginTransaction();
             try
             {
                 Server server = new Server() { Prefix = "!", DiscordID = 0, DiceChannelID = 0, Name = "Game Data Server" };
                 Servers.Add(server);
+                SaveChanges();
 
                 IList<Condition> conditions = new List<Condition>
                 {
@@ -786,13 +793,20 @@ If the specified event does not occur this round, you may perform one action of 
                 DieFaces.AddRange(dice);
                 SaveChanges();
 
+                IList<Role> roles = new List<Role>()
+                {
+                    new Role() { Name = "Admin", Description = "Application / Bot Admin" },
+                    new Role() { Name = "ServerOwner", Description = "Discord Server Owner" },
+                    new Role() { Name = "GM", Description = "Game Master" }
+                };
+                Roles.AddRange(roles);
+                SaveChanges();
+
                 // Everything went fine so commit
-                dbTransaction.Commit();
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Seeding failed: {e.Message}\n{e.StackTrace}");
-                dbTransaction.Rollback();
             }
         }
     }

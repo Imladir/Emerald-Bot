@@ -2,6 +2,8 @@
 using Discord.Commands;
 using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
+using EmeraldBot.Model.Identity;
+using EmeraldBot.Model.Servers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,19 +29,17 @@ namespace EmeraldBot.Bot.Modules
                 {
                     var newGM = user as IGuildUser;
 
-                    using (var ctx = new EmeraldBotContext())
-                    {
-                        var server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
-                        if (server.IsGM(ctx, newGM.Id)) throw new Exception($"{newGM.Nickname} is already a GM on the server.");
+                    using var ctx = new EmeraldBotContext();
+                    var server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
+                    if (server.IsGM(ctx, newGM.Id)) throw new Exception($"{newGM.Nickname} is already a GM on the server.");
 
-                        var player = ctx.Players.SingleOrDefault(x => x.DiscordID == (long)newGM.Id);
-                        if (player == null)
-                            player = new Model.Servers.Player() { DiscordID = (long)newGM.Id };
+                    var player = ctx.Users.SingleOrDefault(x => x.DiscordID == (long)newGM.Id);
+                    if (player == null)
+                        player = new User() { DiscordID = (long)newGM.Id };
 
-                        server.GMs.Add(new Model.Servers.GM() { Player = player, Server = server });
-                        ctx.SaveChanges();
-                        await ReplyAsync($"{newGM.Nickname} is now a GM on the server.");
-                    }
+                    player.Roles.Add(new UserRole() { User = player, Role = ctx.Roles.Single(x => x.Name.Equals("GM")), Server = server });
+                    ctx.SaveChanges();
+                    await ReplyAsync($"{newGM.Nickname} is now a GM on the server.");
 
                 }
                 catch (Exception e)
@@ -66,10 +66,12 @@ namespace EmeraldBot.Bot.Modules
                         var server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
                         if (!server.IsGM(ctx, gm.Id)) throw new Exception($"{gm.Nickname} is not a GM on the server.");
 
-                        var player = ctx.Players.SingleOrDefault(x => x.DiscordID == (long)gm.Id);
+                        var player = ctx.Users.SingleOrDefault(x => x.DiscordID == (long)gm.Id);
 
-                        var res = server.GMs.Single(x => x.ServerID == server.ID && x.PlayerID == player.ID);
-                        server.GMs.Remove(res);
+                        var res = ctx.UserRoles.Single(x => x.Role == ctx.Roles.Single(x => x.Name.Equals("GM"))
+                                                         && x.User.ID == player.ID
+                                                         && x.Server.ID == server.ID);
+                        player.Roles.Remove(res);
                         ctx.SaveChanges();
                         await ReplyAsync($"{gm.Nickname} is no longer a GM on the server.");
                     }

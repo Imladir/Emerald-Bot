@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmeraldBot.Model.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,7 +12,7 @@ namespace EmeraldBot.Model.Servers
     public class PrivateChannel
     {
         public int PlayerID { get; set; }
-        public virtual Player Player { get; set; }
+        public virtual User Player { get; set; }
         public int ServerID { get; set; }
         public virtual Server Server { get; set; }
 

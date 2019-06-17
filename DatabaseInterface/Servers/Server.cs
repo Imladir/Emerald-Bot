@@ -1,4 +1,5 @@
 ﻿using EmeraldBot.Model.Characters;
+using EmeraldBot.Model.Identity;
 using EmeraldBot.Model.Rolls;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -26,9 +27,9 @@ namespace EmeraldBot.Model.Servers
         public long DiceChannelID { get; set; }
 
         public virtual ICollection<NameAlias> NameAliases { get; set; }
-        public virtual ICollection<GM> GMs { get; set; }
         public virtual ICollection<DefaultCharacter> DefaultCharacters { get; set; }
         public virtual ICollection<Roll> Rolls { get; set; }
+        public virtual ICollection<UserRole> Roles { get; set; }
 
         public Server() {
             Prefix = "!";
@@ -39,9 +40,9 @@ namespace EmeraldBot.Model.Servers
             if (ctx.Entry(this).State == EntityState.Detached)
                 ctx.Servers.Attach(this);
 
-            var player = ctx.Players.Single(x => x.DiscordID == (long)userID);
-            ctx.Entry(this).Collection(x => x.GMs).Load();
-            return GMs.Any(x => x.PlayerID == player.ID);
+            var player = ctx.Users.Single(x => x.DiscordID == (long)userID);
+            ctx.Entry(this).Collection(x => x.Roles).Load();
+            return Roles.Any(x => x.UserID == player.ID && x.Role.Name.Equals("GM"));
         }
 
         public Character GetCharacter(EmeraldBotContext ctx, string aliasOrName)

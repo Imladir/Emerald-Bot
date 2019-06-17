@@ -1,0 +1,42 @@
+﻿@page "/servers/{id}/characters/{filter}"
+@using  EmeraldBot.Model
+@using  EmeraldBot.Model.Characters
+@inject EmeraldBotContext _ctx
+
+<p>Details for server @ServerID</p>
+<table>
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Clan</td>
+            <td>Family</td>
+            <td>School</td>
+            <td>Player</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pc in PCs)
+        {
+            <tr>
+                <td><NavLink href="@($"characters/{pc.ID}")">@pc.Name</NavLink></td>
+                <td>@pc.Clan.Name</td>
+                <td>@pc.Family</td>
+                <td>@pc.School</td>
+                <td><a href="#">@pc.Player.UserName</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+[Parameter] public int ServerID { get; set; }
+[Parameter] public string Filter { get; set; }
+List<PC> PCs = new List<PC>();
+
+protected override void OnInit()
+{
+    PCs = _ctx.PCs.Where(x => x.Server.ID == ServerID).OrderBy(x => x.Name).ToList();
+    if (Filter.Equals("default", StringComparison.OrdinalIgnoreCase))
+        PCs = PCs.Where(x => x.Player.DefaultCharacters.Any(y => y.Character.ID == x.ID)).ToList();
+}
+}

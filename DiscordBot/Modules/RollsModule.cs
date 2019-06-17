@@ -49,7 +49,7 @@ namespace EmeraldBot.Bot.Modules
                     Server = server,
                     TN = tn,
                     DiscordChannelID = server.DiceChannelID,
-                    Player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id),
+                    Player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id),
                     Initial = true
                 };
                 var printData = roll.Add(ctx, diceDefinition);
@@ -88,7 +88,7 @@ namespace EmeraldBot.Bot.Modules
                 if (options.Params.ContainsKey("tn")) tn = int.Parse(options.Params["tn"]);
 
                 var server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
-                var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                 var roll = new Roll()
                 {
                     Character = options.Target,
@@ -146,7 +146,7 @@ namespace EmeraldBot.Bot.Modules
                     Server = server,
                     TN = tn,
                     DiscordChannelID = server.DiceChannelID,
-                    Player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id),
+                    Player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id),
                     Skill = s,
                     Ring = r,
                     Initial = true
@@ -341,7 +341,7 @@ namespace EmeraldBot.Bot.Modules
                 Server = server,
                 TN = TN,
                 DiscordChannelID = server.DiceChannelID,
-                Player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id),
+                Player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id),
                 Skill = s,
                 Ring = r,
                 Initial = true
@@ -731,7 +731,7 @@ namespace EmeraldBot.Bot.Modules
                 var msg = roll.Lock(ctx).ReplaceSymbols(Context.Guild.Id);
 
                 List<ulong> sent = new List<ulong>();
-                foreach (var gm in ctx.Players.Where(x => x.IsGMOn.Any(y => y.Server.DiscordID == (long)Context.Guild.Id)))
+                foreach (var gm in ctx.Users.Where(x => x.Roles.Any(y => y.Server.DiscordID == (long)Context.Guild.Id && y.Role == ctx.Roles.Single(z => z.Name.Equals("GM")))))
                 {
                     var chanID = ctx.PrivateChannels.SingleOrDefault(x => x.Player.ID == gm.ID && x.Server.DiscordID == (long)Context.Guild.Id);
                     if (chanID != null && !sent.Contains((ulong)chanID.ChannelDiscordID)) {

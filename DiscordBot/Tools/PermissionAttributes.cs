@@ -17,7 +17,9 @@ namespace EmeraldBot.Bot.Tools
 
             using (var ctx = new EmeraldBotContext())
             {
-                bool isGM = ctx.Players.Single(x => x.DiscordID == (long)guildUser.Id).IsGM(guildUser.Guild.Id);
+                bool isGM = ctx.UserRoles.SingleOrDefault(x => x.Role.Name.Equals("GM")
+                                                            && x.User.DiscordID == (long)guildUser.Id
+                                                            && x.Server.DiscordID == (long)guildUser.Guild.Id) != null;
 
                 return isGM
                     ? Task.FromResult(PreconditionResult.FromSuccess())

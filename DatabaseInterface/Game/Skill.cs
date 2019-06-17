@@ -20,7 +20,7 @@ namespace EmeraldBot.Model.Game
         public virtual Source Source { get; set; }
 
         public virtual ICollection<TechniqueSkill> Techniques { get; set; }
-        public virtual ICollection<CharacterSkill> Characters { get; set; }
+        public virtual ICollection<PCSkill> Characters { get; set; }
 
         public static Skill Get(EmeraldBotContext ctx, string alias)
         {

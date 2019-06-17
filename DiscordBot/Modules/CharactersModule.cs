@@ -31,7 +31,7 @@ namespace EmeraldBot.Bot.Modules
                     Alias = alias,
                     Name = alias,
                     Server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id),
-                    Player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id)
+                    Player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id)
                 };
                 newChar.InitRings(ctx);
 
@@ -160,7 +160,7 @@ namespace EmeraldBot.Bot.Modules
                     }
                     ctx.SaveChanges();
 
-                    var currentPlayer = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var currentPlayer = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     ctx.Entry(options.Target).Reference(x => x.Player).Load();
                     if (ctx.CheckPrivateChannel(Context.Guild.Id, Context.User.Id, Context.Channel.Id, (ulong)options.Target.Player.DiscordID))
                         msg += $"Fatigue is now at {options.Target.Fatigue}.";
@@ -207,7 +207,7 @@ namespace EmeraldBot.Bot.Modules
                     }
                     ctx.SaveChanges();
 
-                    var currentPlayer = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var currentPlayer = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                     ctx.Entry(options.Target).Reference(x => x.Player).Load();
                     if (ctx.CheckPrivateChannel(Context.Guild.Id, Context.User.Id, Context.Channel.Id, (ulong)options.Target.Player.DiscordID))
                         msg += $"Strife is now at {options.Target.Strife}.";
@@ -242,7 +242,7 @@ namespace EmeraldBot.Bot.Modules
                 options.Target.CurrentVoid = newVoid;
 
 
-                var currentPlayer = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                var currentPlayer = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
 
                 //ctx.Entry(options.Target).Reference(x => x.Player).Load();
                 if (ctx.CheckPrivateChannel(Context.Guild.Id, Context.User.Id, Context.Channel.Id, (ulong)options.Target.Player.DiscordID))
@@ -346,7 +346,7 @@ namespace EmeraldBot.Bot.Modules
 
                         msg += $"Journal {journal} updated successfully.";
 
-                        var currentPlayer = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                        var currentPlayer = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
                         ctx.Entry(options.Target).Reference(x => x.Player).Load();
                         if (ctx.CheckPrivateChannel(Context.Guild.Id, Context.User.Id, Context.Channel.Id, (ulong)options.Target.Player.DiscordID))
                             msg += $" New score: {options.Target.CurrentJournalValue(journal)}";
@@ -378,7 +378,7 @@ namespace EmeraldBot.Bot.Modules
                     using var ctx = new EmeraldBotContext();
 
                     options.Reattach(ctx);
-                    var player = ctx.Players.Single(x => x.DiscordID == (long)Context.User.Id);
+                    var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
 
                     ctx.Entry(options.Target).Reference(x => x.Player).Load();
                     options.Target.LoadJournals(ctx);
