@@ -1,8 +1,11 @@
 ﻿@page  "/messages/send"
+@using Microsoft.AspNetCore.Authorization;
 
+@attribute [Authorize]
 @inherits SendBase
 
 <h1>Send a new message</h1>
+<CharacterSelector />
 <input @bind=@Title placeholder="@(Character?.Name ?? "Message Title")" />
 <br />
 <textarea @bind=@Text onkeyup="this.dispatchEvent(new Event('change', { 'bubbles': true }));" placeholder="Message text" rows="15" cols="100"></textarea>

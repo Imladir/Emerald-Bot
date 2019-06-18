@@ -1,0 +1,42 @@
+﻿@inherits CharacterSelectorBase
+
+<div style="width: 20%">
+    <h4>Pick a server</h4>
+    <select class="form-control d-flex" id="servers" @onchange="@ServerSelected">
+        @foreach (var s in Servers)
+        {
+            <option value="@s.ID">@s.Name</option>
+        }
+    </select>
+</div>
+
+@if (CurrentServer != 0)
+{
+<div style="width: 20%">
+    <h4>Pick a Channel</h4>
+    <select class="form-control d-flex" id="servers">
+        @foreach (var c in Channels[CurrentServer])
+{
+            <option value="@c.ID">@c.Name</option>
+}
+    </select>
+</div>
+
+<div style="width: 20%">
+    <h4>Pick a Character</h4>
+    <select class="form-control d-flex" id="servers">
+        @foreach (var s in PCs[CurrentServer])
+{
+            <option value="@s.ID">@s.Name</option>
+}
+    </select>
+</div>
+}
+
+@code {
+    protected void ServerSelected(UIChangeEventArgs serverEvent)
+    {
+        CurrentServer = int.Parse(serverEvent.Value.ToString());
+        StateHasChanged();
+    }
+}

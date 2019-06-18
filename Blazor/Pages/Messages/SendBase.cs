@@ -44,8 +44,8 @@ namespace EmeraldBot.Blazor.Pages.Messages
                     .Build();
             await connection.StartAsync();
 
-            var str = await connection.InvokeAsync<string>("GreetAll");
             var msgID = await connection.InvokeAsync<int>("SendPCMessage", serverID, channelID, userID, characterID, Title, Text);
+            await connection.StopAsync();
             if (msgID > 0)
             {
                 _uri.NavigateTo($"messages/{msgID}");

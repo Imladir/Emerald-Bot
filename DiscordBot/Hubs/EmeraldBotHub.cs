@@ -23,46 +23,35 @@ namespace EmeraldBot.Bot.Hubs
             return "Server says hi";
         }
 
-        public async Task GetUserGuilds(int id)
+        public List<int> GetUserGuilds(int userID)
         {
-            using (var ctx = new EmeraldBotContext())
+            try
             {
-                var player = ctx.Users.Find(id);
-                // Retrieve the player's characters
-                var query =
-                from servers in ctx.Servers
-                join pcs in ctx.Characters.OfType<PC>() on servers.ID equals pcs.Server.ID
-                join p in ctx.Users on pcs.Player.ID equals p.ID
-                where p.ID == player.ID
-                select new { servers.ID, servers.Name };
-                var res = query.ToDictionary(x => x.ID, x => x.Name);
-                await Clients.Caller.SendAsync("UserGuilds", player.ID, res);
-            }
-        }
+                using var ctx = new EmeraldBotContext();
 
-        public async Task GetUserGuildChannels(int userID, int serverID)
-        {
-            using (var ctx = new EmeraldBotContext())
-            {
-                var server = ctx.Servers.Find(serverID);
                 var player = ctx.Users.Find(userID);
-                var discordUser = WebServiceServer.DiscordClient.GetUser((ulong)player.DiscordID);
-                var discordGuild = WebServiceServer.DiscordClient.GetGuild((ulong)server.DiscordID);
-                var channels = discordGuild.Channels.ToList().FindAll(x => x.Users.Contains(discordUser));
-                var res = channels.ToDictionary(x => x.Id, x => x.Name);
-                await Clients.Caller.SendAsync("UserChannels", userID, res);
+                var user = WebServiceServer.DiscordClient.GetUser((ulong)player.DiscordID) as SocketUser;
+                var guildList = user.MutualGuilds;
+
+                var res = guildList.OrderBy(x => x.Name).Select(x => ctx.Servers.Single(y => (ulong)y.DiscordID == x.Id).ID).ToList();
+                return res;
+            } catch (Exception e)
+            {
+                Console.WriteLine($"Failed to retrieve guild list: {e.Message}\n{e.StackTrace}");
+                return new List<int>();
             }
         }
 
-        public async Task GetUserGuildCharacters(int userID, int serverID)
+        public Dictionary<ulong, string> GetUserGuildChannels(int userID, int serverID)
         {
-            using (var ctx = new EmeraldBotContext())
-            {
-                var pcs = ctx.Characters.OfType<PC>().Where(x => x.Server.ID == serverID
-                                                              && x.Player.ID == userID);
-                var res = pcs.ToDictionary(x => x.ID, x => x.Name);
-                await Clients.Caller.SendAsync("UserCharacters", userID, res);
-            }
+            using var ctx = new EmeraldBotContext();
+            var server = ctx.Servers.Find(serverID);
+            var player = ctx.Users.Find(userID);
+            var discordUser = WebServiceServer.DiscordClient.GetUser((ulong)player.DiscordID);
+            var discordGuild = WebServiceServer.DiscordClient.GetGuild((ulong)server.DiscordID);
+            var channels = discordGuild.Channels.ToList().FindAll(x => x.Users.Any(x => x.Id == discordUser.Id));
+            var res = channels.ToDictionary(x => x.Id, x => x.Name);
+            return res;
         }
 
         public async Task<int> SendPCMessage(int serverID, ulong channelID, int userID, int characterID, string title, string text)

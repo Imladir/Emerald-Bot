@@ -81,7 +81,7 @@ namespace EmeraldBot.Model.Identity
         {
             using var ctx = new EmeraldBotContext();
             ctx.Users.Attach(user);
-            IList<Claim> res = new List<Claim>();
+            IList<Claim> res = new List<Claim>() { new Claim("UserID", $"{user.ID}") };
             foreach (var uc in user.Claims) res.Add(uc.ToClaim());
             foreach (var r in user.Roles)
             {

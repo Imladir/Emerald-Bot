@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using EmeraldBot.Model;
+using Microsoft.AspNetCore.Http;
 
 namespace EmeraldBot.Blazor.Pages.Home
 {
@@ -17,7 +18,7 @@ namespace EmeraldBot.Blazor.Pages.Home
 
         protected override void OnInit()
         {
-            Servers = _ctx.Servers.Where(x => x.DiscordID != 0).OrderBy(x => x.Name).ToList();
+            Servers = _ctx.Servers.Where(x => x.DiscordID != 0 && x.ID == 2).OrderBy(x => x.Name).ToList();
         }
     }
 }

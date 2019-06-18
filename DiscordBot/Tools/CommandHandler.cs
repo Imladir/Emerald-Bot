@@ -67,26 +67,26 @@ namespace EmeraldBot.Bot.Tools
                 int argPos = 0;
 
                 char prefix = '!';
-                //using (var ctx = new EmeraldBotContext())
-                //{
-                //    Server server;
-                //    if (!ctx.Servers.Any(x => x.DiscordID == (long)serverID))
-                //    {
-                //        server = new Server() { DiscordID = (long)serverID, Name = guild.Name };
-                //        ctx.Servers.Add(server);
-                //        var _ = ctx.SaveChangesAsync();
-                //    }
-                //    else
-                //    {
-                //        server = ctx.Servers.Single(x => x.DiscordID == (long)serverID);
-                //        if (server.Name == null || server.Name != guild.Name)
-                //        {
-                //            server.Name = guild.Name;
-                //            var _ = ctx.SaveChangesAsync();
-                //        }
-                //    }
-                //    prefix = server.Prefix[0];
-                //}
+                using (var ctx = new EmeraldBotContext())
+                {
+                    Server server;
+                    if (!ctx.Servers.Any(x => x.DiscordID == (long)serverID))
+                    {
+                        server = new Server() { DiscordID = (long)serverID, Name = guild.Name };
+                        ctx.Servers.Add(server);
+                        ctx.SaveChanges();
+                    }
+                    else
+                    {
+                        server = ctx.Servers.Single(x => x.DiscordID == (long)serverID);
+                        if (server.Name == null || server.Name != guild.Name)
+                        {
+                            server.Name = guild.Name;
+                            ctx.SaveChanges();
+                        }
+                    }
+                    prefix = server.Prefix[0];
+                }
 
                 // If the user just says 'prefix' I'll assume he wants to know the prefix used by the bot.
                 if (messageParam.Content == "prefix")
@@ -107,23 +107,23 @@ namespace EmeraldBot.Bot.Tools
                 var context = new SocketCommandContext(_client, message);
 
                 // Make sure the user exists / is up to date
-                //using (var ctx = new EmeraldBotContext())
-                //{
-                //    var player = ctx.Users.SingleOrDefault(x => x.DiscordID == (long)message.Author.Id);
-                //    if (player == null)
-                //    {
-                //        player = new User() { DiscordID = (long)message.Author.Id };
-                //        ctx.Users.Add(player);
-                //        ctx.SaveChanges();
-                //    }
-                //    if (message.Author.Username != player.UserName)
-                //    {
-                //        player.UserName = message.Author.Username;
-                //        ctx.SaveChanges();
-                //    }
-                //    if (player.Verbose) await context.User.SendMessageAsync($"Received command:\n{message.Content}");
-                //    ctx.Entry(player).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
-                //}
+                using (var ctx = new EmeraldBotContext())
+                {
+                    var player = ctx.Users.SingleOrDefault(x => x.DiscordID == (long)message.Author.Id);
+                    if (player == null)
+                    {
+                        player = new User() { DiscordID = (long)message.Author.Id };
+                        ctx.Users.Add(player);
+                        ctx.SaveChanges();
+                    }
+                    //if (message.Author.Username != player.UserName)
+                    //{
+                    //    player.UserName = message.Author.Username;
+                    //    ctx.SaveChanges();
+                    //}
+                    if (player.Verbose) await context.User.SendMessageAsync($"Received command:\n{message.Content}");
+                    ctx.Entry(player).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+                }
 
                 // Execute the command with the command context we just
                 // created, along with the service provider for precondition checks.
