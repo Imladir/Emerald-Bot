@@ -17,6 +17,7 @@ namespace EmeraldBot.Blazor.Shared
     {
         [Inject] private IHttpContextAccessor _ca { get; set; }
         [Inject] private EmeraldBotContext _ctx { get; set; }
+        [Parameter] protected EventCallback<Tuple<int, ulong, int>> Selection { get; set; }
         protected List<Server> Servers { get; set; } = new List<Server>();
         protected Dictionary<int, PC[]> PCs { get; set; } = new Dictionary<int, PC[]>();
         protected Dictionary<int, List<DiscordChannel>> Channels { get; set; } = new Dictionary<int, List<DiscordChannel>>();
@@ -57,7 +58,10 @@ namespace EmeraldBot.Blazor.Shared
 
                     PCs[s.ID] = _ctx.PCs.Where(x => x.Player.ID == userID && x.Server.ID == s.ID).OrderBy(x => x.Name).ToArray();
                 }
+                CurrentChannel = Channels[CurrentServer][0].ID;
+                CurrentCharacter = PCs[CurrentServer][0].ID;
                 await connection.StopAsync();
+                await Selection.InvokeAsync(new Tuple<int, ulong, int>(CurrentServer, CurrentChannel, CurrentCharacter));
             } catch (Exception e)
             {
                 Console.WriteLine($"Error fetching character selection data {e.Message}\n{e.StackTrace}");

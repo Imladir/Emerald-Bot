@@ -199,36 +199,37 @@ namespace EmeraldBot.Model
             return (bool)cmd.Parameters["@isPrivate"].Value;
         }
 
-        public PC GetDefaultCharacter(ulong serverDiscordID, ulong playerDiscordID) { return GetPlayerCharacter(serverDiscordID, playerDiscordID, ""); }
+        public PC GetDefaultCharacter(ulong serverID, ulong userID) {
+            return Users.SingleOrDefault(x => x.DiscordID == (long)userID).DefaultCharacters.SingleOrDefault(x => x.Server.DiscordID == (long)serverID).Character as PC;
+        }
 
         public PC GetPlayerCharacter(ulong serverID, ulong userID, string nameOrAlias)
         {
-            var cmd = Database.GetDbConnection().CreateCommand();
-            cmd.CommandText = "usp_getUserCharacter";
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add(new SqlParameter("@serverID", SqlDbType.BigInt) { Value = serverID });
-            cmd.Parameters.Add(new SqlParameter("@userID", SqlDbType.BigInt) { Value = userID });
-            cmd.Parameters.Add(new SqlParameter("@nameOrAlias", SqlDbType.NVarChar) { Value = nameOrAlias });
-            cmd.Parameters.Add(new SqlParameter("@pcID", SqlDbType.Int) { Direction = ParameterDirection.Output });
-
-            if (cmd.Connection.State != ConnectionState.Open)
+            try
             {
-                cmd.Connection.Open();
+                if (nameOrAlias == "") return GetDefaultCharacter(serverID, userID);
+
+                var user = Users.SingleOrDefault(x => x.DiscordID == (long)userID);
+                // Does the user have privilegies?
+                if (!user.Roles.Where(x => x.Server.DiscordID == (long)serverID).Any(x => x.Role.Name.Equals("GM") || x.Role.Name.Equals("Admin") || x.Role.Name.Equals("ServerOwner")))
+                    return PCs.SingleOrDefault(x => x.Player.DiscordID == (long)userID 
+                                                 && x.Server.DiscordID == (long)serverID 
+                                                 && (x.Name.Equals(nameOrAlias) || x.Alias.Equals(nameOrAlias)));
+                else
+                    return PCs.SingleOrDefault(x => x.Server.DiscordID == (long)serverID
+                                                 && (x.Name.Equals(nameOrAlias) || x.Alias.Equals(nameOrAlias)));
+            } catch (Exception e)
+            {
+                Console.WriteLine($"Error retrieving character: {e.Message}\n{e.StackTrace}");
+                throw;
             }
-
-            cmd.ExecuteNonQuery();
-            var id = (int)cmd.Parameters["@pcID"].Value;
-
-            return PCs.Find(id);
         }
 
         public Character GetCommandTarget(ulong serverID, ulong userID, string aliasOrName = "")
         {
             Character target;
-            if (UserRoles.SingleOrDefault(x => x.Role == Roles.Single(y => y.Name.Equals("GM"))
-                                            && x.User.DiscordID == (long)userID
-                                            && x.Server.DiscordID == (long)serverID) != null 
+            var user = Users.Single(x => x.DiscordID == (long)userID);
+            if (user.Roles.Where(x => x.Server.DiscordID == (long)serverID).Any(x => x.Role.Name.Equals("GM") || x.Role.Name.Equals("Admin") || x.Role.Name.Equals("ServerOwner")) 
                 && aliasOrName != "")
                 target = Characters.Where(x => (x.Name.Equals(aliasOrName) || x.Alias.Equals(aliasOrName))
                                              && (x.Server.DiscordID == (long)serverID || x.Server.DiscordID == 0)).Single();
@@ -239,7 +240,7 @@ namespace EmeraldBot.Model
 
         public NameAlias GetNameAliasEntity(ulong serverID, string nameOrAlias)
         {
-            return NameAliases.FromSqlInterpolated($"usp_getNameAliasEntity {(long)serverID}, {nameOrAlias}").AsNoTracking().SingleOrDefault();
+            return NameAliases.FromSqlInterpolated($"exec usp_getNameAliasEntity {(long)serverID}, {nameOrAlias}").AsNoTracking().SingleOrDefault();
         }
 
         #region Save Changes
@@ -247,23 +248,24 @@ namespace EmeraldBot.Model
         {
             try
             {
-                var aliasChangeSet = ChangeTracker.Entries<NameAlias>();
-                if (aliasChangeSet != null)
-                {
-                    foreach (var entry in aliasChangeSet.Where(x => x.State != EntityState.Unchanged))
-                    {
-                        var server =
-                            from s in Servers
-                            join a in NameAliases on s.ID equals a.Server.ID
-                            where a.ID == entry.Entity.ID
-                            select s;
+                //var aliasChangeSet = ChangeTracker.Entries<NameAlias>();
+                //if (aliasChangeSet != null)
+                //{
+                //    foreach (var entry in aliasChangeSet.Where(x => x.State != EntityState.Unchanged))
+                //    {
+                //        var query =
+                //            from s in Servers
+                //            join a in NameAliases on s.ID equals a.Server.ID
+                //            where a.ID == entry.Entity.ID
+                //            select s;
+                //        var server = query.AsNoTracking().SingleOrDefault();
 
-                        if (server.Count() == 0) continue; // Seeding
-                        var na = GetNameAliasEntity((ulong)server.SingleOrDefault()?.DiscordID, entry.Entity.Alias);
-                        if (na != null && na.ID != entry.Entity.ID)
-                            throw new ValidationException($"there is already something registered with the alias '{na.Alias}'. Pick something else.");
-                    }
-                }
+                //        if (server == null) continue; // Seeding
+                //        var na = NameAliases.AsNoTracking().SingleOrDefault(x => (x.Server.ID == server.ID || x.Server.DiscordID == 0) && x.Alias.Equals(entry.Entity.Alias));
+                //        if (na != null && na.ID != entry.Entity.ID)
+                //            throw new ValidationException($"there is already something registered with the alias '{na.Alias}'. Pick something else.");
+                //    }
+                //}
 
                 // Updating PC secondary characteristics, or a NPC at creation
                 var characterRingChangeSet = ChangeTracker.Entries<CharacterRing>().Where(x => x.State != EntityState.Unchanged).ToList();

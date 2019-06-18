@@ -3,6 +3,7 @@ using Discord.Commands;
 using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Characters;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
@@ -63,9 +64,9 @@ namespace EmeraldBot.Bot.Modules
                 var emd = AutoFormater.Format(target, text);
                 var res = await Context.Channel.SendMessageAsync("", false, emd.Build());
 
-                var player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
-                var server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
-                ctx.Entry(player).Collection(x => x.Messages).Load();
+                var player = ctx.Users.AsNoTracking().Single(x => x.DiscordID == (long)Context.User.Id);
+                var server = ctx.Servers.AsNoTracking().Single(x => x.DiscordID == (long)Context.Guild.Id);
+                //ctx.Entry(player).Collection(x => x.Messages).Load();
 
                 var message = new Model.Servers.Message()
                 {
@@ -76,7 +77,11 @@ namespace EmeraldBot.Bot.Modules
                     Server = server,
                     Player = player,
                 };
-                if (target.ID > 0) message.Character = target;
+                if (target.ID > 0)
+                {
+                    ctx.PCs.Attach(target);
+                    message.Character = target;
+                }
 
                 //player.Messages.Add(message);
                 ctx.Messages.Add(message);

@@ -14,7 +14,7 @@
 {
 <div style="width: 20%">
     <h4>Pick a Channel</h4>
-    <select class="form-control d-flex" id="servers">
+    <select class="form-control d-flex" id="servers" @onchange="@ChannelSelected">
         @foreach (var c in Channels[CurrentServer])
 {
             <option value="@c.ID">@c.Name</option>
@@ -24,7 +24,7 @@
 
 <div style="width: 20%">
     <h4>Pick a Character</h4>
-    <select class="form-control d-flex" id="servers">
+    <select class="form-control d-flex" id="servers" @onchange="@PCSelected">
         @foreach (var s in PCs[CurrentServer])
 {
             <option value="@s.ID">@s.Name</option>
@@ -34,9 +34,23 @@
 }
 
 @code {
-    protected void ServerSelected(UIChangeEventArgs serverEvent)
-    {
-        CurrentServer = int.Parse(serverEvent.Value.ToString());
-        StateHasChanged();
-    }
+protected void ServerSelected(UIChangeEventArgs serverEvent)
+{
+    CurrentServer = int.Parse(serverEvent.Value.ToString());
+    CurrentChannel = Channels[CurrentServer][0].ID;
+    CurrentCharacter = PCs[CurrentServer][0].ID;
+    StateHasChanged();
+}
+
+protected async Task ChannelSelected(UIChangeEventArgs channelEvent)
+{
+    CurrentChannel = ulong.Parse(channelEvent.Value.ToString());
+    await Selection.InvokeAsync(new Tuple<int, ulong, int>(CurrentServer, CurrentChannel, CurrentCharacter));
+}
+
+protected async Task PCSelected(UIChangeEventArgs pcEvent)
+{
+    CurrentCharacter = int.Parse(pcEvent.Value.ToString());
+    await Selection.InvokeAsync(new Tuple<int, ulong, int>(CurrentServer, CurrentChannel, CurrentCharacter));
+}
 }
