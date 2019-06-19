@@ -58,20 +58,28 @@ namespace EmeraldBot.Bot.Hubs
 
         public async Task SendMessage(int messageID)
         {
-            using var ctx = new EmeraldBotContext();
-            var message = ctx.Messages.Find(messageID);
-
-            var channel = WebServiceServer.DiscordClient.GetChannel((ulong)message.DiscordChannelID) as ISocketMessageChannel;
-
-            if (message.DiscordMessageID == 0)
+            try
             {
-                var res = await channel.SendMessageAsync("", false, message.ToEmbed());
-                message.DiscordMessageID = (long)res.Id;
-                ctx.SaveChanges();
-            } else
+                using var ctx = new EmeraldBotContext();
+                var message = ctx.Messages.Find(messageID);
+
+                var channel = WebServiceServer.DiscordClient.GetChannel((ulong)message.DiscordChannelID) as ISocketMessageChannel;
+
+                if (message.DiscordMessageID == 0)
+                {
+                    var res = await channel.SendMessageAsync("", false, message.ToEmbed());
+                    message.DiscordMessageID = (long)res.Id;
+                    ctx.SaveChanges();
+                }
+                else
+                {
+                    IUserMessage msg = (IUserMessage)await channel.GetMessageAsync((ulong)message.DiscordMessageID);
+                    await msg.ModifyAsync(x => x.Embed = message.ToEmbed());
+                }
+            }
+            catch (Exception e)
             {
-                IUserMessage msg = (IUserMessage)await channel.GetMessageAsync((ulong)message.DiscordMessageID);
-                await msg.ModifyAsync(x => x.Embed = message.ToEmbed());
+                Console.WriteLine($"Error sending message: {e.Message}\n{e.StackTrace}");
             }
         }
 

@@ -32,7 +32,7 @@ else
         @foreach (var m in _messages)
     {
         <tr>
-            <td><div class="tooltip"><span class="tooltiptext">@m.Text</span></div>@m.Title</td>
+            <td data-toggle="tooltip" data-placement="right" title="@m.Text">@m.Title</td>
             <td><img src="@m.Icon" style="height: 30px; width: auto;" /></td>
             <td>@(DateTime.SpecifyKind(m.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</td>
             <td><NavLink href="@($"messages/{m.ID}")">See</NavLink> <NavLink href="@($"messages/{m.ID}/edit")">Edit</NavLink> <NavLink href="@($"messages/{m.ID}/delete")">Delete</NavLink></td>

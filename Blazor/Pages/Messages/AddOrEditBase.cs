@@ -10,6 +10,7 @@ using Microsoft.JSInterop;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace EmeraldBot.Blazor.Pages.Messages
 {
@@ -20,14 +21,15 @@ namespace EmeraldBot.Blazor.Pages.Messages
         [Inject] protected IUriHelper _uri { get; set; }
         [Inject] protected IJSRuntime JSRuntime { get; set; }
         [Parameter] public int MessageID { get; set; }
+        [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
         protected int ServerID { get; set; }
         protected bool IsEdit => MessageID == -1 ? false : true;
-        [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-
         protected Message Message { get; set; } = new Message();
 
         protected int TextLength { get; set; } = 0;
         protected ElementRef editor;
+        private string _oldIcon;
+        private int _oldColour;
         public async Task UpdateCharacterCount() => TextLength = await JSRuntime.InvokeAsync<int>("blazor.getCharacterCount", editor);
 
         protected override void OnInit()
@@ -41,6 +43,9 @@ namespace EmeraldBot.Blazor.Pages.Messages
                     if (Message == null) _uri.NavigateTo("messages/");
                     if (Message.Player.ID != UserID) _uri.NavigateTo("messages/");
                     ServerID = Message.Server.ID;
+                    TextLength = Message.Text.Length;
+                    _oldIcon = Message.Icon;
+                    _oldColour = Message.Colour;
                 } else
                 {
                     Message.Player = _ctx.Users.Find(UserID);
@@ -56,6 +61,9 @@ namespace EmeraldBot.Blazor.Pages.Messages
         {
             if (string.IsNullOrWhiteSpace(Message.Title) || string.IsNullOrWhiteSpace(Message.Text)) return;
 
+            Message.Text = WebUtility.HtmlEncode(Message.Text);
+            if (Message.Text.Length >= 2048) return;
+
             // Send the post
             HubConnection connection = new HubConnectionBuilder()
                     .AddMessagePackProtocol()
@@ -67,8 +75,6 @@ namespace EmeraldBot.Blazor.Pages.Messages
                     })
                     .Build();
             await connection.StartAsync();
-
-
             if (!IsEdit)
             {
                 Message.Server = _ctx.Servers.Find(ServerID);
@@ -103,8 +109,8 @@ namespace EmeraldBot.Blazor.Pages.Messages
                 Message.Colour = (from c in _ctx.Clans join p in _ctx.PCs on c.ID equals p.Clan.ID where p.ID == id select c).Single().Colour;
             } else
             {
-                Message.Icon = "";
-                Message.Colour = 0;
+                Message.Icon = _oldIcon;
+                Message.Colour = _oldColour;
             }
         }
     }

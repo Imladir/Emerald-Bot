@@ -5,16 +5,19 @@
     @if (PCs.Count > 0)
     {
         <select class="form-control d-flex" id="servers" @onchange="@PCSelected">
-            @foreach (var s in PCs)
-            {
-                if (s.ID == CurrentCharacter) {
-                    <option value="@s.ID" selected="selected">@s.Name</option>
-                }
-                else {
-                    <option value="@s.ID">@s.Name</option>
-                }
+        @if (AllowEmpty) {
+            <option value="-1"></option>
+        }
+        @foreach (var s in PCs)
+        {
+            if (s.ID == CurrentCharacter) {
+                <option value="@s.ID" selected="selected">@s.Name</option>
             }
-        </select>
+            else {
+                <option value="@s.ID">@s.Name</option>
+            }
+        }
+    </select>
     }
     else
     {

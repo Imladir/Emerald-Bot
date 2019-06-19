@@ -1,4 +1,5 @@
 ﻿@page  "/messages/{id:int}"
+@using Microsoft.AspNetCore.Html
 @using EmeraldBot.Model
 @using EmeraldBot.Model.Servers
 
@@ -16,7 +17,7 @@ else
     <h1>@_message.Title</h1>
     <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
     <NavLink href="@($"messages/{_message.ID}/edit")">Edit Message</NavLink>  <NavLink href="@($"messages/{_message.ID}/delete")">Delete Message</NavLink>
-    <p>@_message.Text</p>
+    <p>@((MarkupString)_message.Text.ToHTML())</p>
 }
 
 @code {

@@ -19,6 +19,7 @@ namespace EmeraldBot.Blazor.Shared
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
         [Parameter] protected EventCallback<int> OnSelected { get; set; }
         [Parameter] protected int ServerID { get; set; }
+        [Parameter] protected bool AllowEmpty { get; set; } = false;
         protected List<PC> PCs { get; set; } = new List<PC>();
         protected int CurrentCharacter { get; set; }
         protected int DefaultCharacter { get; set; }
@@ -40,14 +41,13 @@ namespace EmeraldBot.Blazor.Shared
                 var user = _ctx.Users.Find(UserID);
                 // Check if user has privilege and is on owner's channel
                 var hasPrivilege = user.Roles.Where(x => x.Server.ID == ServerID).Any(x => x.Role.Name.Equals("GM")
-                                                                                        || x.Role.Name.Equals("Admin")
-                                                                                        || x.Role.Name.Equals("ServerOwner"));
+                                                                                        || x.Role.Name.Equals("Admin"));
 
                 PCs = _ctx.PCs.Where(x => x.Server.ID == ServerID).OrderBy(x => x.Name).ToList();
                 if (!hasPrivilege)
                     PCs = PCs.Where(x => x.Player.ID == UserID && x.Server.ID == ServerID).OrderBy(x => x.Name).ToList();
 
-                if (PCs.Count > 0)
+                if (PCs.Count > 0 && !AllowEmpty)
                 {
                     var df = _ctx.Set<DefaultCharacter>().SingleOrDefault(x => x.Server.ID == ServerID && x.Player.ID == UserID);
                     if (df == null) CurrentCharacter = PCs[0].ID;
