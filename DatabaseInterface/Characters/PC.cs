@@ -50,7 +50,6 @@ namespace EmeraldBot.Model.Characters
         public virtual ICollection<PCTechnique> Techniques { get; set; }
         public virtual ICollection<PCSkill> Skills { get; set; }
         public virtual ICollection<JournalEntry> JournalEntries { get; set; }
-        public virtual ICollection<Message> Messages { get; set; }
 
         public PC() : base()
         {
@@ -270,18 +269,12 @@ namespace EmeraldBot.Model.Characters
         public int CurrentJournalValue(string type)
         {
             using var ctx = new EmeraldBotContext();
-            ctx.PCs.Attach(this);
-            ctx.Entry(this).Collection(x => x.JournalEntries).Query()
-                .Include(x => x.Journal)
-                .Load();
-
-            var journalType = ctx.JournalTypes.Single(x => x.Name == type);
-            return CurrentJournalValue(journalType);
+            return ctx.PCs.Find(ID).JournalEntries.Where(x => x.Journal.Name.Equals(type, StringComparison.OrdinalIgnoreCase)).Sum(x => x.Amount);
         }
 
         public int CurrentJournalValue(JournalType type)
         {
-            var entries = JournalEntries.Where(x => x.Journal == type);
+            var entries = JournalEntries.Where(x => x.Journal.ID == type.ID).ToList();
             if (entries.Count() == 0) return 0;
             else return entries.Sum(x => x.Amount);
         }

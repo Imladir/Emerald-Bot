@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
+@inject IAuthorizationService AuthorizationService
+@inject IUriHelper _uri
+
+@functions {
+    [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        var user = (await authenticationStateTask).User;
+
+        if (!user.Identity.IsAuthenticated)
+            _uri.NavigateTo(_uri.ToAbsoluteUri(Urls.Login).ToString());
+    }
+}

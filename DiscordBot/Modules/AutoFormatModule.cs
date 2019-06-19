@@ -70,18 +70,16 @@ namespace EmeraldBot.Bot.Modules
 
                 var message = new Model.Servers.Message()
                 {
-                    Data = JsonConvert.SerializeObject(emd),
                     DiscordChannelID = (long)Context.Channel.Id,
                     DiscordMessageID = (long)res.Id,
                     LastUpdated = DateTime.UtcNow,
                     Server = server,
                     Player = player,
+                    Title = target.Name,
+                    Text = text,
+                    Colour = target.Clan.Colour,
+                    Icon = target.Icon
                 };
-                if (target.ID > 0)
-                {
-                    ctx.PCs.Attach(target);
-                    message.Character = target;
-                }
 
                 //player.Messages.Add(message);
                 ctx.Messages.Add(message);
@@ -98,39 +96,28 @@ namespace EmeraldBot.Bot.Modules
                                           [Summary("The new text replacing the old one.")]
                                           string data)
         {
-            using (var ctx = new EmeraldBotContext())
+            using var ctx = new EmeraldBotContext();
+            try
             {
-                try
-                {
-                    var message = ctx.Messages.Where(x => x.DiscordChannelID == (long)Context.Channel.Id
-                                                       && x.Server.DiscordID == (long)Context.Guild.Id
-                                                       && x.Player.DiscordID == (long)Context.User.Id)
-                                              .OrderByDescending(x => x.LastUpdated).FirstOrDefault();
+                var message = ctx.Messages.Where(x => x.DiscordChannelID == (long)Context.Channel.Id
+                                                   && x.Server.DiscordID == (long)Context.Guild.Id
+                                                   && x.Player.DiscordID == (long)Context.User.Id)
+                                          .OrderByDescending(x => x.LastUpdated).FirstOrDefault();
 
-                    Console.WriteLine($"I found messages? {message != null}");
-                    if (message == null) return;
+                if (message == null) return;
 
-                    var emd = JsonConvert.DeserializeObject<EmbedBuilder>(message.Data);
+                message.Text = AutoFormater.SimpleFormat(data);
 
-                    // Getting color again because it's fucked up
-                    Regex reColor = new Regex("Color.{4}RawValue.{2}(?<color>\\d+)");
-                    Match m = reColor.Match(message.Data);
-                    emd.WithColor(new Color(uint.Parse(m.Groups["color"].Value)));
-
-                    emd.WithDescription(AutoFormater.SimpleFormat(data));
-
-                    IUserMessage msg = (IUserMessage)await Context.Channel.GetMessageAsync((ulong)message.DiscordMessageID);
-                    await msg.ModifyAsync(x => x.Embed = emd.Build());
-                    message.Data = JsonConvert.SerializeObject(emd);
-                    message.LastUpdated = DateTime.UtcNow;
-                    ctx.SaveChanges();
-                    await Context.Channel.DeleteMessageAsync(Context.Message);
-                }
-                catch (Exception e)
-                {
-                    await ReplyAsync($"Couldn't edit message: {e.Message}");
-                    Console.WriteLine($"{e.Message}\n{e.StackTrace}");
-                }
+                IUserMessage msg = (IUserMessage)await Context.Channel.GetMessageAsync((ulong)message.DiscordMessageID);
+                await msg.ModifyAsync(x => x.Embed = message.ToEmbed());
+                message.LastUpdated = DateTime.UtcNow;
+                ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync($"Couldn't edit message: {e.Message}");
+                Console.WriteLine($"{e.Message}\n{e.StackTrace}");
             }
         }
 

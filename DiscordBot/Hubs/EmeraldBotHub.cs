@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Characters;
@@ -10,6 +11,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace EmeraldBot.Bot.Hubs
@@ -49,44 +51,40 @@ namespace EmeraldBot.Bot.Hubs
             var player = ctx.Users.Find(userID);
             var discordUser = WebServiceServer.DiscordClient.GetUser((ulong)player.DiscordID);
             var discordGuild = WebServiceServer.DiscordClient.GetGuild((ulong)server.DiscordID);
-            var channels = discordGuild.Channels.ToList().FindAll(x => x.Users.Any(x => x.Id == discordUser.Id));
+            var channels = discordGuild.Channels.ToList().FindAll(x => x.Users.Any(x => x.Id == discordUser.Id) && x is SocketTextChannel);
             var res = channels.ToDictionary(x => x.Id, x => x.Name);
             return res;
         }
 
-        public async Task<int> SendPCMessage(int serverID, ulong channelID, int userID, int characterID, string title, string text)
+        public async Task SendMessage(int messageID)
         {
-            try
+            using var ctx = new EmeraldBotContext();
+            var message = ctx.Messages.Find(messageID);
+
+            var channel = WebServiceServer.DiscordClient.GetChannel((ulong)message.DiscordChannelID) as ISocketMessageChannel;
+
+            if (message.DiscordMessageID == 0)
             {
-                using var ctx = new EmeraldBotContext();
-                var pc = ctx.PCs.Find(characterID);
-                var emd = AutoFormater.Format(pc, text);
-                emd.Title = title;
-
-                var newMessage = new Message()
-                {
-                    DiscordChannelID = (long)channelID,
-                    Character = pc,
-                    Server = ctx.Servers.Find(serverID),
-                    Player = ctx.Users.Find(userID),
-                    Title = title,
-                    Text = text,
-                    Data = JsonConvert.SerializeObject(emd)
-                };
-
-                var channel = WebServiceServer.DiscordClient.GetChannel(channelID) as ISocketMessageChannel;
-                var res = await channel.SendMessageAsync("", false, emd.Build());
-                newMessage.DiscordMessageID = (long)res.Id;
-
-                ctx.Messages.Add(newMessage);
+                var res = await channel.SendMessageAsync("", false, message.ToEmbed());
+                message.DiscordMessageID = (long)res.Id;
                 ctx.SaveChanges();
-
-                return newMessage.ID;
-            } catch (Exception e)
+            } else
             {
-                Console.WriteLine($"Sending message failed: {e.Message}\n{e.StackTrace}");
-                return -1;
+                IUserMessage msg = (IUserMessage)await channel.GetMessageAsync((ulong)message.DiscordMessageID);
+                await msg.ModifyAsync(x => x.Embed = message.ToEmbed());
             }
+        }
+
+        public async Task DeleteMessage(int messageID)
+        {
+            using var ctx = new EmeraldBotContext();
+            var message = ctx.Messages.Find(messageID);
+
+            var channel = WebServiceServer.DiscordClient.GetChannel((ulong)message.DiscordChannelID) as ISocketMessageChannel;
+            IUserMessage msg = (IUserMessage)await channel.GetMessageAsync((ulong)message.DiscordMessageID);
+            await msg.DeleteAsync();
+            ctx.Messages.Remove(message);
+            ctx.SaveChanges();
         }
 
         /******************

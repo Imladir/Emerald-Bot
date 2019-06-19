@@ -4,28 +4,29 @@
 
 @inject EmeraldBotContext _ctx
 
+<RedirectToLoginIfNotAuthorized />
+
 @if (_message == null)
 {
     <p><em>Message wasn't found. Has it been deleted?</em></p>
 }
 else
 {
-    <img src="@_icon" alt="@_message?.Character.Name" style="float: right; width: 300px; height:auto;" />
+    <img src="@_message.Icon" style="float: right; width: 300px; height:auto;" />
     <h1>@_message.Title</h1>
     <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+    <NavLink href="@($"messages/{_message.ID}/edit")">Edit Message</NavLink>  <NavLink href="@($"messages/{_message.ID}/delete")">Delete Message</NavLink>
     <p>@_message.Text</p>
 }
 
 @code {
+    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
     [Parameter] private int id { get; set; }
     private Message _message;
-    private string _icon;
 
     protected override void OnInit()
     {
+        if (UserID == -1) return;
         _message = _ctx.Messages.SingleOrDefault(x => x.ID == id);
-        if (_message == null) return;
-        if (_message.Character != null)
-            _icon = _message.Character.Icon;
     }
 }

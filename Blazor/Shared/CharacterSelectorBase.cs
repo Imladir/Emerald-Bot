@@ -15,54 +15,48 @@ namespace EmeraldBot.Blazor.Shared
 {
     public class CharacterSelectorBase : ComponentBase
     {
-        [Inject] private IHttpContextAccessor _ca { get; set; }
         [Inject] private EmeraldBotContext _ctx { get; set; }
-        [Parameter] protected EventCallback<Tuple<int, ulong, int>> Selection { get; set; }
-        protected List<Server> Servers { get; set; } = new List<Server>();
-        protected Dictionary<int, PC[]> PCs { get; set; } = new Dictionary<int, PC[]>();
-        protected Dictionary<int, List<DiscordChannel>> Channels { get; set; } = new Dictionary<int, List<DiscordChannel>>();
-        protected int CurrentServer { get; set; }
-        protected ulong CurrentChannel { get; set; }
+        [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+        [Parameter] protected EventCallback<int> OnSelected { get; set; }
+        [Parameter] protected int ServerID { get; set; }
+        protected List<PC> PCs { get; set; } = new List<PC>();
         protected int CurrentCharacter { get; set; }
+        protected int DefaultCharacter { get; set; }
+        private int lastKnownServer { get; set; } = 0;
 
-        protected override async Task OnInitAsync()
+        protected override void OnParametersSet()
+        {
+            UpdateCharactersList();
+        }
+
+        private void UpdateCharactersList()
         {
             try
             {
-                int.TryParse(_ca.HttpContext.User.Claims.Single(x => x.Type.Equals("UserID")).Value, out int userID);
+                if (UserID == -1 || lastKnownServer == ServerID) return;
+                lastKnownServer = ServerID;
+                var needUpdate = CurrentCharacter == 0;
 
-                // Send the post
-                HubConnection connection = new HubConnectionBuilder()
-                        .AddMessagePackProtocol()
-                        .WithAutomaticReconnect()
-                        .WithUrl("http://localhost:5050/emeraldBot",
-                        opt =>
-                        {
-                            opt.Transports = HttpTransportType.WebSockets;
-                        })
-                        .Build();
-                await connection.StartAsync();
+                var user = _ctx.Users.Find(UserID);
+                // Check if user has privilege and is on owner's channel
+                var hasPrivilege = user.Roles.Where(x => x.Server.ID == ServerID).Any(x => x.Role.Name.Equals("GM")
+                                                                                        || x.Role.Name.Equals("Admin")
+                                                                                        || x.Role.Name.Equals("ServerOwner"));
 
-                // Find the servers the user is on
-                List<int> ids = await connection.InvokeAsync<List<int>>("GetUserGuilds", userID);
-                Servers = ids.Select(x => _ctx.Servers.Find(x)).ToList();
-                CurrentServer = Servers[0].ID;
+                PCs = _ctx.PCs.Where(x => x.Server.ID == ServerID).OrderBy(x => x.Name).ToList();
+                if (!hasPrivilege)
+                    PCs = PCs.Where(x => x.Player.ID == UserID && x.Server.ID == ServerID).OrderBy(x => x.Name).ToList();
 
-                // Find the characters for the server
-                foreach (var s in Servers)
+                if (PCs.Count > 0)
                 {
-                    Channels[s.ID] = new List<DiscordChannel>();
-                    foreach (var c in await connection.InvokeAsync<Dictionary<ulong, string>>("GetUserGuildChannels", userID, s.ID))
-                        Channels[s.ID].Add(new DiscordChannel() { ID = c.Key, Name = $"#{c.Value}" });
-                    Channels[s.ID] = Channels[s.ID].OrderBy(x => x.Name).ToList();
-
-                    PCs[s.ID] = _ctx.PCs.Where(x => x.Player.ID == userID && x.Server.ID == s.ID).OrderBy(x => x.Name).ToArray();
+                    var df = _ctx.Set<DefaultCharacter>().SingleOrDefault(x => x.Server.ID == ServerID && x.Player.ID == UserID);
+                    if (df == null) CurrentCharacter = PCs[0].ID;
+                    else CurrentCharacter = df.Character.ID;
                 }
-                CurrentChannel = Channels[CurrentServer][0].ID;
-                CurrentCharacter = PCs[CurrentServer][0].ID;
-                await connection.StopAsync();
-                await Selection.InvokeAsync(new Tuple<int, ulong, int>(CurrentServer, CurrentChannel, CurrentCharacter));
-            } catch (Exception e)
+                else CurrentCharacter = -1;
+                if (needUpdate) OnSelected.InvokeAsync(CurrentCharacter);
+            }
+            catch (Exception e)
             {
                 Console.WriteLine($"Error fetching character selection data {e.Message}\n{e.StackTrace}");
             }

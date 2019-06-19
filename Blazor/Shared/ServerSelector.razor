@@ -1,0 +1,59 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Servers
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.Extensions.DependencyInjection;
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Http.Connections;
+
+@inject EmeraldBotContext _ctx
+@inject IHttpContextAccessor _ca
+
+<div style="width: 20%">
+    <h4>Pick a server</h4>
+    <select class="form-control d-flex" id="servers" @onchange="@ServerSelected">
+        @foreach (var s in Servers)
+        {
+            <option value="@s.ID">@s.Name</option>
+        }
+    </select>
+</div>
+
+@code  {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private EventCallback<int> OnSelected { get; set; }
+private List<Server> Servers = new List<Server>();
+private int _serverID;
+
+protected override async Task OnInitAsync()
+{
+    if (UserID == -1) return;
+    // Create the connection
+    HubConnection connection = new HubConnectionBuilder()
+            .AddMessagePackProtocol()
+            .WithAutomaticReconnect()
+            .WithUrl(Urls.BotHub,
+            opt =>
+            {
+                opt.Transports = HttpTransportType.WebSockets;
+            })
+            .Build();
+    await connection.StartAsync();
+
+    // Find the servers the user is on
+    List<int> ids = await connection.InvokeAsync<List<int>>("GetUserGuilds", UserID);
+    Servers = ids.Select(x => _ctx.Servers.Find(x)).ToList();
+    _serverID = Servers[0].ID;
+    await OnSelected.InvokeAsync(_serverID);
+    await connection.StopAsync();
+}
+
+protected async Task ServerSelected(UIChangeEventArgs serverEvent)
+{
+    var sel = int.Parse(serverEvent.Value.ToString());
+    if (sel != _serverID)
+    {
+        _serverID = sel;
+        await OnSelected.InvokeAsync(_serverID);
+    }
+}
+}

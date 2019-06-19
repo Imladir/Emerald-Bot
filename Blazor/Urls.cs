@@ -6,8 +6,9 @@ namespace EmeraldBot.Blazor
 {
     public static class Urls
     {
-        public const string Login = "api/account/login";
-        public const string Logout = "api/account/logout";
+        public const string BotHub = "http://localhost:5050/emeraldBot";
+        public const string Login = "Account/Login";
+        public const string Logout = "Account/Logout";
 
         public const string ListServers = "api/servers";
         public const string ListServerChannels = "api/servers/{id}/channels";

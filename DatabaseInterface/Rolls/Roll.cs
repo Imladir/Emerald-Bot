@@ -280,7 +280,6 @@ namespace EmeraldBot.Model.Rolls
 
         public RollPrintData PrintData()
         {
-            SortDice();
             var score = Score();
 
             // The dice string
@@ -292,7 +291,11 @@ namespace EmeraldBot.Model.Rolls
                 Emote em;
                 if (d.Face.Emote == null)
                 {
-                    em = _ctx.Emotes.Single(x => x.DieFaces.Contains(d.Face));
+                    var query = from e in _ctx.Emotes
+                                join df in _ctx.DieFaces on e.ID equals df.Emote.ID
+                                where df.ID == d.Face.ID
+                                select e;
+                    em = query.Single();
                 }
                 else
                     em = d.Face.Emote;

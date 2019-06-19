@@ -1,0 +1,20 @@
+@inherits AddOrEditBase
+
+<RedirectToLoginIfNotAuthorized />
+
+<img src="@Message.Icon" style="float: right; width: 300px; height:auto;" />
+@if (IsEdit) {
+    <h1>Message edition</h1>
+} else {
+    <h1>Send a new message</h1>
+    <ServerSelector OnSelected="@ServerSelected" />
+    <ChannelSelector ServerID="@ServerID" OnSelected="@ChannelSelected" />
+}
+<CharacterSelector ServerID="@ServerID" OnSelected="@CharacterSelected" />
+
+
+<input @bind="@Message.Title" />
+<br />
+<textarea @ref="editor" @bind="@Message.Text" onkeyup="@UpdateCharacterCount" rows="15" cols="100"></textarea>
+<div>@TextLength Characters</div>
+<button class="btn btn-primary float-right" @onclick="@SaveMessage">Save Message</button>

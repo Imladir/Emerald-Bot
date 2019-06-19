@@ -14,11 +14,13 @@ namespace EmeraldBot.Blazor.Pages.Home
     public class IndexBase : ComponentBase
     {
         [Inject] private EmeraldBotContext _ctx { get; set; }
+        [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
         protected List<Server> Servers { get; set; } = new List<Server>();
 
         protected override void OnInit()
         {
             Servers = _ctx.Servers.Where(x => x.DiscordID != 0 && x.ID == 2).OrderBy(x => x.Name).ToList();
+            Console.WriteLine($"########### I got a userID = {UserID} #############");
         }
     }
 }

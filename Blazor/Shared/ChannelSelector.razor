@@ -1,0 +1,22 @@
+@inherits ChannelSelectorBase
+
+<div style="width: 20%">
+    <h4>Pick a Channel</h4>
+    @if (Channels.Count != 0)
+    {
+        <select class="form-control d-flex" id="servers" @onchange="@ChannelSelected">
+            @foreach (var c in Channels)
+            {
+                <option value="@c.ID">@c.Name</option>
+            }
+        </select>
+    }
+</div>
+
+@code {
+    protected async Task ChannelSelected(UIChangeEventArgs channelEvent)
+    {
+        CurrentChannel = ulong.Parse(channelEvent.Value.ToString());
+        await OnSelected.InvokeAsync(CurrentChannel);
+    }
+}

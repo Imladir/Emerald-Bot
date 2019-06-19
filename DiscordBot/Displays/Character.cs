@@ -3,6 +3,7 @@ using Discord.Commands;
 using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Characters;
+using EmeraldBot.Model.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,24 +66,22 @@ namespace EmeraldBot.Bot.Displays
                 emd.AddField("Rings", ringsStr, true);
 
                 string skillsStr = "";
-                var skillGroups = ctx.Entry(pc).Collection(x => x.Skills).Query().GroupBy(x => x.Skill.Group).OrderBy(x => x.Key.Name).ToList();
-                foreach (var g in skillGroups)
+                foreach (var g in ctx.Set<SkillGroup>().OrderBy(x => x.Name).ToList())
                 {
-                    skillsStr += $"**{g.Key.Name}**\n";
-                    foreach (var s in g)
+                    var skills = pc.Skills.Where(x => x.Skill.Group.ID == g.ID).OrderBy(x => x.Skill.Name);
+                    skillsStr += $"**{g.Name}**\n";
+                    foreach (var s in skills)
                     {
-                        ctx.Entry(s).Reference(x => x.Skill).Load();
                         skillsStr += $"- {s.Skill.Name}: {s.Value}\n";
                     }
                 }
                 if (skillsStr != "") emd.AddField("Skills", skillsStr, true);
 
                 string techniquesStr = "";
-                var techniqueType = ctx.Entry(pc).Collection(x => x.Techniques).Query().GroupBy(x => x.Technique.Type).OrderBy(x => x.Key.Name).ToList();
-                foreach (var tt in techniqueType)
+                foreach (var tt in ctx.Set<TechniqueType>().OrderBy(x => x.Name).ToList())
                 {
-                    techniquesStr += $"**{tt.Key.Name}**\n";
-                    foreach (var t in tt)
+                    techniquesStr += $"**{tt.Name}**\n";
+                    foreach (var t in pc.Techniques.Where(x => x.Technique.Type.ID == tt.ID).OrderBy(x => x.Technique.Name))
                     {
                         techniquesStr += $"- {t.Technique.Name}\n";
                     }
@@ -90,11 +89,10 @@ namespace EmeraldBot.Bot.Displays
                 if (techniquesStr != "") emd.AddField("Techniques", techniquesStr, true);
 
                 string advantagesStr = "";
-                var advantageClass = ctx.Entry(pc).Collection(x => x.Advantages).Query().GroupBy(x => x.Advantage.AdvantageClass).OrderBy(x => x.Key.Name).ToList();
-                foreach (var ac in advantageClass)
+                foreach (var ac in ctx.Set<AdvantageClass>().OrderBy(x => x.Name).ToList())
                 {
-                    advantagesStr += $"**{ac.Key.Name}**\n";
-                    foreach (var a in ac)
+                    advantagesStr += $"**{ac.Name}**\n";
+                    foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.ID == ac.ID).OrderBy(x => x.Advantage.Name))
                     {
                         advantagesStr += $"- {a.Advantage.Name}\n";
                     }

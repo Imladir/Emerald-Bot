@@ -12,8 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Identity;
-using Blazor.Extensions.Logging;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace EmeraldBot.Blazor
 {
@@ -32,7 +34,21 @@ namespace EmeraldBot.Blazor
         {
             services.AddDbContext<EmeraldBotContext>();
 
-            services.AddIdentity<User, Role>().AddDefaultTokenProviders();
+            services.AddIdentity<User, Role>()
+                .AddUserManager<UserManager<User>>()
+                .AddRoles<Role>()
+                .AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(1);
+                options.LoginPath = "/Account/Login";
+                options.LogoutPath = "/Account/Logout";
+                options.AccessDeniedPath = "/Account/AccessDenied";
+                options.SlidingExpiration = true;
+            });
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
@@ -40,11 +56,6 @@ namespace EmeraldBot.Blazor
 
             services.AddTransient<IUserStore<User>, UserStore>();
             services.AddTransient<IRoleStore<Role>, RoleStore>();
-
-            //services.AddLogging(builder => builder
-            //    .AddBrowserConsole() // Add Blazor.Extensions.Logging.BrowserConsoleLogger
-            //    .SetMinimumLevel(LogLevel.Trace)
-            //);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

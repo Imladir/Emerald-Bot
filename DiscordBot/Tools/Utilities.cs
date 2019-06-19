@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Discord;
 using EmeraldBot.Model;
+using EmeraldBot.Model.Servers;
 
 namespace EmeraldBot.Bot.Tools
 {
@@ -61,6 +63,16 @@ namespace EmeraldBot.Bot.Tools
             if (current != "") res.Add(current);
 
             return res;
+        }
+
+        public static Embed ToEmbed(this Message msg)
+        {
+            var emd = new EmbedBuilder();
+            emd.WithTitle(msg.Title);
+            emd.WithColor(new Color((uint)msg.Colour));
+            emd.WithThumbnailUrl(msg.Icon);
+            emd.WithDescription(AutoFormater.SimpleFormat(msg.Text));
+            return emd.Build();
         }
     }
 }

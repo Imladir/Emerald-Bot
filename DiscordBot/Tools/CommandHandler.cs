@@ -99,7 +99,7 @@ namespace EmeraldBot.Bot.Tools
                     return;
 
                 if (!message.Content.StartsWith($"{prefix}say"))
-                    Console.WriteLine("Received command: " + message);
+                    Console.WriteLine($"Received command from {message.Author.Username}: {message}");
 
                 // Check if the user is a registered player, create him if he isn't
 

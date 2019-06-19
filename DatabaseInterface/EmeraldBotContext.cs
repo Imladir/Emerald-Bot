@@ -99,7 +99,6 @@ namespace EmeraldBot.Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            ConnectionString = "Data Source=DESKTOP-GDL9OB1;Initial Catalog=Rokugan;Persist Security Info=True;User ID=EmeraldBotLogin;Password=MotDePasse;MultipleActiveResultSets=True;App=EntityFramework";
             optionsBuilder.UseSqlServer(ConnectionString)
                 .EnableDetailedErrors()
                 .UseLazyLoadingProxies(true)
@@ -158,45 +157,29 @@ namespace EmeraldBot.Model
 
         public bool CheckPrivateRights(ulong serverID, ulong playerID, int characterID)
         {
-            var cmd = Database.GetDbConnection().CreateCommand();
-            cmd.CommandText = "usp_checkPrivateRights";
-            cmd.CommandType = CommandType.StoredProcedure;
+            var c = Characters.SingleOrDefault(x => x.ID == characterID);
+            var hasPrivilege = Users.Single(x => x.DiscordID == (long)playerID).Roles.Where(x => x.Server.DiscordID == (long)serverID).Any(x => x.Role.Name.Equals("GM")
+                                                                                                                                             || x.Role.Name.Equals("Admin")
+                                                                                                                                             || x.Role.Name.Equals("ServerOwner"));
 
-            cmd.Parameters.Add(new SqlParameter("@serverDiscordID", SqlDbType.BigInt) { Value = serverID });
-            cmd.Parameters.Add(new SqlParameter("@userDiscordID", SqlDbType.BigInt) { Value = playerID });
-            cmd.Parameters.Add(new SqlParameter("@characterID", SqlDbType.Int) { Value = characterID });
-            cmd.Parameters.Add(new SqlParameter("@hasRight", SqlDbType.Bit) { Direction = ParameterDirection.Output });
-
-            if (cmd.Connection.State != ConnectionState.Open)
-            {
-                cmd.Connection.Open();
-            }
-
-            cmd.ExecuteNonQuery();
-
-            return (bool)cmd.Parameters["@hasRight"].Value;
+            if (c is PC pc) return pc.Player.DiscordID == (long)playerID || hasPrivilege;
+            else return hasPrivilege;
         }
 
         public bool CheckPrivateChannel(ulong serverID, ulong playerID, ulong chanID, ulong ownerID)
         {
-            var cmd = Database.GetDbConnection().CreateCommand();
-            cmd.CommandText = "usp_checkPrivateChannel";
-            cmd.CommandType = CommandType.StoredProcedure;
+            var privateC = Users.Single(x => x.DiscordID == (long)playerID).PrivateChannels.SingleOrDefault(x => x.Server.DiscordID == (long)serverID);
+            if (privateC != null) return privateC.ChannelDiscordID == (long)chanID;
 
-            cmd.Parameters.Add(new SqlParameter("@serverID", SqlDbType.BigInt) { Value = serverID });
-            cmd.Parameters.Add(new SqlParameter("@userID", SqlDbType.BigInt) { Value = playerID });
-            cmd.Parameters.Add(new SqlParameter("@chanID", SqlDbType.BigInt) { Value = chanID });
-            cmd.Parameters.Add(new SqlParameter("@ownerID", SqlDbType.BigInt) { Value = ownerID });
-            cmd.Parameters.Add(new SqlParameter("@isPrivate", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+            // Check if user has privilege and is on owner's channel
+            var hasPrivilege = Users.Single(x => x.DiscordID == (long)playerID).Roles.Where(x => x.Server.DiscordID == (long)serverID).Any(x => x.Role.Name.Equals("GM") 
+                                                                                                                                             || x.Role.Name.Equals("Admin") 
+                                                                                                                                             || x.Role.Name.Equals("ServerOwner"));
+            if (!hasPrivilege) return false;
 
-            if (cmd.Connection.State != ConnectionState.Open)
-            {
-                cmd.Connection.Open();
-            }
-
-            cmd.ExecuteNonQuery();
-
-            return (bool)cmd.Parameters["@isPrivate"].Value;
+            var privateO = Users.Single(x => x.DiscordID == (long)ownerID).PrivateChannels.SingleOrDefault(x => x.Server.DiscordID == (long)serverID);
+            if (privateO == null) return false;
+            else return privateO.ChannelDiscordID == (long)chanID;
         }
 
         public PC GetDefaultCharacter(ulong serverID, ulong userID) {
@@ -248,24 +231,24 @@ namespace EmeraldBot.Model
         {
             try
             {
-                //var aliasChangeSet = ChangeTracker.Entries<NameAlias>();
-                //if (aliasChangeSet != null)
-                //{
-                //    foreach (var entry in aliasChangeSet.Where(x => x.State != EntityState.Unchanged))
-                //    {
-                //        var query =
-                //            from s in Servers
-                //            join a in NameAliases on s.ID equals a.Server.ID
-                //            where a.ID == entry.Entity.ID
-                //            select s;
-                //        var server = query.AsNoTracking().SingleOrDefault();
+                var aliasChangeSet = ChangeTracker.Entries<NameAlias>();
+                if (aliasChangeSet != null)
+                {
+                    foreach (var entry in aliasChangeSet.Where(x => x.State != EntityState.Unchanged))
+                    {
+                        var query =
+                            from s in Servers
+                            join a in NameAliases on s.ID equals a.Server.ID
+                            where a.ID == entry.Entity.ID
+                            select s;
+                        var server = query.AsNoTracking().SingleOrDefault();
 
-                //        if (server == null) continue; // Seeding
-                //        var na = NameAliases.AsNoTracking().SingleOrDefault(x => (x.Server.ID == server.ID || x.Server.DiscordID == 0) && x.Alias.Equals(entry.Entity.Alias));
-                //        if (na != null && na.ID != entry.Entity.ID)
-                //            throw new ValidationException($"there is already something registered with the alias '{na.Alias}'. Pick something else.");
-                //    }
-                //}
+                        if (server == null) continue; // Seeding
+                        var na = NameAliases.AsNoTracking().SingleOrDefault(x => (x.Server.ID == server.ID || x.Server.DiscordID == 0) && x.Alias.Equals(entry.Entity.Alias));
+                        if (na != null && na.ID != entry.Entity.ID)
+                            throw new ValidationException($"there is already something registered with the alias '{na.Alias}'. Pick something else.");
+                    }
+                }
 
                 // Updating PC secondary characteristics, or a NPC at creation
                 var characterRingChangeSet = ChangeTracker.Entries<CharacterRing>().Where(x => x.State != EntityState.Unchanged).ToList();

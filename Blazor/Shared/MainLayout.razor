@@ -1,16 +1,35 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@inherits LayoutComponentBase
 
-<div class="sidebar">
-    <NavMenu />
-</div>
-
-<div class="main">
-    <div class="top-row px-4">
-        <LogInDisplay />
-        <a href="https://docs.microsoft.com/en-us/aspnet/" target="_blank">About</a>
+<CascadingValue Name="UserID" Value="@UserID">
+    <div class="sidebar">
+        <NavMenu />
     </div>
 
-    <div class="content px-4">
-        @Body
+    <div class="main">
+        <div class="top-row px-4">
+            <LogInDisplay />
+            <a href="https://docs.microsoft.com/en-us/aspnet/" target="_blank">About</a>
+        </div>
+
+        <div class="content px-4">
+            @Body
+        </div>
     </div>
-</div>
+</CascadingValue>
+
+@code {
+private int UserID;
+[CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
+
+protected override async Task OnInitAsync()
+{
+    var user = (await authenticationStateTask).User;
+
+    if (user.Identity.IsAuthenticated)
+        UserID = int.Parse(user.Claims.Single(x => x.Type == "UserID").Value);
+    else
+        UserID = -1;
+}
+}

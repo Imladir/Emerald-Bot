@@ -1,17 +1,3 @@
 ﻿@page  "/messages/send"
-@using Microsoft.AspNetCore.Authorization;
 
-@attribute [Authorize]
-@inherits SendBase
-
-<h1>Send a new message</h1>
-@if (Character != null)
-{
-    <img src="@Character.Icon" alt="@Character.Name" style="float: right; width: 300px; height:auto;" />
-}
-<CharacterSelector Selection="@SelectionChanged" />
-<input @bind=@Title placeholder="@(Character?.Name ?? "Message Title")" />
-<br />
-<textarea @bind=@Text onkeyup="this.dispatchEvent(new Event('change', { 'bubbles': true }));" placeholder="Message text" rows="15" cols="100"></textarea>
-<div>@(Text?.Length ?? 0) Characters</div>
-<button class="btn btn-primary float-right" @onclick="@SendMessage">Send</button>
+<AddOrEdit MessageID="-1" />

@@ -1,0 +1,7 @@
+@page  "/messages/{id:int}/edit"
+
+<AddOrEdit MessageID="@id" />
+
+@code {
+[Parameter] private int id { get; set; }
+}

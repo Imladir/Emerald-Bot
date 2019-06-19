@@ -1,0 +1,55 @@
+﻿@page  "/messages/"
+
+@using  EmeraldBot.Model
+@using  EmeraldBot.Model.Servers
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Authorization;
+
+@inject EmeraldBotContext _ctx
+@inject IHttpContextAccessor _ca
+
+<RedirectToLoginIfNotAuthorized />
+
+<h1>Your messages</h1>
+<ServerSelector OnSelected="ServerSelected" />
+
+@if (_messages.Count == 0)
+{
+    <p>You didn't send any messages on the server, or your deleted all of them.</p>
+}
+else
+{
+<table style="width: 75%">
+    <thead>
+        <tr>
+            <td>Title</td>
+            <td>Character</td>
+            <td>Sent date</td>
+            <td>Action</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in _messages)
+    {
+        <tr>
+            <td><div class="tooltip"><span class="tooltiptext">@m.Text</span></div>@m.Title</td>
+            <td><img src="@m.Icon" style="height: 30px; width: auto;" /></td>
+            <td>@(DateTime.SpecifyKind(m.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</td>
+            <td><NavLink href="@($"messages/{m.ID}")">See</NavLink> <NavLink href="@($"messages/{m.ID}/edit")">Edit</NavLink> <NavLink href="@($"messages/{m.ID}/delete")">Delete</NavLink></td>
+        </tr>
+    }
+    </tbody>
+</table>
+}
+
+
+@code {
+    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+    private List<Message>
+    _messages = new List<Message>();
+
+    public void ServerSelected(int serverID)
+    {
+        _messages = _ctx.Messages.Where(x => x.Server.ID == serverID && x.Player.ID == UserID).OrderByDescending(x => x.CreatedDate).ToList();
+    }
+}

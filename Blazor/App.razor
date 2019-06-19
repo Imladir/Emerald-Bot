@@ -1,7 +1,13 @@
 ﻿<CascadingAuthenticationState>
     <Router AppAssembly="typeof(Startup).Assembly">
         <NotFoundContent>
-            <p>Sorry, there's nothing at this address.</p>
+            <p>Try to refresh if you were redirected here, the router is a bit moody... Otherwise, well... Sorry, there's nothing at this address.</p>
         </NotFoundContent>
+        @*<NotAuthorizedContent>
+            <p>You can't see this go back!</p>
+        </NotAuthorizedContent>
+        <AuthorizingContent>
+            <p>Please wait...</p>
+        </AuthorizingContent>*@
     </Router>
 </CascadingAuthenticationState>

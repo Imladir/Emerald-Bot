@@ -1,0 +1,53 @@
+@page  "/messages/{id:int}/delete"
+@using  EmeraldBot.Model
+@using  EmeraldBot.Model.Servers
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Http.Connections;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.Extensions.DependencyInjection;
+@using Microsoft.AspNetCore.Authorization;
+@using System.Linq;
+
+@inject EmeraldBotContext _ctx;
+@inject IUriHelper _uri;
+@inject IHttpContextAccessor _ca;
+
+
+<RedirectToLoginIfNotAuthorized />
+
+<h1>Message deletion</h1>
+<p>Are you sure you want to delete the message? There is no going back!</p>
+<button class="btn btn-primary" @onclick="@DeleteMessage">Yes</button>
+<button class="btn btn-primary" @onclick="@(() => { _uri.NavigateTo($"messages/{_message.ID}"); })">No</button>
+
+@code {
+    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+    [Parameter] private int id { get; set; }
+    private Message _message;
+
+    protected override void OnInit()
+    {
+        if (UserID == -1) return;
+        _message = _ctx.Messages.SingleOrDefault(x => x.ID == id);
+        if (_message == null) _uri.NavigateTo("messages/");
+        if (_message.Player.ID != UserID) _uri.NavigateTo("messages/");
+    }
+
+    private async Task DeleteMessage()
+    {
+        HubConnection connection = new HubConnectionBuilder()
+                .AddMessagePackProtocol()
+                .WithAutomaticReconnect()
+                .WithUrl(Urls.BotHub,
+                opt =>
+                {
+                    opt.Transports = HttpTransportType.WebSockets;
+                })
+                .Build();
+        await connection.StartAsync();
+
+        await connection.InvokeAsync("DeleteMessage", _message.ID);
+        await connection.StopAsync();
+        _uri.NavigateTo("messages/");
+    }
+}

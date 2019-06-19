@@ -16,14 +16,14 @@ namespace EmeraldBot.Model.Servers
         public int ID { get; set; }
         public virtual Server Server { get; set; } = null;
         public virtual User Player { get; set; } = null;
-        public virtual PC Character { get; set; } = null;
         public long DiscordChannelID { get; set; } = 0;
         public long DiscordMessageID { get; set; } = 0;
         public DateTime CreatedDate { get; set; }
         public DateTime LastUpdated { get; set; }
         public string Title { get; set; } = "";
         public string Text { get; set; } = "";
-        public string Data { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public int Colour { get; set; } = 0;
 
         public Message()
         {
