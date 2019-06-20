@@ -4,20 +4,35 @@ using EmeraldBot.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EmeraldBot.Model.Migrations
 {
     [DbContext(typeof(EmeraldBotContext))]
-    partial class EmeraldBotContextModelSnapshot : ModelSnapshot
+    [Migration("20190619175633_Conflicts")]
+    partial class Conflicts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.0.0-preview6.19304.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterCondition", b =>
+                {
+                    b.Property<int>("CharacterID");
+
+                    b.Property<int>("ConditionID");
+
+                    b.HasKey("CharacterID", "ConditionID");
+
+                    b.HasIndex("ConditionID");
+
+                    b.ToTable("CharacterConditions");
+                });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterRing", b =>
                 {
@@ -144,19 +159,6 @@ namespace EmeraldBot.Model.Migrations
                     b.HasIndex("PCID");
 
                     b.ToTable("PCAdvantage");
-                });
-
-            modelBuilder.Entity("EmeraldBot.Model.Characters.PCCondition", b =>
-                {
-                    b.Property<int>("PCID");
-
-                    b.Property<int>("ConditionID");
-
-                    b.HasKey("PCID", "ConditionID");
-
-                    b.HasIndex("ConditionID");
-
-                    b.ToTable("CharacterConditions");
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.PCSkill", b =>
@@ -827,11 +829,11 @@ namespace EmeraldBot.Model.Migrations
 
                     b.Property<int?>("ConflictID");
 
+                    b.Property<int?>("ConflictID1");
+
                     b.Property<int>("Fatigue");
 
                     b.Property<int>("Init");
-
-                    b.Property<bool>("IsLate");
 
                     b.Property<string>("Name")
                         .HasMaxLength(128);
@@ -843,6 +845,8 @@ namespace EmeraldBot.Model.Migrations
                     b.HasIndex("CharacterID");
 
                     b.HasIndex("ConflictID");
+
+                    b.HasIndex("ConflictID1");
 
                     b.ToTable("ConflictParticipant");
                 });
@@ -1048,9 +1052,13 @@ namespace EmeraldBot.Model.Migrations
 
                     b.Property<int>("Endurance");
 
+                    b.Property<int>("Fatigue");
+
                     b.Property<int>("Focus");
 
                     b.Property<string>("Icon");
+
+                    b.Property<int>("Strife");
 
                     b.Property<int>("Vigilance");
 
@@ -1214,8 +1222,6 @@ namespace EmeraldBot.Model.Migrations
 
                     b.Property<string>("Family");
 
-                    b.Property<int>("Fatigue");
-
                     b.Property<string>("Giri")
                         .HasMaxLength(256);
 
@@ -1227,8 +1233,6 @@ namespace EmeraldBot.Model.Migrations
                     b.Property<int>("Rank");
 
                     b.Property<string>("School");
-
-                    b.Property<int>("Strife");
 
                     b.HasIndex("ClanID");
 
@@ -1271,6 +1275,21 @@ namespace EmeraldBot.Model.Migrations
                     b.ToTable("Weapons");
 
                     b.HasDiscriminator().HasValue("Weapon");
+                });
+
+            modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterCondition", b =>
+                {
+                    b.HasOne("EmeraldBot.Model.Characters.Character", "Character")
+                        .WithMany("Conditions")
+                        .HasForeignKey("CharacterID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmeraldBot.Model.Characters.Condition", "Condition")
+                        .WithMany("Characters")
+                        .HasForeignKey("ConditionID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.CharacterRing", b =>
@@ -1335,21 +1354,6 @@ namespace EmeraldBot.Model.Migrations
                         .WithMany("Advantages")
                         .HasForeignKey("PCID")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("EmeraldBot.Model.Characters.PCCondition", b =>
-                {
-                    b.HasOne("EmeraldBot.Model.Characters.Condition", "Condition")
-                        .WithMany("Characters")
-                        .HasForeignKey("ConditionID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EmeraldBot.Model.Characters.PC", "PC")
-                        .WithMany("Conditions")
-                        .HasForeignKey("PCID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Characters.PCSkill", b =>
@@ -1713,9 +1717,14 @@ namespace EmeraldBot.Model.Migrations
                         .HasForeignKey("CharacterID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EmeraldBot.Model.Scenes.Conflict", "Conflict")
-                        .WithMany("Participants")
+                    b.HasOne("EmeraldBot.Model.Scenes.Conflict", null)
+                        .WithMany("LateArrivals")
                         .HasForeignKey("ConflictID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EmeraldBot.Model.Scenes.Conflict", null)
+                        .WithMany("Participants")
+                        .HasForeignKey("ConflictID1")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 

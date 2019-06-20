@@ -1,5 +1,6 @@
 ﻿window.blazor = {
-    getCharacterCount: function (element) {
+    getCharacterCount: function (elementName) {
+        element = document.getElementById(elementName);
         return element.value.length;
     }
 }

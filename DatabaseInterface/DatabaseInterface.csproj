@@ -28,6 +28,12 @@
     <Compile Remove="Migrations\20190615192812_CharactersOnMessages.Designer.cs" />
     <Compile Remove="Migrations\20190615193340_CharactersOnMessages.cs" />
     <Compile Remove="Migrations\20190615193340_CharactersOnMessages.Designer.cs" />
+    <Compile Remove="Migrations\20190619174924_Conflicts.cs" />
+    <Compile Remove="Migrations\20190619174924_Conflicts.Designer.cs" />
+    <Compile Remove="Migrations\20190619201209_MovedStuffFromCharacterToPC.cs" />
+    <Compile Remove="Migrations\20190619201209_MovedStuffFromCharacterToPC.Designer.cs" />
+    <Compile Remove="Migrations\20190619203438_MovedStuffFromCharacterToPC.cs" />
+    <Compile Remove="Migrations\20190619203438_MovedStuffFromCharacterToPC.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

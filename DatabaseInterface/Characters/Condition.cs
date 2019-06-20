@@ -18,14 +18,14 @@ namespace EmeraldBot.Model.Characters
 
         public string RemovedWhen { get; set; }
 
-        public virtual ICollection<CharacterCondition> Characters { get; set; }
+        public virtual ICollection<PCCondition> Characters { get; set; }
 
         public Condition()
         {
             Description = "";
             Effect = "";
             RemovedWhen = "";
-            Characters = new List<CharacterCondition>();
+            Characters = new List<PCCondition>();
         }
         public static Condition Get(EmeraldBotContext ctx, string name)
         {

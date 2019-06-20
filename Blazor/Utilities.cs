@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -10,9 +11,10 @@ namespace EmeraldBot.Blazor
     public static class Utilities
     {
         private static string speechPattern = "((\".*?\")|(“.*?”))";
-        private static string thoughtsPattern = "\\~(.*?)\\~";
+        private static string thoughtsPattern = @"[\*~](.*?)[\*~]";
         public static string ToHTML(this string s)
         {
+            s = WebUtility.HtmlEncode(s).Replace("&quot;", "\"");
             s = s.Replace("\n", "<br />\n");
             return SimpleFormat(s);
         }

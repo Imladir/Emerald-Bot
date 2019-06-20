@@ -19,8 +19,6 @@ namespace EmeraldBot.Model.Characters
         public static new readonly List<string> AcceptedFields = new List<string>() { "clan", "icon", "description", "any ring name"}.Concat(NameAlias.AcceptedFields).OrderBy(s => s).ToList();
         public string Icon { get; set; }
         public string Description { get; set; }
-        public int Fatigue { get; set; }
-        public int Strife { get; set; }
         public int Endurance { get; set; }
         public int Composure { get; set; }
         public int Focus { get; set; }
@@ -28,14 +26,11 @@ namespace EmeraldBot.Model.Characters
 
         public virtual ICollection<Roll> Rolls { get; set; }
         public virtual ICollection<CharacterRing> Rings { get; set; }
-        public virtual ICollection<CharacterCondition> Conditions { get; set; }
 
         public Character()
         {
             Icon = "";
             Description = "";
-            Fatigue = 0;
-            Strife = 0;
         }
 
         public void InitRings(EmeraldBotContext ctx)
@@ -54,7 +49,6 @@ namespace EmeraldBot.Model.Characters
         {
             base.FullLoad(ctx);
             LoadRings(ctx);
-            LoadConditions(ctx);
         }
 
         public void LoadRings(EmeraldBotContext ctx)
@@ -63,22 +57,13 @@ namespace EmeraldBot.Model.Characters
                 .Include(x => x.Ring).Load();
         }
 
-        public void LoadConditions(EmeraldBotContext ctx)
-        {
-            ctx.Entry(this).Collection(x => x.Conditions).Query()
-                .Include(x => x.Condition)
-                .Load();
-        }
-
         public virtual bool Add(NameAlias na)
         {
-            if (na is Condition) return Add(na as Condition);
             return false;
         }
 
         public virtual bool Remove(NameAlias na)
         {
-            if (na is Condition) return Remove(na as Condition);
             return false;
         }
 
@@ -110,18 +95,6 @@ namespace EmeraldBot.Model.Characters
             Endurance = 2 * (earth + fire);
             Composure = 2 * (earth + water);
         }
-        public bool Add(Condition c) {
-            if (Conditions.Contains(Conditions.SingleOrDefault(x => x.Condition == c))) return false;
-            Conditions.Add(new CharacterCondition() { Condition = c, Character = this });
-            return true;
-        }
-        public bool Remove(Condition c) { return Conditions.Remove(Conditions.SingleOrDefault(x => x.Condition == c)); }
-        public void AddCondition(EmeraldBotContext ctx, string name) { Add(Condition.Get(ctx, name)); }
-
-        public void Remove(EmeraldBotContext ctx, string name) {
-            ctx.Entry(this).Collection(x => x.Conditions).Load();
-            Remove(Condition.Get(ctx, name));
-        }
 
         public override void Update(EmeraldBotContext ctx, Dictionary<string, string> args)
         {
@@ -133,6 +106,7 @@ namespace EmeraldBot.Model.Characters
         {
             try
             {
+                if (base.UpdateField(ctx, field, value)) return true;
                 if (ctx.Rings.SingleOrDefault(x => x.Name.Equals(field)) != null) return Ring(field, int.Parse(value));
                 else
                 {

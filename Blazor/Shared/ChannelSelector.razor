@@ -1,22 +1,37 @@
 @inherits ChannelSelectorBase
 
-<div style="width: 20%">
-    <h4>Pick a Channel</h4>
-    @if (Channels.Count != 0)
-    {
-        <select class="form-control d-flex" id="servers" @onchange="@ChannelSelected">
-            @foreach (var c in Channels)
+
+<FormGroup>
+    <BlazorLabel>Pick a Channel</BlazorLabel>
+    <Dropdown IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@OnClick">@(Channels.Count > 0 ? Channels.Find(x => x.ID == CurrentChannel).Name : "Loading...")</DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var s in Channels)
             {
-                <option value="@c.ID">@c.Name</option>
+                <DropdownItem @key="@s.ID" @onclick="@(async (e) => await ChannelSelected(s.ID))">@s.Name</DropdownItem>
             }
-        </select>
-    }
-</div>
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
 
 @code {
-    protected async Task ChannelSelected(UIChangeEventArgs channelEvent)
+private bool IsOpen = false;
+
+
+private void OnClick(UIMouseEventArgs e)
+{
+    IsOpen = !IsOpen;
+    StateHasChanged();
+}
+
+protected async Task ChannelSelected(ulong newSelection)
+{
+    if (newSelection != CurrentChannel)
     {
-        CurrentChannel = ulong.Parse(channelEvent.Value.ToString());
+        CurrentChannel = newSelection;
         await OnSelected.InvokeAsync(CurrentChannel);
     }
+    IsOpen = false;
+}
+
 }

@@ -3,6 +3,7 @@ using Discord.Commands;
 using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Characters;
+using EmeraldBot.Model.Servers;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -20,7 +21,14 @@ namespace EmeraldBot.Bot.Modules
         {
             try
             {
-                await Talk(options.Target, options.Text);
+                var msg = await Talk(options.Target, options.Text);
+                using var ctx = new EmeraldBotContext();
+                ctx.Messages.Add(msg);
+                msg.Server = options.Target.Server;
+                msg.Player = options.Target.Player;
+                ctx.Entry(options.Target.Player).State = EntityState.Unchanged;
+                ctx.Entry(options.Target.Server).State = EntityState.Unchanged;
+                ctx.SaveChanges();
             }
             catch (Exception e)
             {
@@ -39,54 +47,61 @@ namespace EmeraldBot.Bot.Modules
                                            "- **icon=\"xxx.jpg\"**: must be a valid URL of an image (the actual image, not a page containing the image) and will display it instead of the clan mon.")]
                                   CommandOptions<Character> options)
         {
-            using (var ctx = new EmeraldBotContext())
+            using var ctx = new EmeraldBotContext();
+            try
             {
-                try
-                {
-                    var target = new PC();
-                    target.Update(ctx, options.Params);
+                var target = new PC();
+                target.Update(ctx, options.Params);
 
-                    if (target.Clan != null && target.Icon == "") target.Icon = target.Clan.Icon;
-                    await Talk(target, options.Text);
-                }
-                catch (Exception e)
-                {
-                    await ReplyAsync($"Couldn't send message: {e.Message}");
-                    Console.WriteLine($"{e.Message}\n{e.StackTrace}");
-                }
+                if (target.Clan == null) target.Clan = ctx.Clans.Single(x => x.Name.Equals(""));
+
+                if (target.Clan != null && target.Icon == "") target.Icon = target.Clan.Icon;
+                var msg = await Talk(target, options.Text);
+
+                msg.Server = ctx.Servers.Single(x => x.DiscordID == (long)Context.Guild.Id);
+                msg.Player = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
+                ctx.Messages.Add(msg);
+                ctx.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync($"Couldn't send message: {e.Message}");
+                Console.WriteLine($"{e.Message}\n{e.StackTrace}");
             }
         }
 
-        private async Task Talk(PC target, string text)
+        private async Task<Message> Talk(PC target, string text)
         {
-            using (var ctx = new EmeraldBotContext())
+            var emd = AutoFormater.Format(target, text);
+            var res = await Context.Channel.SendMessageAsync("", false, emd.Build());
+
+
+            int colour;
+            try
             {
-                var emd = AutoFormater.Format(target, text);
-                var res = await Context.Channel.SendMessageAsync("", false, emd.Build());
-
-                var player = ctx.Users.AsNoTracking().Single(x => x.DiscordID == (long)Context.User.Id);
-                var server = ctx.Servers.AsNoTracking().Single(x => x.DiscordID == (long)Context.Guild.Id);
-                //ctx.Entry(player).Collection(x => x.Messages).Load();
-
-                var message = new Model.Servers.Message()
-                {
-                    DiscordChannelID = (long)Context.Channel.Id,
-                    DiscordMessageID = (long)res.Id,
-                    LastUpdated = DateTime.UtcNow,
-                    Server = server,
-                    Player = player,
-                    Title = target.Name,
-                    Text = text,
-                    Colour = target.Clan.Colour,
-                    Icon = target.Icon
-                };
-
-                //player.Messages.Add(message);
-                ctx.Messages.Add(message);
-                ctx.SaveChanges();
-
-                await Context.Channel.DeleteMessageAsync(Context.Message);
+                colour = target.Clan.Colour;
             }
+            catch (Exception)
+            {
+                using var ctx = new EmeraldBotContext();
+                colour = (from c in ctx.Clans join pc in ctx.PCs on c.ID equals pc.Clan.ID where pc.ID == target.ID select c.Colour).Single();
+            }
+
+            var message = new Message()
+            {
+                DiscordChannelID = (long)Context.Channel.Id,
+                DiscordMessageID = (long)res.Id,
+                LastUpdated = DateTime.UtcNow,
+                Title = target.Name,
+                Text = text,
+                Colour = colour,
+                Icon = target.Icon
+            };
+
+
+            await Context.Channel.DeleteMessageAsync(Context.Message);
+
+            return message;
         }
 
         [Command("editlastmessage")]

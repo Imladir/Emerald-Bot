@@ -5,7 +5,7 @@ html, body {
 }
 
 a {
-    color: #0366d6;
+    color: #50C878;
 }
 
 app {
@@ -35,7 +35,7 @@ app {
         }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-image: linear-gradient(180deg, rgb(80, 200, 120) 0%, #006900 70%);
 }
 
     .sidebar .top-row {

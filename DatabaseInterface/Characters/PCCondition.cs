@@ -4,10 +4,10 @@ using System.Text;
 
 namespace EmeraldBot.Model.Characters
 {
-    public class CharacterCondition
+    public class PCCondition
     {
-        public int CharacterID { get; set; }
-        public virtual Character Character { get; set; }
+        public int PCID { get; set; }
+        public virtual PC PC { get; set; }
 
         public int ConditionID { get; set; }
         public virtual Condition Condition { get; set; }

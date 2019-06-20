@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EmeraldBot.Model.Game
+namespace EmeraldBot.Model.Scenes
 {
     public class Action
     {

@@ -144,20 +144,9 @@ namespace EmeraldBot.Bot.Modules
                 {
                     options ??= new CommandOptions<PC>(Context);
                     options.Reattach(ctx);
-                    options.Target.Fatigue = Math.Max(options.Target.Fatigue + fatigue, 0);
-                    bool changed = false;
-                    if (fatigue > 0 && options.Target.Fatigue > options.Target.Endurance)
-                    {
-                        options.Target.LoadConditions(ctx);
-                        changed = options.Target.Add(Condition.Get(ctx, "Incapacitated"));
-                        if (changed) msg += $"{options.Target.Name} is now **Incapacitated**! ";
-                    }
-                    else if (fatigue < 0 && options.Target.Fatigue <= options.Target.Endurance)
-                    {
-                        options.Target.LoadConditions(ctx);
-                        changed = options.Target.Remove(Condition.Get(ctx, "Incapacitated"));
-                        if (changed) msg += $"{options.Target.Name} is **not** Incapacitated anymore! ";
-                    }
+
+                    msg += options.Target.ModifyFatigue(ctx, fatigue);
+
                     ctx.SaveChanges();
 
                     var currentPlayer = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);
@@ -191,20 +180,9 @@ namespace EmeraldBot.Bot.Modules
                 {
                     options ??= new CommandOptions<PC>(Context);
                     options.Reattach(ctx);
-                    options.Target.Strife = Math.Max(options.Target.Strife + strife, 0);
-                    bool changed = false;
-                    if (strife > 0 && options.Target.Strife > options.Target.Composure)
-                    {
-                        options.Target.LoadConditions(ctx);
-                        changed = options.Target.Add(Condition.Get(ctx, "Compromised"));
-                        if (changed) msg += $"{options.Target.Name} is now **Compromised**! ";
-                    }
-                    else if (strife < 0 && options.Target.Strife <= options.Target.Composure)
-                    {
-                        options.Target.LoadConditions(ctx);
-                        changed = options.Target.Remove(Condition.Get(ctx, "Compromised"));
-                        if (changed) msg += $"{options.Target.Name} is **not** Compromised anymore! ";
-                    }
+
+                    msg += options.Target.ModifyStrife(ctx, strife);
+
                     ctx.SaveChanges();
 
                     var currentPlayer = ctx.Users.Single(x => x.DiscordID == (long)Context.User.Id);

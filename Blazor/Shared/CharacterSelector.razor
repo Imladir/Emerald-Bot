@@ -1,34 +1,41 @@
 ﻿@inherits CharacterSelectorBase
 
-<div style="width: 20%">
-    <h4>Pick a Character</h4>
-    @if (PCs.Count > 0)
-    {
-        <select class="form-control d-flex" id="servers" @onchange="@PCSelected">
-        @if (AllowEmpty) {
-            <option value="-1"></option>
-        }
-        @foreach (var s in PCs)
-        {
-            if (s.ID == CurrentCharacter) {
-                <option value="@s.ID" selected="selected">@s.Name</option>
-            }
-            else {
-                <option value="@s.ID">@s.Name</option>
-            }
-        }
-    </select>
+@if (PCs.Count > 0)
+{
+    <FormGroup>
+        <BlazorLabel>Pick a Character</BlazorLabel>
+        <Dropdown IsOpen="@IsOpen">
+            <DropdownToggle @onclick="@OnClick">@((PCs.Count > 0 && CurrentCharacter > 0) ? PCs.Find(x => x.ID == CurrentCharacter).Name : (CurrentCharacter == -1 ? "Unchanged" : "Loading..."))</DropdownToggle>
+            <DropdownMenu IsOpen="@IsOpen">
+                @foreach (var s in PCs)
+                {
+                    <DropdownItem @key="@s.ID" @onclick="@(async (e) => await CharacterSelected(s.ID))">@s.Name</DropdownItem>
     }
-    else
-    {
-        <p>You do not have any characters on this server: you can't send any message.</p>
-    }
-</div>
+            </DropdownMenu>
+        </Dropdown>
+    </FormGroup>
+}
+else
+{
+    <p>You do not have any characters on this server: you can't send any message.</p>
+}
 
 @code {
-    protected async Task PCSelected(UIChangeEventArgs pcEvent)
+    private bool IsOpen = false;
+
+    private void OnClick(UIMouseEventArgs e)
     {
-        CurrentCharacter = int.Parse(pcEvent.Value.ToString());
+        IsOpen = !IsOpen;
+        StateHasChanged();
+    }
+
+protected async Task CharacterSelected(int newSelection)
+{
+    if (newSelection != CurrentCharacter)
+    {
+        CurrentCharacter = newSelection;
         await OnSelected.InvokeAsync(CurrentCharacter);
     }
+    IsOpen = false;
+}
 }

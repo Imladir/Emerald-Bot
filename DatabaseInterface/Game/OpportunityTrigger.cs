@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmeraldBot.Model.Scenes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,7 +20,7 @@ namespace EmeraldBot.Model.Game
         public virtual TechniqueType TechniqueType { get; set; }
         public virtual Technique Technique { get; set; }
         public virtual SceneType SceneType { get; set; }
-        public virtual Action Action { get; set; }
+        public virtual Scenes.Action Action { get; set; }
         public virtual ICollection<OpportunityTriggerOpportunity> Opportunities { get; set; }
     }
 }

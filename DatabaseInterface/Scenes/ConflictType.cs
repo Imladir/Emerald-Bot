@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EmeraldBot.Model.Game
+namespace EmeraldBot.Model.Scenes
 {
     public class ConflictType
     {

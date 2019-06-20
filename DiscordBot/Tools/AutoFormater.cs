@@ -1,6 +1,8 @@
 ﻿using Discord;
 using EmeraldBot.Model;
+using EmeraldBot.Model.Game;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace EmeraldBot.Bot.Tools
@@ -12,15 +14,22 @@ namespace EmeraldBot.Bot.Tools
 
         public static EmbedBuilder Format(Model.Characters.PC character, string msg)
         {
-            using var ctx = new EmeraldBotContext();
-            character = ctx.PCs.Find(character.ID);
+            int colour;
+            try
+            {
+                colour = character.Clan.Colour;
+            } catch (Exception)
+            {
+                using var ctx = new EmeraldBotContext();
+                colour = (from c in ctx.Clans join pc in ctx.PCs on c.ID equals pc.Clan.ID where pc.ID == character.ID select c.Colour).Single();
+            }
 
             msg = SimpleFormat(msg);
 
             var emd = new EmbedBuilder();
             emd.WithTitle(character.Name);
             emd.WithDescription(msg);
-            emd.WithColor(new Color((uint)character.Clan.Colour));
+            emd.WithColor(new Color((uint)colour));
             if (character.Icon != "") emd.WithThumbnailUrl(character.Icon);
 
             return emd;

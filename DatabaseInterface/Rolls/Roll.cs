@@ -91,7 +91,7 @@ namespace EmeraldBot.Model.Rolls
                 {
                     int nFaces = 6;
                     if (type.Equals("Skill")) nFaces = 12;
-                    d.Face = _ctx.DieFaces.Where(x => x.DieType.Equals(type)).Skip(_rnd.Next(nFaces)).First();
+                    d.Face = _ctx.DieFaces.Where(x => x.DieType.Equals(type) && !x.Value.Equals("")).Skip(_rnd.Next(nFaces)).First();
                 }
             }
             Initial = false;
@@ -119,7 +119,11 @@ namespace EmeraldBot.Model.Rolls
                     Emote em;
                     if (Dice.ElementAt(i).Face.Emote == null)
                     {
-                        em = _ctx.Emotes.Single(x => x.DieFaces.Contains(Dice.ElementAt(i).Face));
+                        var query = from e in _ctx.Emotes
+                                    join df in _ctx.DieFaces on e.ID equals df.Emote.ID
+                                    where df.ID == Dice.ElementAt(i).Face.ID
+                                    select e;
+                        em = query.Single();
                     }
                     else
                         em = Dice.ElementAt(i).Face.Emote;
@@ -147,14 +151,13 @@ namespace EmeraldBot.Model.Rolls
             foreach ((int i, DieFace face) in indices.Zip(dice))
             {
                 replaced += "{" + Dice.ElementAt(i).Face.Emote.Code + "}";
-                Emote em;
-                ctx.DieFaces.Attach(face);
-                if (face.Emote == null)
-                {
-                    em = _ctx.Emotes.Single(x => x.DieFaces.Contains(face));
-                }
-                else
-                    em = face.Emote;
+
+                var query = from e in _ctx.Emotes
+                            join df in _ctx.DieFaces on e.ID equals df.Emote.ID
+                            where df.ID == face.ID
+                            select e;
+                Emote em = query.Single();
+
                 with += "{" + em.Code + "}";
                 Dice.ElementAt(i).Face = face;
             }
@@ -217,7 +220,7 @@ namespace EmeraldBot.Model.Rolls
 
         public RollPrintData Keep(EmeraldBotContext ctx, List<int> kept, string reason = "")
         {
-            ctx = _ctx;
+            _ctx = ctx;
             SortDice();
             if (Locked) throw new Exception("Roll has been locked: you cannot modify it anymore.");
             reason = reason == "" ? "" : (": " + reason);
@@ -259,7 +262,7 @@ namespace EmeraldBot.Model.Rolls
             var score = Score();
             string success = TN == 0 ? "obtained" : (score.CountSuccess() < TN ? "**failed** with" : "**succeeded** with");
 
-            return $"{Character.Name} rolled {Name} with TN {TN} and {success} {score.GetString(true)} ({diceStr})";
+            return $"{Character.Name} rolled {Name} with {(TN == 0 ? "Unknown TN" : $"TN{TN}")} and {success} {score.GetString(true)} ({diceStr})";
         }
 
         public RollPrintData SetTN(EmeraldBotContext ctx, int tn)
@@ -288,17 +291,12 @@ namespace EmeraldBot.Model.Rolls
 
             foreach (var d in Dice)
             {
-                Emote em;
-                if (d.Face.Emote == null)
-                {
-                    var query = from e in _ctx.Emotes
-                                join df in _ctx.DieFaces on e.ID equals df.Emote.ID
-                                where df.ID == d.Face.ID
-                                select e;
-                    em = query.Single();
-                }
-                else
-                    em = d.Face.Emote;
+                Console.WriteLine($"{_ctx}");
+                var query = from e in _ctx.Emotes
+                            join df in _ctx.DieFaces on e.ID equals df.Emote.ID
+                            where df.ID == d.Face.ID
+                            select e;
+                Emote em = query.Single();
 
                 msg += "{" + em.Code + "}";
             }

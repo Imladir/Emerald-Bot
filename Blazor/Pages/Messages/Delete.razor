@@ -17,8 +17,8 @@
 
 <h1>Message deletion</h1>
 <p>Are you sure you want to delete the message? There is no going back!</p>
-<button class="btn btn-primary" @onclick="@DeleteMessage">Yes</button>
-<button class="btn btn-primary" @onclick="@(() => { _uri.NavigateTo($"messages/{_message.ID}"); })">No</button>
+<BlazorButton Color="Color.Success" @onclick="@DeleteMessage">Yes, delete</BlazorButton>
+<BlazorButton Color="Color.Danger" @onclick="@(() => { _uri.NavigateTo($"messages/{_message.ID}"); })">No, go back</BlazorButton>
 
 @code {
     [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }

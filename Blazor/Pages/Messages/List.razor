@@ -4,9 +4,11 @@
 @using  EmeraldBot.Model.Servers
 @using Microsoft.AspNetCore.Http;
 @using Microsoft.AspNetCore.Authorization;
+@using  System.Linq;
 
 @inject EmeraldBotContext _ctx
 @inject IHttpContextAccessor _ca
+@inject  IUriHelper _uri
 
 <RedirectToLoginIfNotAuthorized />
 
@@ -19,37 +21,62 @@
 }
 else
 {
-<table style="width: 75%">
-    <thead>
-        <tr>
-            <td>Title</td>
-            <td>Character</td>
-            <td>Sent date</td>
-            <td>Action</td>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var m in _messages)
-    {
-        <tr>
-            <td data-toggle="tooltip" data-placement="right" title="@m.Text">@m.Title</td>
-            <td><img src="@m.Icon" style="height: 30px; width: auto;" /></td>
-            <td>@(DateTime.SpecifyKind(m.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</td>
-            <td><NavLink href="@($"messages/{m.ID}")">See</NavLink> <NavLink href="@($"messages/{m.ID}/edit")">Edit</NavLink> <NavLink href="@($"messages/{m.ID}/delete")">Delete</NavLink></td>
-        </tr>
-    }
-    </tbody>
-</table>
+    <BlazorTable IsHovarable="true">
+        <TableHead TableHeadType="TableHeadType.Dark">
+            <tr>
+                <td>Message</td>
+                <td style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/send"))">New Message</BlazorButton></td>
+            </tr>
+        </TableHead>
+        <tbody>
+            @foreach (var m in _messages)
+            {
+                <tr @onclick="@((e) => IsOpen[m.ID] = !IsOpen[m.ID])">
+                    <td style="width: 85%;">
+                        <Media MediaType="MediaType.Media">
+                            <Media MediaType="MediaType.Image" VerticalAlignment="VerticalAlignment.Center" src="@m.Icon" style="width: 32px; height: auto;" />
+                            <Media MediaType="MediaType.Body">
+                                <Media MediaType="MediaType.Heading">@m.Title</Media>
+                                <p>@(DateTime.SpecifyKind(m.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+                                @if (m.Text.Length > 150)
+                                {
+                                    if (!IsOpen[m.ID])
+                                    {
+                                        <p>@((MarkupString)$"{m.Text.Substring(0, 150)}...".ToHTML())</p>
+                                    }
+                                    else
+                                    {
+                                        <Collapse IsOpen="@IsOpen[m.ID]">
+                                            <Card CardType="CardType.Text">@((MarkupString)m.Text.ToHTML())</Card>
+                                        </Collapse>
+                                    }
+                                }
+                                else { 
+                                    <p>@((MarkupString)m.Text.ToHTML())</p>
+                                }
+                            </Media>
+                        </Media>
+                    </td>
+                    <td style="vertical-align: middle; text-align: center;">
+                        <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}"))">View</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}/edit"))">Edit</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}/delete"))">Delete</BlazorButton>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </BlazorTable>
 }
 
 
 @code {
-    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-    private List<Message>
-    _messages = new List<Message>();
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+private List<Message> _messages = new List<Message>();
+private Dictionary<int, bool> IsOpen = new Dictionary<int, bool>();
 
     public void ServerSelected(int serverID)
     {
         _messages = _ctx.Messages.Where(x => x.Server.ID == serverID && x.Player.ID == UserID).OrderByDescending(x => x.CreatedDate).ToList();
+        IsOpen = _messages.ToDictionary(x => x.ID, x => false);
     }
 }

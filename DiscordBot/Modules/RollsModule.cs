@@ -5,6 +5,7 @@ using EmeraldBot.Bot.Tools;
 using EmeraldBot.Model;
 using EmeraldBot.Model.Characters;
 using EmeraldBot.Model.Game;
+using EmeraldBot.Model.Identity;
 using EmeraldBot.Model.Rolls;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -548,8 +549,8 @@ namespace EmeraldBot.Bot.Modules
         public async Task Reroll([Summary("\nThe only required parameter is a series of indices of dice to reroll, separated by commas.\n" +
                                                   "Saying for example **!reroll 2,3,4** will reroll the dice 2, 3 and 4 and ignore all the others.")]
                                           List<int> indices,
-                                      [Summary("The operation will be logged, if a reason is provided, it will be added to the log.")]
-                                          [Remainder] string reason = "")
+                                 [Summary("The operation will be logged, if a reason is provided, it will be added to the log.")]
+                                 [Remainder] string reason = "")
         {
             try
             {
@@ -731,7 +732,7 @@ namespace EmeraldBot.Bot.Modules
                 var msg = roll.Lock(ctx).ReplaceSymbols(Context.Guild.Id);
 
                 List<ulong> sent = new List<ulong>();
-                foreach (var gm in ctx.Users.Where(x => x.Roles.Any(y => y.Server.DiscordID == (long)Context.Guild.Id && y.Role == ctx.Roles.Single(z => z.Name.Equals("GM")))))
+                foreach (var gm in ctx.GetGM(Context.Guild.Id))
                 {
                     var chanID = ctx.PrivateChannels.SingleOrDefault(x => x.Player.ID == gm.ID && x.Server.DiscordID == (long)Context.Guild.Id);
                     if (chanID != null && !sent.Contains((ulong)chanID.ChannelDiscordID)) {

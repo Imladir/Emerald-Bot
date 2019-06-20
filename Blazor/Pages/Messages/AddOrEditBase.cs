@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
+using BlazorStrap;
 
 namespace EmeraldBot.Blazor.Pages.Messages
 {
@@ -25,12 +26,13 @@ namespace EmeraldBot.Blazor.Pages.Messages
         protected int ServerID { get; set; }
         protected bool IsEdit => MessageID == -1 ? false : true;
         protected Message Message { get; set; } = new Message();
+        protected string ImageURL { get { return $"{Message.Icon}/300x300"; } }
 
         protected int TextLength { get; set; } = 0;
-        protected ElementRef editor;
+        protected BlazorInput editor;
         private string _oldIcon;
         private int _oldColour;
-        public async Task UpdateCharacterCount() => TextLength = await JSRuntime.InvokeAsync<int>("blazor.getCharacterCount", editor);
+        public async Task UpdateCharacterCount() => TextLength = await JSRuntime.InvokeAsync<int>("blazor.getCharacterCount", "MessageText");
 
         protected override void OnInit()
         {
@@ -61,7 +63,7 @@ namespace EmeraldBot.Blazor.Pages.Messages
         {
             if (string.IsNullOrWhiteSpace(Message.Title) || string.IsNullOrWhiteSpace(Message.Text)) return;
 
-            Message.Text = WebUtility.HtmlEncode(Message.Text);
+            //Message.Text = WebUtility.HtmlEncode(Message.Text);
             if (Message.Text.Length >= 2048) return;
 
             // Send the post

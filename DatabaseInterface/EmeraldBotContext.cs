@@ -16,6 +16,7 @@ using GenericServices;
 using System.Collections;
 using EmeraldBot.Model.Identity;
 using Microsoft.AspNetCore.Identity;
+using EmeraldBot.Model.Scenes;
 
 namespace EmeraldBot.Model
 {
@@ -24,7 +25,7 @@ namespace EmeraldBot.Model
         public static string ConnectionString;
         // Characters
         public DbSet<Condition> Conditions { get; set; }
-        public DbSet<CharacterCondition> CharacterConditions { get; set; }
+        public DbSet<PCCondition> CharacterConditions { get; set; }
         public DbSet<Demeanor> Demeanors { get; set; }
         public DbSet<JournalType> JournalTypes { get; set; }
         public DbSet<Character> Characters { get; set; }
@@ -43,8 +44,6 @@ namespace EmeraldBot.Model
         public DbSet<AdvantageClass> AdvantageClasses { get; set; }
         public DbSet<AdvantageType> AdvantageTypes { get; set; }
         public DbSet<Advantage> Advantages { get; set; }
-        public DbSet<Game.Action> Actions { get; set; }
-        public DbSet<ActionType> ActionTypes { get; set; }
         public DbSet<Clan> Clans { get; set; }
         public DbSet<Ring> Rings { get; set; }
         public DbSet<SkillGroup> SkillGroups { get; set; }
@@ -55,8 +54,6 @@ namespace EmeraldBot.Model
         public DbSet<TechniqueType> TechniqueTypes { get; set; }
         public DbSet<Opportunity> Opportunities { get; set; }
         public DbSet<OpportunityTrigger> OpportunityTriggers { get; set; }
-        public DbSet<SceneType> SceneTypes { get; set; }
-        public DbSet<ConflictType> ConflictTypes { get; set; }
 
         // Rolls
         public DbSet<DieFace> DieFaces { get; set; }
@@ -77,6 +74,13 @@ namespace EmeraldBot.Model
         public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<UserClaim> UserClaims { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
+
+        // Conflicts
+        public DbSet<SceneType> SceneTypes { get; set; }
+        public DbSet<Conflict> Conflicts { get; set; }
+        public DbSet<ConflictType> ConflictTypes { get; set; }
+        public DbSet<Scenes.Action> Actions { get; set; }
+        public DbSet<ActionType> ActionTypes { get; set; }
 
 
         public EmeraldBotContext(DbContextOptions<EmeraldBotContext> options)
@@ -127,7 +131,7 @@ namespace EmeraldBot.Model
             mb.Entity<CharacterRing>().HasKey(x => new { x.CharacterID, x.RingID });
             mb.Entity<PCSkill>().HasKey(x => new { x.PCID, x.SkillID });
             mb.Entity<NPCSkillGroup>().HasKey(x => new { x.NPCID, x.SkillGroupID });
-            mb.Entity<CharacterCondition>().HasKey(x => new { x.CharacterID, x.ConditionID });
+            mb.Entity<PCCondition>().HasKey(x => new { x.PCID, x.ConditionID });
 
             mb.Entity<PCAdvantage>().HasKey(x => new { x.CharacterID, x.AdvantageID });
             mb.Entity<PCTechnique>().HasKey(x => new { x.CharacterID, x.TechniqueID });
@@ -155,12 +159,12 @@ namespace EmeraldBot.Model
             base.OnModelCreating(mb);
         }
 
-        public bool CheckPrivateRights(ulong serverID, ulong playerID, int characterID)
+        public bool CheckPrivateRights(int serverID, int playerID, int characterID)
         {
             var c = Characters.SingleOrDefault(x => x.ID == characterID);
-            var hasPrivilege = Users.Single(x => x.DiscordID == (long)playerID).Roles.Where(x => x.Server.DiscordID == (long)serverID).Any(x => x.Role.Name.Equals("GM")
-                                                                                                                                             || x.Role.Name.Equals("Admin")
-                                                                                                                                             || x.Role.Name.Equals("ServerOwner"));
+            var hasPrivilege = Users.Single(x => x.ID == playerID).Roles.Where(x => x.Server.ID == serverID).Any(x => x.Role.Name.Equals("GM")
+                                                                                                                   || x.Role.Name.Equals("Admin")
+                                                                                                                   || x.Role.Name.Equals("ServerOwner"));
 
             if (c is PC pc) return pc.Player.DiscordID == (long)playerID || hasPrivilege;
             else return hasPrivilege;
@@ -223,7 +227,13 @@ namespace EmeraldBot.Model
 
         public NameAlias GetNameAliasEntity(ulong serverID, string nameOrAlias)
         {
-            return NameAliases.FromSqlInterpolated($"exec usp_getNameAliasEntity {(long)serverID}, {nameOrAlias}").AsNoTracking().SingleOrDefault();
+            return NameAliases.SingleOrDefault(x => (x.Server.DiscordID == (long)serverID || x.Server.DiscordID == 0)
+                                                 && (x.Alias.Equals(nameOrAlias) || x.Name.Equals(nameOrAlias)));
+        }
+
+        public List<User> GetGM(ulong serverID)
+        {
+            return Set<UserRole>().Where(x => x.Server.DiscordID == (long)serverID && x.Role.Name.Equals("GM")).Select(x => x.User).ToList();
         }
 
         #region Save Changes
@@ -558,25 +568,25 @@ Intrigues follow the general pattern described in Conflict Scenes on page 249, w
                     };
                 SaveChanges();
 
-                IList<Game.Action> actions = new List<Game.Action>()
+                IList<Scenes.Action> actions = new List<Scenes.Action>()
                     {
-                        new Game.Action() { Name = "Persuade", Description = @"You attempt to foster or quell an idea, emotion, or desire in a person (based on the approach you are using, as described in Social Skills, on page 151).", Activation = @"$As a Scheme action, you make a Social skill check targeting one or more characters who can hear you. The TN of the check is equal to the highest vigilance among your targets. Additionally, if applicable, apply one of the following modifications to the TN based on the skill you use on the check:
+                        new Scenes.Action() { Name = "Persuade", Description = @"You attempt to foster or quell an idea, emotion, or desire in a person (based on the approach you are using, as described in Social Skills, on page 151).", Activation = @"$As a Scheme action, you make a Social skill check targeting one or more characters who can hear you. The TN of the check is equal to the highest vigilance among your targets. Additionally, if applicable, apply one of the following modifications to the TN based on the skill you use on the check:
 - Command: You present a plan with authority, sweeping your targets along with all the confidence a lord should have among their vassals. If each target’s status rank is lower than yours, decrease the TN of this check by 1.
 - Courtesy: You present a proposal backed by honeyed words and clever implications—perfect for dealing with one’s superiors, but perhaps overly deferential when addressing equals or subordinates. If each target’s status rank is higher than yours, decrease the TN of this check by 1.
 - Games/Performance/Other Skills: You offer a diversion from the affairs at hand, turning the conversation to a less pressing topic. If each target’s status rank is equal to yours, decrease the TN of this check by 1.", Effect = @"If you succeed, you add one momentum point toward an appropriate social objective, plus one additional momentum point for every two bonus successes. Further, any narrative ramifications of your check resolve."},
-                        new Game.Action() { Name = "Center", Description = @"You let the world around you slow as the Void overtakes your senses. Everything but the moment fades as you instinctively seek victory. Your mind weaves through infinite treacherous possibilities and the razor steel of your foe to the outcome you desire.", Activation = @"As a Support action in Void stance, you may focus your energy inward, envisioning your action in your mind and seeking the perfect moment to take it. You must name a skill when you use Center.", Effect = @"Roll a number of Skill dice up to your ranks in the skill you chose and reserve any number of those dice. If you do, the next time you make a check using the chosen skill (or use the Center action) this scene, after rolling dice, you may replace any number of rolled dice with the reserved dice (set to the results they were showing when reserved). You cannot reserve a number of dice greater than your ranks in the skill this way."},
-                        new Game.Action() { Name = "Predict", Description = @"You shift subtly to draw a reaction out of your foe by repositioning or signaling a strike you never intend to throw. By predicting your foe’s reaction, you aim to win the battle in the mind, leaving the foe open to a decisive strike or forcing them to attack early.", Activation = @"As an Attack and Scheme action, you may secretly select Air, Earth, Fire, or Water and record it.", Effect = @"The next time your opponent chooses their stance, you may reveal your selection; if it matches the stance they chose, your opponent receives 4 strife and must choose a different stance. This effect persists until the end of your next turn."},
-                        new Game.Action() { Name = "Assist", Description = @"You offer an ally a plan of attack to use, an insight about the foe, or an encouraging word.", Activation = @"As an Attack, Scheme, and Support action, describe how you are helping one other character at range 0–2 with their next action.", Effect = @"If the GM accepts your suggestion, you provide assistance (see page 26) on the chosen character’s next action check."},
-                        new Game.Action() { Name = "Calming Breath", Description = @"During a conflict, you may inhale deeply before exhaling, drawing upon your inner strength.", Activation = @"As a Support action, you may take a deep breath to calm yourself and recover stamina.", Effect = @"If your strife is greater than half your composure, you remove 1 strife. If your fatigue is greater than half your endurance, you remove 1 fatigue."},
-                        new Game.Action() { Name = "Challenge", Description = @" You issue a challenge to a foe, calling for them to face you in single combat.", Activation = @"As a Scheme action, you may make a **TN 1 Command** check to issue a formal combat challenge targeting one character at range 0–5. You must stake 10 honor and 5 glory upon the challenge, which you forfeit if you sabotage the clash.", Effect = @"If you succeed, the target must choose whether to **accept** or **decline**; resolve one of the following:
+                        new Scenes.Action() { Name = "Center", Description = @"You let the world around you slow as the Void overtakes your senses. Everything but the moment fades as you instinctively seek victory. Your mind weaves through infinite treacherous possibilities and the razor steel of your foe to the outcome you desire.", Activation = @"As a Support action in Void stance, you may focus your energy inward, envisioning your action in your mind and seeking the perfect moment to take it. You must name a skill when you use Center.", Effect = @"Roll a number of Skill dice up to your ranks in the skill you chose and reserve any number of those dice. If you do, the next time you make a check using the chosen skill (or use the Center action) this scene, after rolling dice, you may replace any number of rolled dice with the reserved dice (set to the results they were showing when reserved). You cannot reserve a number of dice greater than your ranks in the skill this way."},
+                        new Scenes.Action() { Name = "Predict", Description = @"You shift subtly to draw a reaction out of your foe by repositioning or signaling a strike you never intend to throw. By predicting your foe’s reaction, you aim to win the battle in the mind, leaving the foe open to a decisive strike or forcing them to attack early.", Activation = @"As an Attack and Scheme action, you may secretly select Air, Earth, Fire, or Water and record it.", Effect = @"The next time your opponent chooses their stance, you may reveal your selection; if it matches the stance they chose, your opponent receives 4 strife and must choose a different stance. This effect persists until the end of your next turn."},
+                        new Scenes.Action() { Name = "Assist", Description = @"You offer an ally a plan of attack to use, an insight about the foe, or an encouraging word.", Activation = @"As an Attack, Scheme, and Support action, describe how you are helping one other character at range 0–2 with their next action.", Effect = @"If the GM accepts your suggestion, you provide assistance (see page 26) on the chosen character’s next action check."},
+                        new Scenes.Action() { Name = "Calming Breath", Description = @"During a conflict, you may inhale deeply before exhaling, drawing upon your inner strength.", Activation = @"As a Support action, you may take a deep breath to calm yourself and recover stamina.", Effect = @"If your strife is greater than half your composure, you remove 1 strife. If your fatigue is greater than half your endurance, you remove 1 fatigue."},
+                        new Scenes.Action() { Name = "Challenge", Description = @" You issue a challenge to a foe, calling for them to face you in single combat.", Activation = @"As a Scheme action, you may make a **TN 1 Command** check to issue a formal combat challenge targeting one character at range 0–5. You must stake 10 honor and 5 glory upon the challenge, which you forfeit if you sabotage the clash.", Effect = @"If you succeed, the target must choose whether to **accept** or **decline**; resolve one of the following:
 - If the target **accepts**, they stake 10 honor and 5 glory, which they forfeit if they take any Attack or Scheme action before the clash. At the end of the round, the clash begins.
 - To **decline**, the target must forfeit glory equal to your ranks in Command plus your bonus successes. Each of their allies with lower glory than you suffers 2 strife. Then, you gain 1 Void point. If you win the clash, each of your foe’s allies in the skirmish suffers 3 strife. If you lose the clash, each of your allies suffers 3 strife."},
-                        new Game.Action() { Name = "Guard", Description = @"You focus on warding off foes from yourself or an ally by positioning yourself defensively, taking cover, throwing strategically placed strikes, or even firing shots menacingly close to the enemy.", Activation = @" As a Support action using a readied weapon, you may make a **TN 1 Tactics** check targeting yourself or one other character within the weapon’s range.", Effect = @" If you succeed, you **guard** the target until the beginning of your next turn. Increase the TN of Attack checks against the guarded target by one, plus an additional one per two bonus successes."},
-                        new Game.Action() { Name = "Maneuver", Description = @"You shift on the battlefield, moving to a more advantageous position.", Activation = @" As a Movement action, you may reposition for more distance. Optionally, you may make a **TN 2 Fitness** check as part of this action.", Effect = @"Move one range band. If you choose to make the Fitness check and you succeed, you may instead move two range bands, plus one additional range band per two bonus successes."},
-                        new Game.Action() { Name = "Prepare Item", Description = @"You prepare, ready, or stow one weapon or other item.", Activation = @"As a Support action, you may interact with one item.", Effect = @"Prepare one item for use, ready a weapon in a grip of your choice, or stow an item."},
-                        new Game.Action() { Name = "Strike", Description = @"You make an attack against a single foe.", Activation = @"As an Attack action using one readied weapon, you may make a **TN 2 Martial Arts** check using the appropriate skill for the weapon, targeting one character within the weapon’s range.", Effect = @"If you succeed, you deal physical damage to the target equal to the weapon’s base damage plus your bonus successes."},
-                        new Game.Action() { Name = "Unique Action", Description = @"You make a check using a skill for a mechanical or narrative effect, as described in **Chapter 3: Skills** (see page 140).", Activation = @"As an action, you make a skill check to attempt a task you have described to the GM.", Effect = @"If you succeed, you may use the skill for its narrative effects, for implementing any sample use that can be completed in a single action, or for pursuing another task that the GM deems appropriate."},
-                        new Game.Action() { Name = "Wait", Description = @"You bide your time, waiting to spring into action.", Activation = @" As an Attack, Scheme, and Support action, you may declare a non-Movement action you will perform after the occurrence of a specified event before the end of the round.", Effect = @"After the specified event occurs before the end of the round, you may perform the action. You must still use the ring matching your stance for this action.
+                        new Scenes.Action() { Name = "Guard", Description = @"You focus on warding off foes from yourself or an ally by positioning yourself defensively, taking cover, throwing strategically placed strikes, or even firing shots menacingly close to the enemy.", Activation = @" As a Support action using a readied weapon, you may make a **TN 1 Tactics** check targeting yourself or one other character within the weapon’s range.", Effect = @" If you succeed, you **guard** the target until the beginning of your next turn. Increase the TN of Attack checks against the guarded target by one, plus an additional one per two bonus successes."},
+                        new Scenes.Action() { Name = "Maneuver", Description = @"You shift on the battlefield, moving to a more advantageous position.", Activation = @" As a Movement action, you may reposition for more distance. Optionally, you may make a **TN 2 Fitness** check as part of this action.", Effect = @"Move one range band. If you choose to make the Fitness check and you succeed, you may instead move two range bands, plus one additional range band per two bonus successes."},
+                        new Scenes.Action() { Name = "Prepare Item", Description = @"You prepare, ready, or stow one weapon or other item.", Activation = @"As a Support action, you may interact with one item.", Effect = @"Prepare one item for use, ready a weapon in a grip of your choice, or stow an item."},
+                        new Scenes.Action() { Name = "Strike", Description = @"You make an attack against a single foe.", Activation = @"As an Attack action using one readied weapon, you may make a **TN 2 Martial Arts** check using the appropriate skill for the weapon, targeting one character within the weapon’s range.", Effect = @"If you succeed, you deal physical damage to the target equal to the weapon’s base damage plus your bonus successes."},
+                        new Scenes.Action() { Name = "Unique Action", Description = @"You make a check using a skill for a mechanical or narrative effect, as described in **Chapter 3: Skills** (see page 140).", Activation = @"As an action, you make a skill check to attempt a task you have described to the GM.", Effect = @"If you succeed, you may use the skill for its narrative effects, for implementing any sample use that can be completed in a single action, or for pursuing another task that the GM deems appropriate."},
+                        new Scenes.Action() { Name = "Wait", Description = @"You bide your time, waiting to spring into action.", Activation = @" As an Attack, Scheme, and Support action, you may declare a non-Movement action you will perform after the occurrence of a specified event before the end of the round.", Effect = @"After the specified event occurs before the end of the round, you may perform the action. You must still use the ring matching your stance for this action.
 If the specified event does not occur this round, you may perform one action of your choice (other than Wait) at the end of the round."}
                     };
                 Actions.AddRange(actions);

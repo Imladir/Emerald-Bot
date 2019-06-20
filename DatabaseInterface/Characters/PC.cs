@@ -21,16 +21,18 @@ namespace EmeraldBot.Model.Characters
 
         public virtual User Player { get; set; }
         public virtual Clan Clan { get; set; }
-        public string Family { get; set; }
-        public string School { get; set; }
-        public int Rank { get; set; }
-        public int Age { get; set; }
+        public string Family { get; set; } = "";
+        public string School { get; set; } = "";
+        public int Rank { get; set; } = 1;
+        public int Age { get; set; } = 0;
+        public int Fatigue { get; set; } = 0;
+        public int Strife { get; set; } = 0;
 
         [MaxLength(256, ErrorMessage = "Ninjo is too long")]
-        public string Ninjo { get; set; }
+        public string Ninjo { get; set; } = "";
 
         [MaxLength(256, ErrorMessage = "Giri is too long")]
-        public string Giri { get; set; }
+        public string Giri { get; set; } = "";
 
         [NotMapped]
         public int XP { get { return CurrentJournalValue("XP"); } }
@@ -46,24 +48,11 @@ namespace EmeraldBot.Model.Characters
 
         public int CurrentVoid { get; set; }
 
-        public virtual ICollection<PCAdvantage> Advantages { get; set; }
-        public virtual ICollection<PCTechnique> Techniques { get; set; }
-        public virtual ICollection<PCSkill> Skills { get; set; }
-        public virtual ICollection<JournalEntry> JournalEntries { get; set; }
-
-        public PC() : base()
-        {
-            Family = "";
-            School = "";
-            Rank = 1;
-            Age = -1;
-            Ninjo = "";
-            Giri = "";
-            Advantages = new List<PCAdvantage>();
-            Techniques = new List<PCTechnique>();
-            Skills = new List<PCSkill>();
-            JournalEntries = new List<JournalEntry>();
-        }
+        public virtual ICollection<PCAdvantage> Advantages { get; set; } = new List<PCAdvantage>();
+        public virtual ICollection<PCTechnique> Techniques { get; set; } = new List<PCTechnique>();
+        public virtual ICollection<PCSkill> Skills { get; set; } = new List<PCSkill>();
+        public virtual ICollection<JournalEntry> JournalEntries { get; set; } = new List<JournalEntry>();
+        public virtual ICollection<PCCondition> Conditions { get; set; } = new List<PCCondition>();
 
         public override void FullLoad(EmeraldBotContext ctx)
         {
@@ -75,6 +64,7 @@ namespace EmeraldBot.Model.Characters
             LoadSkills(ctx);
             LoadTechniques(ctx);
             LoadJournals(ctx);
+            LoadConditions(ctx);
         }
 
         public void LoadClan(EmeraldBotContext ctx)
@@ -129,9 +119,17 @@ namespace EmeraldBot.Model.Characters
                 .Load();
         }
 
+        public void LoadConditions(EmeraldBotContext ctx)
+        {
+            ctx.Entry(this).Collection(x => x.Conditions).Query()
+                .Include(x => x.Condition)
+                .Load();
+        }
+
         public override bool Add(NameAlias na)
         {
             if (base.Add(na)) return true;
+            else if (na is Condition) return Add(na as Condition);
             else if (na is Technique) return Add(na as Technique);
             else if (na is Advantage) return Add(na as Advantage);
             else if (na is Skill) return Add(na as Skill);
@@ -141,6 +139,7 @@ namespace EmeraldBot.Model.Characters
         public override bool Remove(NameAlias na)
         {
             if (base.Remove(na)) return true;
+            else if (na is Condition) return Remove(na as Condition);
             else if (na is Technique) return Remove(na as Technique);
             else if (na is Advantage) return Remove(na as Advantage);
             else if (na is Skill) return Remove(na as Skill);
@@ -163,8 +162,10 @@ namespace EmeraldBot.Model.Characters
         {
             try
             {
-                var server = ctx.Servers.AsNoTracking().Single(x => x.NameAliases.Any(y => y.ID == ID));
-                var na = ctx.GetNameAliasEntity((ulong)server.DiscordID, field);
+                var server = ctx.Servers.AsNoTracking().SingleOrDefault(x => x.NameAliases.Any(y => y.ID == ID));
+                NameAlias na = null;
+                if (server != null)
+                    na = ctx.GetNameAliasEntity((ulong)server.DiscordID, field);
 
                 if (na != null)
                 {
@@ -265,6 +266,14 @@ namespace EmeraldBot.Model.Characters
             ctx.Entry(this).Collection(x => x.Techniques).Load();
             return Remove(Technique.Get(ctx, alias));
         }
+        public bool Add(Condition c)
+        {
+            if (Conditions.Contains(Conditions.SingleOrDefault(x => x.Condition == c))) return false;
+            Conditions.Add(new PCCondition() { Condition = c, PC = this });
+            return true;
+        }
+        public bool Remove(Condition c) { return Conditions.Remove(Conditions.SingleOrDefault(x => x.Condition == c)); }
+        public void AddCondition(EmeraldBotContext ctx, string name) { Add(Condition.Get(ctx, name)); }
 
         public int CurrentJournalValue(string type)
         {
@@ -277,6 +286,55 @@ namespace EmeraldBot.Model.Characters
             var entries = JournalEntries.Where(x => x.Journal.ID == type.ID).ToList();
             if (entries.Count() == 0) return 0;
             else return entries.Sum(x => x.Amount);
+        }
+
+        public bool HasCondition(string condition)
+        {
+            using var ctx = new EmeraldBotContext();
+            var cond = ctx.Conditions.SingleOrDefault(x => x.Name.Equals(condition) || x.Alias.Equals(condition));
+
+            if (cond == null) return false;
+            else return HasCondition(cond);
+        }
+
+        public bool HasCondition(Condition condition)
+        {
+            return Conditions.Any(x => x.Condition.ID == condition.ID);
+        }
+
+        public string ModifyStrife(EmeraldBotContext ctx, int strife)
+        {
+            string msg = "";
+            Strife = Math.Max(Strife + strife, 0);
+            bool changed = false;
+            if (strife > 0 && Strife > Composure)
+            {
+                changed = Add(Condition.Get(ctx, "Compromised"));
+                if (changed) msg += $"{Name} is now **Compromised**! ";
+            }
+            else if (strife < 0 && Strife <= Composure)
+            {
+                changed = Remove(Condition.Get(ctx, "Compromised"));
+                if (changed) msg += $"{Name} is **not** Compromised anymore! ";
+            }
+            return msg;
+        }
+
+        public string ModifyFatigue(EmeraldBotContext ctx, int fatigue)
+        {
+            string msg = "";
+            Fatigue = Math.Max(Fatigue + fatigue, 0);
+            if (fatigue > 0 && Fatigue > Endurance)
+            {
+                bool changed = Add(Condition.Get(ctx, "Incapacitated"));
+                if (changed) msg += $"{Name} is now **Incapacitated**! ";
+            }
+            else if (fatigue < 0 && Fatigue <= Endurance)
+            {
+                bool changed = Remove(Condition.Get(ctx, "Incapacitated"));
+                if (changed) msg += $"{Name} is **not** Incapacitated anymore! ";
+            }
+            return msg;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace EmeraldBot.Model.Characters
         public static new readonly List<string> AcceptedFields = new List<string>() { "composure", "endurance", "glory", "honour", "status", "demeanor", "type", "ability", "any skill group's name" }.Concat(Character.AcceptedFields).OrderBy(s => s).ToList();
         public virtual Demeanor Demeanor { get; set; }
         public virtual NPCType NPCType { get; set; }
-        public int  Honour { get; set; }
+        public int Honour { get; set; }
         public int Glory { get; set; }
         public int Status { get; set; }
         public string Ability { get; set; }

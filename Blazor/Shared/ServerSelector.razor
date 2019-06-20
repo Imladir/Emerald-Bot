@@ -8,21 +8,25 @@
 @inject EmeraldBotContext _ctx
 @inject IHttpContextAccessor _ca
 
-<div style="width: 20%">
-    <h4>Pick a server</h4>
-    <select class="form-control d-flex" id="servers" @onchange="@ServerSelected">
-        @foreach (var s in Servers)
-        {
-            <option value="@s.ID">@s.Name</option>
-        }
-    </select>
-</div>
+<FormGroup>
+    <BlazorLabel>Pick a Server</BlazorLabel>
+    <Dropdown IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@OnClick">@(Servers.Count > 0 ? Servers.Find(x => x.ID == _serverID).Name : "Loading...")</DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var s in Servers)
+            {
+                <DropdownItem @key="@s.ID" @onclick="@((e) => ServerSelected(s.ID))">@s.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
 
 @code  {
 [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
 [Parameter] private EventCallback<int> OnSelected { get; set; }
+private bool IsOpen;
 private List<Server> Servers = new List<Server>();
-private int _serverID;
+private int _serverID = -1;
 
 protected override async Task OnInitAsync()
 {
@@ -41,19 +45,25 @@ protected override async Task OnInitAsync()
 
     // Find the servers the user is on
     List<int> ids = await connection.InvokeAsync<List<int>>("GetUserGuilds", UserID);
+    await connection.StopAsync();
     Servers = ids.Select(x => _ctx.Servers.Find(x)).ToList();
     _serverID = Servers[0].ID;
     await OnSelected.InvokeAsync(_serverID);
-    await connection.StopAsync();
 }
 
-protected async Task ServerSelected(UIChangeEventArgs serverEvent)
+protected async Task ServerSelected(int newSelection)
 {
-    var sel = int.Parse(serverEvent.Value.ToString());
-    if (sel != _serverID)
+    if (newSelection != _serverID)
     {
-        _serverID = sel;
+        _serverID = newSelection;
         await OnSelected.InvokeAsync(_serverID);
     }
+    IsOpen = false;
+}
+
+private void OnClick(UIMouseEventArgs e)
+{
+    IsOpen = !IsOpen;
+    StateHasChanged();
 }
 }

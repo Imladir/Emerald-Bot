@@ -46,7 +46,9 @@ namespace EmeraldBot.Bot.Displays
             emds.Add(emd.Build());
 
             ctx.Entry(pc).Reference(x => x.Player).Load();
-            if (ctx.CheckPrivateRights(serverID, userID, pc.ID) && ctx.CheckPrivateChannel(serverID, userID, chanID, (ulong)pc.Player.DiscordID))
+            if (ctx.CheckPrivateRights(ctx.Servers.Single(x => x.DiscordID == (long)serverID).ID, 
+                                       ctx.Users.Single(x => x.DiscordID == (long)userID).ID, pc.ID) 
+                && ctx.CheckPrivateChannel(serverID, userID, chanID, (ulong)pc.Player.DiscordID))
             {
                 emd = new EmbedBuilder();
                 emd.WithColor(new Color((uint)pc.Clan.Colour));
@@ -80,10 +82,13 @@ namespace EmeraldBot.Bot.Displays
                 string techniquesStr = "";
                 foreach (var tt in ctx.Set<TechniqueType>().OrderBy(x => x.Name).ToList())
                 {
-                    techniquesStr += $"**{tt.Name}**\n";
-                    foreach (var t in pc.Techniques.Where(x => x.Technique.Type.ID == tt.ID).OrderBy(x => x.Technique.Name))
-                    {
-                        techniquesStr += $"- {t.Technique.Name}\n";
+                    var tlist = pc.Techniques.Where(x => x.Technique.Type.ID == tt.ID).OrderBy(x => x.Technique.Name).ToList();
+                    if (tlist.Count > 0) {
+                        techniquesStr += $"**{tt.Name}**\n";
+                        foreach (var t in tlist)
+                        {
+                            techniquesStr += $"- {t.Technique.Name}\n";
+                        }
                     }
                 }
                 if (techniquesStr != "") emd.AddField("Techniques", techniquesStr, true);
@@ -91,10 +96,14 @@ namespace EmeraldBot.Bot.Displays
                 string advantagesStr = "";
                 foreach (var ac in ctx.Set<AdvantageClass>().OrderBy(x => x.Name).ToList())
                 {
-                    advantagesStr += $"**{ac.Name}**\n";
-                    foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.ID == ac.ID).OrderBy(x => x.Advantage.Name))
+                    var alist = pc.Advantages.Where(x => x.Advantage.AdvantageClass.ID == ac.ID).OrderBy(x => x.Advantage.Name).ToList();
+                    if (alist.Count > 0)
                     {
-                        advantagesStr += $"- {a.Advantage.Name}\n";
+                        advantagesStr += $"**{ac.Name}**\n";
+                        foreach (var a in alist)
+                        {
+                            advantagesStr += $"- {a.Advantage.Name}\n";
+                        }
                     }
                 }
                 if (advantagesStr != "") emd.AddField("Techniques", advantagesStr, true);

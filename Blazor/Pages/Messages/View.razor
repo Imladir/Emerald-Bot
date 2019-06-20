@@ -4,6 +4,7 @@
 @using EmeraldBot.Model.Servers
 
 @inject EmeraldBotContext _ctx
+@inject  IUriHelper _uri
 
 <RedirectToLoginIfNotAuthorized />
 
@@ -13,17 +14,26 @@
 }
 else
 {
-    <img src="@_message.Icon" style="float: right; width: 300px; height:auto;" />
-    <h1>@_message.Title</h1>
-    <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
-    <NavLink href="@($"messages/{_message.ID}/edit")">Edit Message</NavLink>  <NavLink href="@($"messages/{_message.ID}/delete")">Delete Message</NavLink>
-    <p>@((MarkupString)_message.Text.ToHTML())</p>
+    <Container IsFluid="true">
+        <Row>
+            <BlazorCol>
+                <h1>@_message.Title</h1>
+                <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+                    <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/{_message.ID}/edit"))">Edit</BlazorButton>
+                    <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) =>_uri.NavigateTo($"messages/{_message.ID}/delete"))">Delete</BlazorButton>
+                <p>@((MarkupString)_message.Text.ToHTML())</p>
+            </BlazorCol>
+            <BlazorCol>
+                <Image IsRounded="true" Alignment="Alignment.Center" src="@_message.Icon" style="width: 300px; height: auto;" />
+            </BlazorCol>
+        </Row>
+    </Container>
 }
 
 @code {
-    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-    [Parameter] private int id { get; set; }
-    private Message _message;
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private int id { get; set; }
+private Message _message;
 
     protected override void OnInit()
     {

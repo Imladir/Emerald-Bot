@@ -11,6 +11,6 @@
         var user = (await authenticationStateTask).User;
 
         if (!user.Identity.IsAuthenticated)
-            _uri.NavigateTo(_uri.ToAbsoluteUri(Urls.Login).ToString());
+            _uri.NavigateTo(_uri.ToAbsoluteUri(Urls.Login).ToString(), true);
     }
 }

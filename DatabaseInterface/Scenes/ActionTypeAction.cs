@@ -1,8 +1,9 @@
-﻿using System;
+﻿using EmeraldBot.Model.Game;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EmeraldBot.Model.Game
+namespace EmeraldBot.Model.Scenes
 {
     public class ActionTypeAction
     {
