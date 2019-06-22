@@ -1,0 +1,110 @@
+﻿@page  "/techniques/"
+
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Servers
+@using EmeraldBot.Model.Game
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Authorization;
+@using  System.Linq;
+
+@inject EmeraldBotContext _ctx
+@inject IHttpContextAccessor _ca
+@inject IUriHelper _uri
+
+<RedirectToLoginIfNotAuthorized />
+<h1>Techniques</h1>
+<ServerSelector ServerIDChanged="@ServerSelected" />
+
+@if (_techniques.Count == 0)
+{
+    <p>Page is loading...</p>
+}
+else
+{
+<BlazorNav IsTabs="true">
+    @foreach (var tt in _types)
+{
+        <BlazorNavLink @onclick="@((e) => _openType = tt.ID)" IsActive="@(_openType == tt.ID)">@tt.Name</BlazorNavLink>
+}
+</BlazorNav>
+<TabContent>
+    @foreach (var tt in _types)
+{
+        <TabPane IsOpen="@(_openType == tt.ID)">
+            <BlazorTable IsHovarable="false" IsStriped="true">
+                <TableHead TableHeadType="TableHeadType.Dark">
+                    <tr>
+                        <td>Name</td>
+                        <td>Alias</td>
+                        <td style="text-align: center;">Rank</td>
+                        <td style="text-align: center;">Ring</td>
+                        <td style="text-align: center;">TN</td>
+                        <td style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"techniques/add"))">New Technique</BlazorButton></td>
+                    </tr>
+                </TableHead>
+                <tbody>
+                    @foreach (var t in _techniques.Where(x => x.Type.ID == tt.ID).OrderBy(x => TechniqueOrder(x)))
+                    {
+                    <tr>
+                        <td>@t.Name</td>
+                        <td>@t.Alias</td>
+                        <td style="text-align: center;">@t.Rank</td>
+                        <td style="text-align: center;"><Image Alignment="Alignment.Center" src="@(GetRingImage(t.Ring))" style="width: 40px; height: auto;" /></td>
+                        <td style="text-align: center;">@(t.TN != 0 ? $"{t.TN}" : "Variable")</td>
+                        <td style="text-align: center;">
+                            <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{t.ID}"))">View</BlazorButton>
+                            @if (_isGM && t.Server.DiscordID != 0 || _isAdmin)
+                            {
+                                <BlazorButton IsOutline="true" Color="Color.Success" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{t.ID}/edit"))">Edit</BlazorButton>
+                                <BlazorButton IsOutline="true" Color="Color.Danger" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{t.ID}/delete"))">Delete</BlazorButton>
+                            }
+                        </td>
+                    </tr>
+}
+                </tbody>
+            </BlazorTable>
+        </TabPane>
+}
+</TabContent>
+}
+
+@code {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+private List<Technique> _techniques = new List<Technique>();
+private List<TechniqueType> _types;
+private bool _isGM;
+private bool _isAdmin;
+private int _openType;
+
+protected override void OnInit()
+{
+    _types = _ctx.Set<TechniqueType>().OrderBy(x => x.Name).ToList();
+    _openType = _types.Single(x => x.Name.Equals("Kata")).ID;
+    _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+}
+
+public void ServerSelected(int id)
+{
+    _techniques = _ctx.Techniques.Where(x => x.Server.ID == id || x.Server.DiscordID == 0).ToList();
+    foreach (var t in _techniques)
+    {
+        _ctx.Entry(t).Reference(x => x.Ring).Load();
+        _ctx.Entry(t).Reference(x => x.Type).Load();
+    }
+    _isGM = _ctx.HasPrivilege(id, UserID);
+}
+
+private string TechniqueOrder(Technique t)
+{
+    if (t.Type.Name.Equals("Invocation") || t.Type.Name.Equals("Shūji") || t.Type.Name.Equals("Kihō"))
+        return $"{t.Ring.Name} - {t.Name}";
+    else
+        return t.Name;
+}
+
+private string GetRingImage(Ring r)
+{
+    return $"img/{r.Name}.png";
+}
+
+}

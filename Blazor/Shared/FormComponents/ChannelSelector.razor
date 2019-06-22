@@ -2,9 +2,9 @@
 
 
 <FormGroup>
-    <BlazorLabel>Pick a Channel</BlazorLabel>
-    <Dropdown IsOpen="@IsOpen">
-        <DropdownToggle @onclick="@OnClick">@(Channels.Count > 0 ? Channels.Find(x => x.ID == CurrentChannel).Name : "Loading...")</DropdownToggle>
+    <BlazorLabel For="ChannelSelector">Channel</BlazorLabel>
+    <Dropdown Id="ChannelSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@OnClick">@(Channels.Count > 0 ? Channels.Find(x => x.ID == ChannelID).Name : "Loading...")</DropdownToggle>
         <DropdownMenu IsOpen="@IsOpen">
             @foreach (var s in Channels)
             {
@@ -24,12 +24,12 @@ private void OnClick(UIMouseEventArgs e)
     StateHasChanged();
 }
 
-protected async Task ChannelSelected(ulong newSelection)
+protected async Task ChannelSelected(long newSelection)
 {
-    if (newSelection != CurrentChannel)
+    if (newSelection != ChannelID)
     {
-        CurrentChannel = newSelection;
-        await OnSelected.InvokeAsync(CurrentChannel);
+        ChannelID = newSelection;
+        await ChannelIDChanged.InvokeAsync(ChannelID);
     }
     IsOpen = false;
 }

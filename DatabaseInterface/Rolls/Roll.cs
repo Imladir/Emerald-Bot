@@ -212,7 +212,7 @@ namespace EmeraldBot.Model.Rolls
             if (added.Count > 0)
             {
                 foreach (var d in added) Dice.Add(d);
-                Log += $"Exploded {explosions}";
+                Log += $"Exploded {explosions}\n";
             }
 
             return PrintData();

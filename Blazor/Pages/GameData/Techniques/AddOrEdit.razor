@@ -1,0 +1,108 @@
+﻿@inherits AddOrEditBase
+
+@if (IsEdit)
+{
+    <h1>Technique Edition</h1>
+} else
+{
+    <h1>Technique creation</h1>
+}
+<BlazorForm>
+    <Container IsFluid="true">
+        <Row>
+            <BlazorCol><ServerSelector IncludeAdmin="true" @bind-ServerID="@ServerID" /></BlazorCol>
+            <BlazorCol><TechniqueTypeSelector @bind-Type="@Technique.Type" /></BlazorCol>
+            <BlazorCol><RingSelector AllowAny="true" @bind-Ring="@Technique.Ring" /></BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <FormGroup>
+                    <BlazorLabel For="techniqueRank">Rank</BlazorLabel>
+                    <Dropdown Id="techniqueRank" IsOpen="@RankIsOpen">
+                        <DropdownToggle @onclick="@((e) => { RankIsOpen = !RankIsOpen; StateHasChanged(); })">@Technique.Rank</DropdownToggle>
+                        <DropdownMenu IsOpen="@RankIsOpen">
+                            <DropdownItem @key="1" @onclick="@((e) => { Technique.Rank = 1; RankIsOpen = false; })">1</DropdownItem>
+                            <DropdownItem @key="2" @onclick="@((e) => { Technique.Rank = 2; RankIsOpen = false; })">2</DropdownItem>
+                            <DropdownItem @key="3" @onclick="@((e) => { Technique.Rank = 3; RankIsOpen = false; })">3</DropdownItem>
+                            <DropdownItem @key="4" @onclick="@((e) => { Technique.Rank = 4; RankIsOpen = false; })">4</DropdownItem>
+                            <DropdownItem @key="5" @onclick="@((e) => { Technique.Rank = 5; RankIsOpen = false; })">5</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </FormGroup>
+            </BlazorCol>
+            <BlazorCol><TechniqueSkillsSelector TechniqueSkillGroups="@Technique.SkillGroups" TechniqueSkills="@Technique.Skills" /></BlazorCol>
+            <BlazorCol>
+                <FormGroup>
+                    <BlazorLabel For="techniqueTN">TN</BlazorLabel>
+                    <Dropdown Id="techniqueTN" IsOpen="@TNIsOpen">
+                        <DropdownToggle @onclick="@((e) => { TNIsOpen = !TNIsOpen; StateHasChanged(); })">@(Technique.TN > 0 ? $"{Technique.TN}" : "Variable")</DropdownToggle>
+                        <DropdownMenu IsOpen="@TNIsOpen">
+                            <DropdownItem @key="0" @onclick="@((e) => { Technique.TN = 0; TNIsOpen = false; })">Variable</DropdownItem>
+                            <DropdownItem @key="1" @onclick="@((e) => { Technique.TN = 1; TNIsOpen = false; })">1</DropdownItem>
+                            <DropdownItem @key="2" @onclick="@((e) => { Technique.TN = 2; TNIsOpen = false; })">2</DropdownItem>
+                            <DropdownItem @key="3" @onclick="@((e) => { Technique.TN = 3; TNIsOpen = false; })">3</DropdownItem>
+                            <DropdownItem @key="4" @onclick="@((e) => { Technique.TN = 4; TNIsOpen = false; })">4</DropdownItem>
+                            <DropdownItem @key="5" @onclick="@((e) => { Technique.TN = 5; TNIsOpen = false; })">5</DropdownItem>
+                            <DropdownItem @key="6" @onclick="@((e) => { Technique.TN = 6; TNIsOpen = false; })">6</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </FormGroup>
+            </BlazorCol>
+        </Row>
+        <Row>
+            <SourceInput @bind-Source="@Technique.Source" />
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="TechniqueName">Name</BlazorLabel>
+                <BlazorInput Id="TechniqueName" InputType="InputType.Text" @bind-Value="@Technique.Name" PlaceHolder="Name" />
+            </BlazorCol>
+            <BlazorCol>
+                <BlazorLabel For="TechniqueAlias">Alias</BlazorLabel>
+                <BlazorInput Id="TechniqueAlias" InputType="InputType.Text" @bind-Value="@Technique.Alias" PlaceHolder="Alias" />
+            </BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="TechniqueActivationText">Activation</BlazorLabel>
+                <BlazorInput Id="TechniqueActivationText" InputType="InputType.TextArea" @bind-Value="@Technique.Activation" Rows="3" @onkeyup="@UpdateActivationCharacterCount" />
+                @if (ActivationLength < 1024)
+                {
+                    <Alert Color="Color.Success">
+                        @ActivationLength Characters
+                    </Alert>
+                }
+                else
+                {
+                    <Alert Color="Color.Danger">
+                        @ActivationLength Characters
+                    </Alert>
+                }
+            </BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="TechniqueEffectText">Effect</BlazorLabel>
+                <BlazorInput Id="TechniqueEffectText" InputType="InputType.TextArea" @bind-Value="@Technique.Effect" Rows="5" @onkeyup="@UpdateEffectCharacterCount" />
+                @if (EffectLength < 1024)
+                {
+                    <Alert Color="Color.Success">
+                        @EffectLength Characters
+                    </Alert>
+                }
+                else
+                {
+                    <Alert Color="Color.Danger">
+                        @EffectLength Characters
+                    </Alert>
+                }
+                <BlazorButton Color="Color.Success" @onclick="@Save">Save Technique</BlazorButton>
+            </BlazorCol>
+        </Row>
+    </Container>
+</BlazorForm>
+
+@code  {
+private bool RankIsOpen = false;
+private bool TNIsOpen = false;
+}

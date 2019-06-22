@@ -41,6 +41,7 @@ namespace EmeraldBot.Bot.Modules
                 ctx.SaveChanges();
                 dbTransaction.Commit();
                 await ReplyAsync(msg);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -72,6 +73,7 @@ namespace EmeraldBot.Bot.Modules
                 ctx.SaveChanges();
                 dbTransaction.Commit();
                 await ReplyAsync(msg);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -127,6 +129,7 @@ namespace EmeraldBot.Bot.Modules
                          $"character create satsume name=\"Doji Satsume\" clan=Crane description=\"The Emerald Champion\"\n" +
                          $"character update koei name=\"Hida Koei\" fire=2 earth=3 melee=2 survival=1 learn=\"Striking as Earth,Lord Hida's Grip\"";
             await ReplyAsync(msg);
+            await Context.Channel.DeleteMessageAsync(Context.Message);
         }
 
         [Command("fatigue")]
@@ -157,6 +160,7 @@ namespace EmeraldBot.Bot.Modules
                 }
 
                 await ReplyAsync(msg);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -193,6 +197,7 @@ namespace EmeraldBot.Bot.Modules
                 }
 
                 await ReplyAsync(msg);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -227,6 +232,7 @@ namespace EmeraldBot.Bot.Modules
                     msg += $"{options.Target.Name} now has {options.Target.CurrentVoid} void point(s) available.";
                 ctx.SaveChanges();
                 await ReplyAsync(msg);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -284,6 +290,7 @@ namespace EmeraldBot.Bot.Modules
                     ctx.SaveChanges();
 
                     await ReplyAsync(msg);
+                    await Context.Channel.DeleteMessageAsync(Context.Message);
 
                 }
                 catch (Exception e)
@@ -331,6 +338,7 @@ namespace EmeraldBot.Bot.Modules
                     }
 
                     await ReplyAsync(msg);
+                    await Context.Channel.DeleteMessageAsync(Context.Message);
 
                 }
                 catch (Exception e)
@@ -396,6 +404,7 @@ namespace EmeraldBot.Bot.Modules
                             await ReplyAsync("", false, emd.Build());
                         }
                     }
+                    await Context.Channel.DeleteMessageAsync(Context.Message);
                 }
                 catch (Exception e)
                 {

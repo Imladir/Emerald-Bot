@@ -71,6 +71,7 @@ namespace EmeraldBot.Bot.Modules
                         }
                 }
                 foreach (var m in msg.FitDiscordMessageSize()) await ReplyAsync(m);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -141,7 +142,7 @@ namespace EmeraldBot.Bot.Modules
 
                 var techniques = ctx.Techniques.Include(x => x.Type).Include(x => x.Ring)
                                                .Where(x => x.Name.Contains(filter) || x.Alias.Contains(filter));
-                if (tt != null) techniques = techniques.Where(x => x.Type == tt);
+                if (tt != null) techniques = techniques.Where(x => x.Type.ID == tt.ID);
                 if (techniques.Count() == 0) throw new Exception($"No  {(tt == null ? "advantages" : tt.Name)} found with filter '{filter}'");
 
                 foreach (var t in techniques.OrderBy(x => tt == null ? x.Type.Name : x.Ring.Name).ThenBy(x => x.Name))
@@ -216,7 +217,7 @@ namespace EmeraldBot.Bot.Modules
                     }
 
                     foreach (var e in emds) await ReplyAsync("", false, e);
-
+                    await Context.Channel.DeleteMessageAsync(Context.Message);
                 }
                 catch (Exception e)
                 {

@@ -1,82 +1,128 @@
 ﻿@page  "/messages/"
 
-@using  EmeraldBot.Model
-@using  EmeraldBot.Model.Servers
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Servers
 @using Microsoft.AspNetCore.Http;
 @using Microsoft.AspNetCore.Authorization;
-@using  System.Linq;
+@using System.Linq;
 
 @inject EmeraldBotContext _ctx
 @inject IHttpContextAccessor _ca
-@inject  IUriHelper _uri
+@inject IUriHelper _uri
 
 <RedirectToLoginIfNotAuthorized />
 
 <h1>Your messages</h1>
-<ServerSelector OnSelected="ServerSelected" />
+<ServerSelector ServerIDChanged="@ServerSelected" />
 
 @if (_messages.Count == 0)
 {
-    <p>You didn't send any messages on the server, or your deleted all of them.</p>
+<p>You didn't send any messages on the server, or your deleted all of them.</p>
 }
 else
 {
-    <BlazorTable IsHovarable="true">
-        <TableHead TableHeadType="TableHeadType.Dark">
-            <tr>
-                <td>Message</td>
-                <td style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/send"))">New Message</BlazorButton></td>
-            </tr>
-        </TableHead>
-        <tbody>
-            @foreach (var m in _messages)
+<Pagination Alignment="Alignment.Center">
+    @if (_page > 1) {
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page--)" PaginationLinkType="PaginationLinkType.PreviousIcon" />
+    </PaginationItem>
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page--)">@(_page - 1)</PaginationLink>
+    </PaginationItem>
+    }
+    <PaginationItem IsActive="false">
+        <PaginationLink>@_page</PaginationLink>
+    </PaginationItem>
+    @if (_page <= _lastPage) {
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page++)">@(_page + 1)</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page++)" PaginationLinkType="PaginationLinkType.NextIcon" />
+    </PaginationItem>
+    }
+</Pagination>
+<BlazorTable IsHovarable="true">
+    <TableHead TableHeadType="TableHeadType.Dark">
+        <tr>
+            <td>Message</td>
+            <td style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/send"))">New Message</BlazorButton></td>
+        </tr>
+    </TableHead>
+    <tbody>
+        @foreach (var m in _messages.Skip((_page -1) * _messagesPerPage).Take(_messagesPerPage))
             {
-                <tr @onclick="@((e) => IsOpen[m.ID] = !IsOpen[m.ID])">
-                    <td style="width: 85%;">
-                        <Media MediaType="MediaType.Media">
-                            <Media MediaType="MediaType.Image" VerticalAlignment="VerticalAlignment.Center" src="@m.Icon" style="width: 32px; height: auto;" />
-                            <Media MediaType="MediaType.Body">
-                                <Media MediaType="MediaType.Heading">@m.Title</Media>
-                                <p>@(DateTime.SpecifyKind(m.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
-                                @if (m.Text.Length > 150)
+        <tr @onclick="@((e) => IsOpen[m.ID] = !IsOpen[m.ID])">
+            <td style="width: 85%;">
+                <Media MediaType="MediaType.Media">
+                    <Media MediaType="MediaType.Image" VerticalAlignment="VerticalAlignment.Center" src="@m.Icon" style="width: 32px; height: auto;" />
+                    <Media MediaType="MediaType.Body">
+                        <Media MediaType="MediaType.Heading">@m.Title</Media>
+                        <p>@(DateTime.SpecifyKind(m.CreatedDate, DateTimeKind.Utc).ToLocalTime().ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+                        @if (m.Text.Length > 150)
                                 {
                                     if (!IsOpen[m.ID])
                                     {
-                                        <p>@((MarkupString)$"{m.Text.Substring(0, 150)}...".ToHTML())</p>
+                        <p>@((MarkupString)$"{m.Text.Substring(0, 150)}...".ToHTML())</p>
                                     }
                                     else
                                     {
-                                        <Collapse IsOpen="@IsOpen[m.ID]">
-                                            <Card CardType="CardType.Text">@((MarkupString)m.Text.ToHTML())</Card>
-                                        </Collapse>
+                        <Collapse IsOpen="@IsOpen[m.ID]">
+                            <Card CardType="CardType.Text">@((MarkupString)m.Text.ToHTML())</Card>
+                        </Collapse>
                                     }
                                 }
-                                else { 
-                                    <p>@((MarkupString)m.Text.ToHTML())</p>
+                                else {
+                        <p>@((MarkupString)m.Text.ToHTML())</p>
                                 }
-                            </Media>
-                        </Media>
-                    </td>
-                    <td style="vertical-align: middle; text-align: center;">
-                        <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}"))">View</BlazorButton>
-                        <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}/edit"))">Edit</BlazorButton>
-                        <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}/delete"))">Delete</BlazorButton>
-                    </td>
-                </tr>
+                    </Media>
+                </Media>
+            </td>
+            <td style="vertical-align: middle; text-align: center;">
+                <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}"))">View</BlazorButton>
+                <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}/edit"))">Edit</BlazorButton>
+                <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"messages/{m.ID}/delete"))">Delete</BlazorButton>
+            </td>
+        </tr>
             }
-        </tbody>
-    </BlazorTable>
+    </tbody>
+</BlazorTable>
+<Pagination Alignment="Alignment.Center">
+    @if (_page > 1) {
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page--)" PaginationLinkType="PaginationLinkType.PreviousIcon" />
+    </PaginationItem>
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page--)">@(_page - 1)</PaginationLink>
+    </PaginationItem>
+    }
+    <PaginationItem IsActive="false">
+        <PaginationLink>@_page</PaginationLink>
+    </PaginationItem>
+    @if (_page <= _lastPage) {
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page++)">@(_page + 1)</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+        <PaginationLink @onclick="@((e) => _page++)" PaginationLinkType="PaginationLinkType.NextIcon" />
+    </PaginationItem>
+    }
+</Pagination>
 }
 
 
 @code {
 [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+private int _messagesPerPage = 10;
+private int _page = 1;
+private int _lastPage;
 private List<Message> _messages = new List<Message>();
 private Dictionary<int, bool> IsOpen = new Dictionary<int, bool>();
 
-    public void ServerSelected(int serverID)
-    {
-        _messages = _ctx.Messages.Where(x => x.Server.ID == serverID && x.Player.ID == UserID).OrderByDescending(x => x.CreatedDate).ToList();
-        IsOpen = _messages.ToDictionary(x => x.ID, x => false);
-    }
+public void ServerSelected(int id)
+{
+    _messages = _ctx.Messages.Where(x => x.Server.ID == id && x.Player.ID == UserID).OrderByDescending(x => x.CreatedDate).ToList();
+    _lastPage = (int)_messages.Count / _messagesPerPage;
+    IsOpen = _messages.ToDictionary(x => x.ID, x => false);
+}
 }

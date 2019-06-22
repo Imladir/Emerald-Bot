@@ -1,0 +1,54 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<FormGroup>
+    <BlazorLabel For="RingSelector">Ring</BlazorLabel>
+    <Dropdown Id="RingSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">
+            @if (Ring != null)
+            {
+                <Image src="@(Ring.GetImage())" style="width: 24px; height: auto;" /> <span>@Ring.Name</span>
+            } else
+            {
+                <span>Loading</span>
+            }
+        </DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var r in _rings)
+            {
+                <DropdownItem @key="@r.ID" @onclick="@((e) => RingSelected(r))"><Image src="@(r.GetImage())" style="width: 24px; height: auto;" /> @r.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
+
+@code  {
+[Parameter] protected EventCallback<Ring> RingChanged { get; set; }
+[Parameter] protected Ring Ring { get; set; }
+[Parameter] private bool AllowAny { get; set; } = false;
+private bool IsOpen = false;
+private List<Ring> _rings = new List<Ring>();
+
+protected override async Task OnInitAsync()
+{
+    _rings = _ctx.Rings.Where(x => !x.Name.Equals("Any")).OrderBy(x => x.Name).ToList();
+    if (AllowAny) _rings.Insert(0, _ctx.Rings.Single(x => x.Name.Equals("Any")));
+    if (Ring == null)
+    {
+        Ring = _rings[0];
+        await RingChanged.InvokeAsync(Ring);
+    }
+}
+
+protected async Task RingSelected(Ring r)
+{
+    if (Ring == null || r.ID != Ring.ID)
+    {
+        Ring = r;
+        await RingChanged.InvokeAsync(Ring);
+    }
+    IsOpen = false;
+}
+}

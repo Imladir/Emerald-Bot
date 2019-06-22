@@ -11,32 +11,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EmeraldBot.Blazor.Shared
+namespace EmeraldBot.Blazor.Shared.FormComponents
 {
     public class CharacterSelectorBase : ComponentBase
     {
         [Inject] private EmeraldBotContext _ctx { get; set; }
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-        [Parameter] protected EventCallback<int> OnSelected { get; set; }
         [Parameter] protected int ServerID { get; set; }
+        [Parameter] protected EventCallback<int> CharacterIDChanged { get; set; }
+        [Parameter] protected int CharacterID { get; set; }
         [Parameter] protected bool AllowEmpty { get; set; } = false;
         protected List<PC> PCs { get; set; } = new List<PC>();
-        protected int CurrentCharacter { get; set; }
         protected int DefaultCharacter { get; set; }
-        private int lastKnownServer { get; set; } = 0;
+        private int _lastServerChecked = -2;
 
-        protected override void OnParametersSet()
+        protected override async Task OnParametersSetAsync()
         {
-            UpdateCharactersList();
+            if (ServerID == _lastServerChecked) return;
+
+            _lastServerChecked = ServerID;
+            await UpdateCharactersList();
         }
 
-        private void UpdateCharactersList()
+        private async Task UpdateCharactersList()
         {
             try
             {
-                if (UserID == -1 || lastKnownServer == ServerID) return;
-                lastKnownServer = ServerID;
-                var needUpdate = CurrentCharacter == 0;
+                if (UserID == -1 || ServerID == -1) return;
+                int newCharacterID;
 
                 var user = _ctx.Users.Find(UserID);
                 // Check if user has privilege and is on owner's channel
@@ -50,11 +52,16 @@ namespace EmeraldBot.Blazor.Shared
                 if (PCs.Count > 0 && !AllowEmpty)
                 {
                     var df = _ctx.Set<DefaultCharacter>().SingleOrDefault(x => x.Server.ID == ServerID && x.Player.ID == UserID);
-                    if (df == null) CurrentCharacter = PCs[0].ID;
-                    else CurrentCharacter = df.Character.ID;
+                    if (df == null) newCharacterID = PCs[0].ID;
+                    else newCharacterID = df.Character.ID;
                 }
-                else CurrentCharacter = -1;
-                if (needUpdate) OnSelected.InvokeAsync(CurrentCharacter);
+                else newCharacterID = -1;
+
+                if (newCharacterID != CharacterID)
+                {
+                    CharacterID = newCharacterID;
+                    await CharacterIDChanged.InvokeAsync(CharacterID);
+                }
             }
             catch (Exception e)
             {

@@ -1,0 +1,56 @@
+﻿@page  "/techniques/{id:int}/delete"
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx;
+@inject IUriHelper _uri;
+
+
+<RedirectToLoginIfNotAuthorized />
+
+<h1>Technique deletion</h1>
+<p>Are you sure you want to delete the technique <em>@_technique.Name</em>? There is no going back!</p>
+@if (associatedPC > 0)
+{
+    <Alert Color="Color.Warning">Technique <em>@_technique.Name</em> is associated to @associatedPC character(s). Are you sure, sure?</Alert>
+}
+<BlazorButton Color="Color.Success" @onclick="@DeleteTechnique">Yes, delete</BlazorButton>
+<BlazorButton Color="Color.Danger" @onclick="@(() => { _uri.NavigateTo($"techniques/{_technique.ID}"); })">No, go back</BlazorButton>
+
+@code {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private int id { get; set; }
+private Technique _technique;
+private int associatedPC;
+
+protected override void OnInit()
+{
+    if (UserID == -1) return;
+    _technique = _ctx.Techniques.SingleOrDefault(x => x.ID == id);
+    if (_technique == null) _uri.NavigateTo($"techniques/{_technique.ID}");
+
+    var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) == null;
+
+    // Admin can do whatever
+    if (!isAdmin)
+    {
+        // Otherwise GM is only able to delete a technique if it's on the right server
+        var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == _technique.Server.ID) == null;
+        if (!isGM)
+            _uri.NavigateTo($"techniques/{_technique.ID}");
+    }
+    associatedPC = _ctx.PCs.Where(x => x.Techniques.Select(x => x.Technique.ID).Contains(_technique.ID)).Count();
+}
+
+private void DeleteTechnique()
+{
+    foreach (var tsg in _technique.SkillGroups) _ctx.TechniqueSkillGroups.Remove(tsg);
+    foreach (var ts in _technique.Skills) _ctx.TechniquesSkills.Remove(ts);
+    foreach (var tpc in _technique.PCs) _ctx.Set<PCTechnique>().Remove(tpc);
+    _ctx.Set<Source>().Remove(_technique.Source);
+    _ctx.Techniques.Remove(_technique);
+    _ctx.SaveChanges();
+    _uri.NavigateTo("techniques/");
+}
+}

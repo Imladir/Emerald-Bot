@@ -1,0 +1,20 @@
+﻿@using EmeraldBot.Model
+
+<Container IsFluid="true">
+    <Row>
+        <BlazorCol>
+            <BlazorLabel For="TechniqueSource">Source</BlazorLabel>
+            <BlazorInput Id="TechniqueSource" InputType="InputType.Text" @bind-Value="@Source.Book" PlaceHolder="Book / creator" />
+        </BlazorCol>
+        <BlazorCol>
+            <BlazorLabel For="TechniqueSourcePage">Page</BlazorLabel>
+            <BlazorInput Id="TechniqueSourcePage" InputType="InputType.Number" min="0" max="500" @bind-Value="@Page" PlaceHolder="Page" />
+        </BlazorCol>
+    </Row>
+</Container>
+
+@code {
+[Parameter] private EventCallback<Source> SourceChanged { get; set; }
+[Parameter] private Source Source { get; set; }
+private string Page { get { return $"{Source.Page}"; } set { int p = 0;  int.TryParse(value, out p); Source.Page = p; } }
+}

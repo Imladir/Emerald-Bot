@@ -1,0 +1,44 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<FormGroup>
+    <BlazorLabel For="TypeSelector">Technique Type</BlazorLabel>
+    <Dropdown Id="TypeSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick= "@((e) => { IsOpen = !IsOpen; StateHasChanged(); })" >@(Type != null ? Type.Name : "Pick one")</DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var t in _types)
+            {
+                <DropdownItem @key="@t.ID" @onclick="@((e) => TypeSelected(t))">@t.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
+
+@code  {
+[Parameter] protected EventCallback<TechniqueType> TypeChanged { get; set; }
+[Parameter] protected TechniqueType Type { get; set; }
+private bool IsOpen = false;
+private List<TechniqueType> _types = new List<TechniqueType>();
+
+protected override async Task OnInitAsync()
+{
+    _types = _ctx.TechniqueTypes.OrderBy(x => x.Name).ToList();
+    if (Type == null)
+    {
+        Type = _types[0];
+        await TypeChanged.InvokeAsync(Type);
+    }
+}
+
+protected async Task TypeSelected(TechniqueType type)
+{
+    if (Type == null || type.ID != Type.ID)
+    {
+        Type = type;
+        await TypeChanged.InvokeAsync(Type);
+    }
+    IsOpen = false;
+}
+}

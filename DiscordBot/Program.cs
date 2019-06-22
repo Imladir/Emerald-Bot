@@ -37,8 +37,6 @@ namespace EmeraldBot.Bot
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            //EmeraldBotContext.ConnectionString = config.GetSection("ConnectionStrings")["azure"];
-
             /* Discord */
             var client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -55,7 +53,7 @@ namespace EmeraldBot.Bot
                 .BuildServiceProvider();
 
             _handler = new CommandHandler(commands, client, services);
-            await _handler.SetupAsync(client);
+            //await _handler.SetupAsync(client);
 
             string url = "http://localhost:5050/";
             _webService = WebServiceServer.Get(url, client, args);

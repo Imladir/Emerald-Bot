@@ -1,0 +1,82 @@
+﻿@page  "/techniques/{id:int}"
+@using Microsoft.AspNetCore.Html
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+@inject IUriHelper _uri
+
+
+<RedirectToLoginIfNotAuthorized />
+
+@if (_technique == null)
+{
+<p><em>The requested technique wasn't found.</em></p>
+}
+else
+{
+<Container IsFluid="true">
+    <Row><BlazorCol><h1>@_technique.Name</h1></BlazorCol></Row>
+    <Row><BlazorCol><h2><Image src="@(GetRingImage())" style="width: 40px; height: auto;" /> @_technique.Type.Name</h2></BlazorCol></Row>
+    <Row>
+        <BlazorCol><p><span style="font-weight: bold">Discord Alias</span>: @_technique.Alias</p></BlazorCol>
+        <BlazorCol><p><span style="font-weight: bold">Rank</span>: @_technique.Rank</p></BlazorCol>
+        @if (_technique.Source != null) {
+        <BlazorCol><p><span style="font-weight: bold">Source</span>: @(Source())</p></BlazorCol>
+        }
+    </Row>
+    <Row><BlazorCol><h4>Associated skills</h4></BlazorCol></Row>
+    <Row><BlazorCol><p>@(GetSkills())</p></BlazorCol></Row>
+    <Row><BlazorCol><h4>Activation</h4></BlazorCol></Row>
+    <Row><BlazorCol><p>@((MarkupString)_technique.Activation.ReplaceSymbols())</p></BlazorCol></Row>
+    <Row><BlazorCol><h4>Effect</h4></BlazorCol></Row>
+    <Row><BlazorCol><p>@((MarkupString)_technique.Effect.ReplaceSymbols())</p></BlazorCol></Row>
+    <Row>
+        <BlazorCol>
+            <BlazorButton IsOutline="true" Color="Color.Secondary"Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/"))">Back</BlazorButton>
+            @if (_isGM || _isAdmin)
+            {
+                <BlazorButton IsOutline="true" Color="Color.Success" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{_technique.ID}/edit"))">Edit</BlazorButton>
+                @if (_technique.Server.DiscordID != 0 || _isAdmin)
+                {
+                    <BlazorButton IsOutline="true" Color="Color.Danger" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{_technique.ID}/delete"))">Delete</BlazorButton>
+                }
+            }
+        </BlazorCol>
+    </Row>
+</Container>
+}
+
+@code {
+    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+    [Parameter] private int id { get; set; }
+    private Technique _technique;
+    private bool _isGM;
+    private bool _isAdmin;
+
+    protected override void OnInit()
+    {
+        _technique = _ctx.Techniques.SingleOrDefault(x => x.ID == id);
+        _isGM = _ctx.HasPrivilege(id, UserID);
+        _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+    }
+
+    private string GetRingImage()
+    {
+        return $"img/{_technique.Ring.Name}.png";
+    }
+
+    private string GetSkills()
+    {
+        List<string> res = new List<string>();
+        foreach (var g in _technique.SkillGroups.Select(x => x.SkillGroup.Name).OrderBy(x => x)) res.Add($"{g} Skills");
+        foreach (var s in _technique.Skills.Select(x => x.Skill.Name).OrderBy(x => x)) res.Add($"{s}");
+        return string.Join(", ", res);
+    }
+
+    private string Source() {
+        string res = _technique.Source.Book;
+        if (_technique.Source.Page != -1) res += $", p{_technique.Source.Page}";
+        return res;
+    }
+}

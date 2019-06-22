@@ -23,4 +23,9 @@
     <ProjectReference Include="..\DatabaseInterface\DatabaseInterface.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\GameData\Advantages\" />
+    <Folder Include="wwwroot\img\" />
+  </ItemGroup>
+
 </Project>

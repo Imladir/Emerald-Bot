@@ -1,0 +1,43 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<FormGroup>
+    <BlazorLabel For="TypeSelector">Advantage Type(s)</BlazorLabel>
+    <Dropdown Id="TypeSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">@(SelectionToString())</DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var t in _types)
+            {
+                <DropdownItem @key="@t.ID" IsActive="@(TypesSelected.Contains(t.ID))" @onclick="@((e) => TypeSelected(t.ID))">@t.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
+
+@code  {
+[Parameter] private List<int> TypesSelected { get; set; } = new List<int>();
+[Parameter] private EventCallback<List<int>> TypesSelectedChanged { get; set; }
+private bool IsOpen = false;
+private List<AdvantageType> _types = new List<AdvantageType>();
+
+protected override void OnInit()
+{
+    _types = _ctx.AdvantageTypes.OrderBy(x => x.Name).ToList();
+}
+
+private string SelectionToString()
+{
+    if (_types.Count == 0) return "Loading...";
+    else if (TypesSelected.Count == 0) return "None";
+    else return string.Join(", ", TypesSelected.Select(x => _types.Single(y => y.ID == x)).Select(x => x.Name));
+}
+
+protected async Task TypeSelected(int newSelection)
+{
+    if (TypesSelected.Contains(newSelection)) TypesSelected.Remove(newSelection);
+    else TypesSelected.Add(newSelection);
+    await TypesSelectedChanged.InvokeAsync(TypesSelected);
+}
+}

@@ -69,11 +69,14 @@ namespace EmeraldBot.Bot.Modules
 
                         var player = ctx.Users.SingleOrDefault(x => x.DiscordID == (long)gm.Id);
 
-                        var res = ctx.UserRoles.Single(x => x.Role == ctx.Roles.Single(x => x.Name.Equals("GM"))
-                                                         && x.User.ID == player.ID
-                                                         && x.Server.ID == server.ID);
-                        player.Roles.Remove(res);
-                        var claim = player.Claims.Single(x => x.ClaimType.Equals($"Server-{server.DiscordID}") && x.ClaimValue.Equals(res.Role.Name));
+                        var roleQuery = from ur in ctx.UserRoles
+                                        join u in ctx.Users on ur.User.ID equals u.ID
+                                        join r in ctx.Roles on ur.Role.ID equals r.ID
+                                        where ur.Server.ID == server.ID && u.ID == player.ID && r.Name.Equals("GM")
+                                        select ur;
+
+                        player.Roles.Remove(roleQuery.Single());
+                        var claim = player.Claims.Single(x => x.ClaimType.Equals($"Server-{server.DiscordID}") && x.ClaimValue.Equals(roleQuery.Single().Role.Name));
                         player.Claims.Remove(claim);
                         ctx.SaveChanges();
                         await ReplyAsync($"{gm.Nickname} is no longer a GM on the server.");

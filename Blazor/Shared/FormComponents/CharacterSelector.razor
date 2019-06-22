@@ -3,9 +3,9 @@
 @if (PCs.Count > 0)
 {
     <FormGroup>
-        <BlazorLabel>Pick a Character</BlazorLabel>
-        <Dropdown IsOpen="@IsOpen">
-            <DropdownToggle @onclick="@OnClick">@((PCs.Count > 0 && CurrentCharacter > 0) ? PCs.Find(x => x.ID == CurrentCharacter).Name : (CurrentCharacter == -1 ? "Unchanged" : "Loading..."))</DropdownToggle>
+        <BlazorLabel For="CharacterSelector">Character</BlazorLabel>
+        <Dropdown Id="CharacterSelector" IsOpen="@IsOpen">
+            <DropdownToggle @onclick="@OnClick">@((PCs.Count > 0 && CharacterID > 0) ? PCs.Find(x => x.ID == CharacterID).Name : (CharacterID == -1 ? "Unchanged" : "Loading..."))</DropdownToggle>
             <DropdownMenu IsOpen="@IsOpen">
                 @foreach (var s in PCs)
                 {
@@ -29,13 +29,13 @@ else
         StateHasChanged();
     }
 
-protected async Task CharacterSelected(int newSelection)
-{
-    if (newSelection != CurrentCharacter)
+    protected async Task CharacterSelected(int newSelection)
     {
-        CurrentCharacter = newSelection;
-        await OnSelected.InvokeAsync(CurrentCharacter);
+        if (newSelection != CharacterID)
+        {
+            CharacterID = newSelection;
+            await CharacterIDChanged.InvokeAsync(CharacterID);
+        }
+        IsOpen = false;
     }
-    IsOpen = false;
-}
 }

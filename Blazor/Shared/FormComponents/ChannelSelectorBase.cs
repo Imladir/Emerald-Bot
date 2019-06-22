@@ -11,24 +11,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EmeraldBot.Blazor.Shared
+namespace EmeraldBot.Blazor.Shared.FormComponents
 {
     public class ChannelSelectorBase : ComponentBase
     {
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-        [Parameter] protected EventCallback<ulong> OnSelected { get; set; }
         [Parameter] protected int ServerID { get; set; }
-        private int lastKnownServer;
+        [Parameter] protected EventCallback<long> ChannelIDChanged { get; set; }
+        [Parameter] protected long ChannelID { get; set; }
         protected List<DiscordChannel> Channels { get; set; } = new List<DiscordChannel>();
-        protected ulong CurrentChannel { get; set; } = 0;
+        private int _lastServerChecked = -2;
 
         protected override async Task OnParametersSetAsync()
         {
+            if (ServerID == _lastServerChecked) return;
+
+            _lastServerChecked = ServerID;
+            await UpdateChannels();
+        }
+
+        private async Task UpdateChannels()
+        {
             try
             {
-                if (UserID == -1 || lastKnownServer == ServerID) return;
-                lastKnownServer = ServerID;
-                var forceUpdate = CurrentChannel == 0;
+                if (UserID == -1 || ServerID == -1) return;
 
                 HubConnection connection = new HubConnectionBuilder()
                         .AddMessagePackProtocol()
@@ -43,14 +49,15 @@ namespace EmeraldBot.Blazor.Shared
 
                 Channels.Clear();
                 foreach (var c in await connection.InvokeAsync<Dictionary<ulong, string>>("GetUserGuildChannels", UserID, ServerID))
-                        Channels.Add(new DiscordChannel() { ID = c.Key, Name = $"#{c.Value}" });
-                    Channels = Channels.OrderBy(x => x.Name).ToList();
+                    Channels.Add(new DiscordChannel() { ID = (long)c.Key, Name = $"#{c.Value}" });
+                await connection.StopAsync();
 
-                if (Channels[0].ID != CurrentChannel)
+                Channels = Channels.OrderBy(x => x.Name).ToList();
+
+                if (Channels[0].ID != ChannelID)
                 {
-                    CurrentChannel = Channels[0].ID;
-                    await connection.StopAsync();
-                    if (forceUpdate) await OnSelected.InvokeAsync(CurrentChannel);
+                    ChannelID = Channels[0].ID;
+                    await ChannelIDChanged.InvokeAsync(ChannelID);
                 }
             }
             catch (Exception e)

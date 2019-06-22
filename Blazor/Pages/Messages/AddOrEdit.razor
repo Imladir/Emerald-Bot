@@ -8,20 +8,24 @@
             <BlazorForm>
                 @if (IsEdit)
                 {
-                    <h1>Message edition</h1>
-                    <CharacterSelector ServerID="@ServerID" OnSelected="@CharacterSelected" AllowEmpty="true" />
+                <h1>Message edition</h1>
+                <CharacterSelector ServerID="@ServerID" CharacterIDChanged="@CharacterSelected" AllowEmpty="true" />
                 }
                 else
                 {
-                    <h1>Send a new message</h1>
-                    <ServerSelector OnSelected="@ServerSelected" />
-                    <ChannelSelector ServerID="@ServerID" OnSelected="@ChannelSelected" />
-                    <CharacterSelector ServerID="@ServerID" OnSelected="@CharacterSelected" AllowEmpty="false" />
+                <h1>Send a new message</h1>
+                <Container>
+                    <Row>
+                        <BlazorCol><ServerSelector @bind-ServerID="@ServerID" /></BlazorCol>
+                        <BlazorCol><ChannelSelector ServerID="@ServerID" @bind-ChannelID="@Message.DiscordChannelID" /></BlazorCol>
+                        <BlazorCol><CharacterSelector ServerID="@ServerID" CharacterIDChanged="@CharacterSelected" AllowEmpty="false" /></BlazorCol>
+                    </Row>
+                </Container>
                 }
                 <BlazorInput InputType="InputType.Text" @bind-Value="@Message.Title" PlaceHolder="Message title" />
                 <BlazorInput Id="MessageText" InputType="InputType.TextArea" @bind-Value="@Message.Text" Rows="12" @onkeyup="@UpdateCharacterCount" />
-            </BlazorForm>
-            @if (@TextLength < 2048)
+                </BlazorForm>
+                @if (@TextLength < 2048)
             {
                 <Alert Color="Color.Success">
                     @TextLength Characters
@@ -33,12 +37,12 @@
                     @TextLength Characters
                 </Alert>
             }
-            <BlazorButton Color="Color.Success" @onclick="@SaveMessage">Save Message</BlazorButton>
-        </BlazorCol>
-        <BlazorCol>
-            <Image IsRounded="true" Alignment="Alignment.Center" src="@Message.Icon" style="width: 300px; height: auto;" />
-        </BlazorCol>
-    </Row>
+                <BlazorButton Color="Color.Success" @onclick="@SaveMessage">Save Message</BlazorButton>
+                </BlazorCol>
+                <BlazorCol>
+                    <Image IsRounded="true" Alignment="Alignment.Center" src="@Message.Icon" style="width: 300px; height: auto; max-width: 20%;" />
+                </BlazorCol>
+            </Row>
 </Container>
 
 @*<input @bind="@Message.Title" />

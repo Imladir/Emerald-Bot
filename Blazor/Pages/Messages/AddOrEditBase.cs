@@ -23,13 +23,11 @@ namespace EmeraldBot.Blazor.Pages.Messages
         [Inject] protected IJSRuntime JSRuntime { get; set; }
         [Parameter] public int MessageID { get; set; }
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-        protected int ServerID { get; set; }
+        protected int ServerID { get; set; } = -1;
         protected bool IsEdit => MessageID == -1 ? false : true;
         protected Message Message { get; set; } = new Message();
-        protected string ImageURL { get { return $"{Message.Icon}/300x300"; } }
 
         protected int TextLength { get; set; } = 0;
-        protected BlazorInput editor;
         private string _oldIcon;
         private int _oldColour;
         public async Task UpdateCharacterCount() => TextLength = await JSRuntime.InvokeAsync<int>("blazor.getCharacterCount", "MessageText");
@@ -51,6 +49,7 @@ namespace EmeraldBot.Blazor.Pages.Messages
                 } else
                 {
                     Message.Player = _ctx.Users.Find(UserID);
+                    Message.DiscordChannelID = -1;
                 }
             }
             catch (Exception e)
@@ -88,16 +87,6 @@ namespace EmeraldBot.Blazor.Pages.Messages
             await connection.InvokeAsync("SendMessage", Message.ID);
             await connection.StopAsync();
             _uri.NavigateTo($"messages/{Message.ID}");
-        }
-
-        protected void ServerSelected(int id)
-        {
-            ServerID = id;
-        }
-
-        protected void ChannelSelected(ulong id)
-        {
-            Message.DiscordChannelID = (long)id;
         }
 
         protected void CharacterSelected(int id)

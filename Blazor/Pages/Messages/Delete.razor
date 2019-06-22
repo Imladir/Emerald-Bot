@@ -29,8 +29,8 @@
     {
         if (UserID == -1) return;
         _message = _ctx.Messages.SingleOrDefault(x => x.ID == id);
-        if (_message == null) _uri.NavigateTo("messages/");
-        if (_message.Player.ID != UserID) _uri.NavigateTo("messages/");
+        if (_message == null) _uri.NavigateTo($"messages/{_message.ID}");
+        if (_message.Player.ID != UserID) _uri.NavigateTo($"messages/{_message.ID}");
     }
 
     private async Task DeleteMessage()

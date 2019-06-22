@@ -9,13 +9,13 @@
 @inject IHttpContextAccessor _ca
 
 <FormGroup>
-    <BlazorLabel>Pick a Server</BlazorLabel>
-    <Dropdown IsOpen="@IsOpen">
-        <DropdownToggle @onclick="@OnClick">@(Servers.Count > 0 ? Servers.Find(x => x.ID == _serverID).Name : "Loading...")</DropdownToggle>
+    <BlazorLabel For="ServerSelector">Server</BlazorLabel>
+    <Dropdown Id="ServerSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@OnClick">@(Servers.Count > 0 ? Servers.Find(x => x.ID == ServerID).Name : "Loading...")</DropdownToggle>
         <DropdownMenu IsOpen="@IsOpen">
             @foreach (var s in Servers)
             {
-                <DropdownItem @key="@s.ID" @onclick="@((e) => ServerSelected(s.ID))">@s.Name</DropdownItem>
+                <DropdownItem @key="@s.ID" @onclick="@((e) => Selection(s.ID))">@s.Name</DropdownItem>
             }
         </DropdownMenu>
     </Dropdown>
@@ -23,10 +23,11 @@
 
 @code  {
 [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-[Parameter] private EventCallback<int> OnSelected { get; set; }
+[Parameter] private int ServerID { get; set; }
+[Parameter] private EventCallback<int> ServerIDChanged { get; set; }
+[Parameter] private bool IncludeAdmin { get; set; } = false;
 private bool IsOpen;
 private List<Server> Servers = new List<Server>();
-private int _serverID = -1;
 
 protected override async Task OnInitAsync()
 {
@@ -47,16 +48,23 @@ protected override async Task OnInitAsync()
     List<int> ids = await connection.InvokeAsync<List<int>>("GetUserGuilds", UserID);
     await connection.StopAsync();
     Servers = ids.Select(x => _ctx.Servers.Find(x)).ToList();
-    _serverID = Servers[0].ID;
-    await OnSelected.InvokeAsync(_serverID);
+
+    if (IncludeAdmin && _ctx.UserRoles.SingleOrDefault(x => x.Role.Name.Equals("Admin") && x.User.ID == UserID) != null)
+        Servers.Insert(0, _ctx.Servers.Single(x => x.DiscordID == 0));
+
+    if (ServerID <= 0)
+    {
+        ServerID = Servers[0].ID;
+        await ServerIDChanged.InvokeAsync(ServerID);
+    }
 }
 
-protected async Task ServerSelected(int newSelection)
+protected async Task Selection(int newSelection)
 {
-    if (newSelection != _serverID)
+    if (newSelection != ServerID)
     {
-        _serverID = newSelection;
-        await OnSelected.InvokeAsync(_serverID);
+        ServerID = newSelection;
+        await ServerIDChanged.InvokeAsync(ServerID);
     }
     IsOpen = false;
 }

@@ -26,7 +26,7 @@ namespace EmeraldBot.Bot.Displays
             emd.AddField("Ring", t.Ring == null ? "Any" : t.Ring.Name, true);
 
             List<Skill> skills = t.Skills.Select(x => x.Skill).ToList();
-            foreach (var sg in t.SkillGroups.Select(x => x.SkillGroup)) skills.AddRange(ctx.Skills.Where(x => x.Group == sg).ToList());
+            foreach (var sg in t.SkillGroups.Select(x => x.SkillGroup)) skills.AddRange(ctx.Skills.Where(x => x.Group.ID == sg.ID).ToList());
 
             emd.AddField("Skill", String.Join("\n", skills.Select(s => s.Name)), true);
 

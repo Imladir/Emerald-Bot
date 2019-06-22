@@ -18,13 +18,14 @@ else
         <Row>
             <BlazorCol>
                 <h1>@_message.Title</h1>
-                <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
-                    <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/{_message.ID}/edit"))">Edit</BlazorButton>
-                    <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) =>_uri.NavigateTo($"messages/{_message.ID}/delete"))">Delete</BlazorButton>
+                <p>@(DateTime.SpecifyKind(_message.CreatedDate, DateTimeKind.Utc).ToLocalTime().ToString("ddddd dd MMMM yyyy, HH:mm"))</p>
+                <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"messages/"))">Back</BlazorButton>
+                <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/{_message.ID}/edit"))">Edit</BlazorButton>
+                <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) =>_uri.NavigateTo($"messages/{_message.ID}/delete"))">Delete</BlazorButton>
                 <p>@((MarkupString)_message.Text.ToHTML())</p>
             </BlazorCol>
             <BlazorCol>
-                <Image IsRounded="true" Alignment="Alignment.Center" src="@_message.Icon" style="width: 300px; height: auto;" />
+                <Image IsRounded="true" Alignment="Alignment.Center" src="@_message.Icon" style="width: 300px; height: auto; max-width: 20%;" />
             </BlazorCol>
         </Row>
     </Container>

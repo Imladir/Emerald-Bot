@@ -1,0 +1,68 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+@using System.Linq
+
+@inject EmeraldBotContext _ctx
+
+<BlazorButton IsOutline="true" Color="Color.None" @onclick="@(() => IsOpen = !IsOpen)">Skill Groups &amp; Skills</BlazorButton>
+<Collapse IsOpen="@IsOpen">
+    <ul>
+        @foreach (var g in _ctx.SkillGroups.OrderBy(x => x.Name))
+        {
+            @*<li><BlazorInput InputType="InputType.Checkbox" id="@g.Name" @onclick="@(() => UpdateGroup(g))" IsChecked="@GroupChecked[g.ID]" /><BlazorLabel For="@g.Name">@g.Name</BlazorLabel></li>*@
+            <li><input type="checkbox" id="@g.Name" value="@g.Name" @onchange="@(() => UpdateGroup(g))" checked="@GroupChecked[g.ID]" /> <BlazorLabel For="@g.Name">@g.Name</BlazorLabel></li>
+            <ul>
+                @foreach (var s in _ctx.Skills.Where(x => x.Group.ID == g.ID).OrderBy(x => x.Name))
+                {
+                    @*<li><BlazorInput InputType="InputType.Checkbox" id="@s.Alias" @onclick="@(() => UpdateSkill(s))" IsChecked="@SkillChecked[s.ID]" /><BlazorLabel For="@s.Alias">@s.Name</BlazorLabel></li>*@
+                    <li><input type="checkbox" id="@s.Alias" value="@s.Alias" @onchange="@(() => UpdateSkill(s))" checked="@SkillChecked[s.ID]" /> <BlazorLabel For="@s.Alias">@s.Name</BlazorLabel></li>
+
+                }
+            </ul>
+        }
+    </ul>
+</Collapse>
+
+@code {
+    [Parameter] private EventCallback<ICollection<TechniqueSkillGroup>> TechniqueSkillGroupsChanged { get; set; }
+    [Parameter] private ICollection<TechniqueSkillGroup> TechniqueSkillGroups { get; set; }
+    [Parameter] private EventCallback<ICollection<TechniqueSkill>> TechniqueSkillsChanged { get; set; }
+    [Parameter] private ICollection<TechniqueSkill> TechniqueSkills { get; set; }
+    private Dictionary<int, bool> GroupChecked = new Dictionary<int, bool>();
+    private Dictionary<int, bool> SkillChecked = new Dictionary<int, bool>();
+    private bool IsOpen = false;
+    private bool isInit = false;
+
+    protected override void OnParametersSet()
+    {
+        if (!isInit)
+        {
+            if (TechniqueSkillGroups != null)
+            {
+                GroupChecked = _ctx.SkillGroups.ToDictionary(x => x.ID, x => false);
+                foreach (var tsg in TechniqueSkillGroups) GroupChecked[tsg.SkillGroup.ID] = true;
+            }
+            if (TechniqueSkills != null)
+            {
+                SkillChecked = _ctx.Skills.ToDictionary(x => x.ID, x => false);
+                foreach (var ts in TechniqueSkills) SkillChecked[ts.Skill.ID] = true;
+            }
+        }
+    }
+
+    private async Task UpdateGroup(SkillGroup group)
+    {
+        var tsg = TechniqueSkillGroups.SingleOrDefault(x => x.SkillGroup.ID == group.ID);
+        if (tsg != null) TechniqueSkillGroups.Remove(tsg);
+        else TechniqueSkillGroups.Add(new TechniqueSkillGroup() { SkillGroup = group });
+        await TechniqueSkillGroupsChanged.InvokeAsync(TechniqueSkillGroups);
+    }
+
+    private async Task UpdateSkill(Skill skill)
+    {
+        var ts = TechniqueSkills.SingleOrDefault(x => x.Skill.ID == skill.ID);
+        if (ts != null) TechniqueSkills.Remove(ts);
+        else TechniqueSkills.Add(new TechniqueSkill() { Skill = skill });
+        await TechniqueSkillsChanged.InvokeAsync(TechniqueSkills);
+    }
+}

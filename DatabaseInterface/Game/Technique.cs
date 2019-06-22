@@ -18,15 +18,15 @@ namespace EmeraldBot.Model.Game
         [NotMapped]
         public static readonly List<string> AllowedFields = new List<string>() { "activation", "alias", "effect", "name", "rank", "ring", "skill", "source", "type", "tn" }.OrderBy(x => x).ToList();
         public virtual TechniqueType Type { get; set; }
-        public int Rank { get; set; }
+        public int Rank { get; set; } = 1;
         public virtual Ring Ring { get; set; }
-        public int TN { get; set; }
-        public virtual Source Source { get; set; }
-        public string Activation { get; set; }
-        public string Effect { get; set; }
+        public int TN { get; set; } = 0;
+        public virtual Source Source { get; set; } = new Source();
+        public string Activation { get; set; } = "";
+        public string Effect { get; set; } = "";
 
-        public virtual ICollection<TechniqueSkillGroup> SkillGroups { get; set; }
-        public virtual ICollection<TechniqueSkill> Skills { get; set; }
+        public virtual ICollection<TechniqueSkillGroup> SkillGroups { get; set; } = new List<TechniqueSkillGroup>();
+        public virtual ICollection<TechniqueSkill> Skills { get; set; } = new List<TechniqueSkill>();
         public virtual ICollection<PCTechnique> PCs { get; set; }
 
         public static Technique Get(EmeraldBotContext ctx, string alias)

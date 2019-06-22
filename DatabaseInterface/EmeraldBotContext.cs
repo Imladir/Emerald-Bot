@@ -159,14 +159,18 @@ namespace EmeraldBot.Model
             base.OnModelCreating(mb);
         }
 
-        public bool CheckPrivateRights(int serverID, int playerID, int characterID)
+        public bool HasPrivilege(int serverID, int userID)
+        {
+            return Users.Single(x => x.ID == userID).Roles.Where(x => x.Server.ID == serverID).Any(x => x.Role.Name.Equals("GM")
+                                                                                                     || x.Role.Name.Equals("Admin"));
+        }
+
+        public bool CheckPrivateRights(int serverID, int userID, int characterID)
         {
             var c = Characters.SingleOrDefault(x => x.ID == characterID);
-            var hasPrivilege = Users.Single(x => x.ID == playerID).Roles.Where(x => x.Server.ID == serverID).Any(x => x.Role.Name.Equals("GM")
-                                                                                                                   || x.Role.Name.Equals("Admin")
-                                                                                                                   || x.Role.Name.Equals("ServerOwner"));
+            var hasPrivilege = HasPrivilege(serverID, userID);
 
-            if (c is PC pc) return pc.Player.DiscordID == (long)playerID || hasPrivilege;
+            if (c is PC pc) return pc.Player.ID == (long)userID || hasPrivilege;
             else return hasPrivilege;
         }
 
@@ -177,8 +181,7 @@ namespace EmeraldBot.Model
 
             // Check if user has privilege and is on owner's channel
             var hasPrivilege = Users.Single(x => x.DiscordID == (long)playerID).Roles.Where(x => x.Server.DiscordID == (long)serverID).Any(x => x.Role.Name.Equals("GM") 
-                                                                                                                                             || x.Role.Name.Equals("Admin") 
-                                                                                                                                             || x.Role.Name.Equals("ServerOwner"));
+                                                                                                                                             || x.Role.Name.Equals("Admin"));
             if (!hasPrivilege) return false;
 
             var privateO = Users.Single(x => x.DiscordID == (long)ownerID).PrivateChannels.SingleOrDefault(x => x.Server.DiscordID == (long)serverID);
