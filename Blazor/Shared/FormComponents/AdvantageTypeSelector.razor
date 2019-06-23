@@ -1,43 +1,44 @@
 ﻿@using EmeraldBot.Model
 @using EmeraldBot.Model.Game
+@using System.Linq
 
 @inject EmeraldBotContext _ctx
 
-<FormGroup>
-    <BlazorLabel For="TypeSelector">Advantage Type(s)</BlazorLabel>
-    <Dropdown Id="TypeSelector" IsOpen="@IsOpen">
-        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">@(SelectionToString())</DropdownToggle>
-        <DropdownMenu IsOpen="@IsOpen">
-            @foreach (var t in _types)
-            {
-                <DropdownItem @key="@t.ID" IsActive="@(TypesSelected.Contains(t.ID))" @onclick="@((e) => TypeSelected(t.ID))">@t.Name</DropdownItem>
-            }
-        </DropdownMenu>
-    </Dropdown>
-</FormGroup>
+<BlazorButton IsOutline="true" Color="Color.None" @onclick="@(() => IsOpen = !IsOpen)">Advantage Types</BlazorButton>
+<Collapse IsOpen="@IsOpen">
+    <ul>
+        @foreach (var t in _ctx.AdvantageTypes.OrderBy(x => x.Name).ToList())
+        {
+            @*<li><BlazorInput InputType="InputType.Checkbox" id="@g.Name" @onclick="@(() => UpdateGroup(g))" IsChecked="@GroupChecked[g.ID]" /><BlazorLabel For="@g.Name">@g.Name</BlazorLabel></li>*@
+            <li><input type="checkbox" id="@t.Name" value="@t.Name" @onchange="@(() => UpdateType(t))" checked="@TypesChecked[t.ID]" /> <BlazorLabel For="@t.Name">@t.Name</BlazorLabel></li>
+        }
+    </ul>
+</Collapse>
 
-@code  {
-[Parameter] private List<int> TypesSelected { get; set; } = new List<int>();
-[Parameter] private EventCallback<List<int>> TypesSelectedChanged { get; set; }
+@code {
+[Parameter] private EventCallback<ICollection<AdvantageTypeAdvantages>> TypesChanged { get; set; }
+[Parameter] private ICollection<AdvantageTypeAdvantages> Types { get; set; }
+private Dictionary<int, bool> TypesChecked = new Dictionary<int, bool>();
 private bool IsOpen = false;
-private List<AdvantageType> _types = new List<AdvantageType>();
+private bool isInit = false;
 
-protected override void OnInit()
+protected override void OnParametersSet()
 {
-    _types = _ctx.AdvantageTypes.OrderBy(x => x.Name).ToList();
+    if (!isInit)
+    {
+        if (Types != null)
+        {
+            TypesChecked = _ctx.AdvantageTypes.ToDictionary(x => x.ID, x => false);
+            foreach (var at in Types) TypesChecked[at.AdvantageType.ID] = true;
+        }
+    }
 }
 
-private string SelectionToString()
+private async Task UpdateType(AdvantageType type)
 {
-    if (_types.Count == 0) return "Loading...";
-    else if (TypesSelected.Count == 0) return "None";
-    else return string.Join(", ", TypesSelected.Select(x => _types.Single(y => y.ID == x)).Select(x => x.Name));
-}
-
-protected async Task TypeSelected(int newSelection)
-{
-    if (TypesSelected.Contains(newSelection)) TypesSelected.Remove(newSelection);
-    else TypesSelected.Add(newSelection);
-    await TypesSelectedChanged.InvokeAsync(TypesSelected);
+    var at = Types.SingleOrDefault(x => x.AdvantageType.ID == type.ID);
+    if (at != null) Types.Remove(at);
+    else Types.Add(new AdvantageTypeAdvantages() { AdvantageType = type });
+    await TypesChanged.InvokeAsync(Types);
 }
 }

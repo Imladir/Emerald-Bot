@@ -2,8 +2,7 @@
 @using EmeraldBot.Model
 @using EmeraldBot.Model.Characters
 @inject EmeraldBotContext _ctx
-
-@*@attribute [Authorize]*@
+@inject IUriHelper _uri
 
 @if (pc == null)
 {
@@ -11,32 +10,305 @@
 }
 else
 {
-    <img src="@pc.Icon" alt="@pc.Name" style="float: right; width: 300px; height:auto;" />
+    <Image IsRounded="true" Alignment="Alignment.Right" src="@pc.Icon" style="width: 300px; height: auto; max-width: 20%;" />
     <h1>@pc.Name</h1>
     <table width="75%">
         <tr>
-            <td>Clan</td>
-            <td>Family</td>
-            <td>School</td>
-            <td>Rank</td>
+            <td style="text-align: center;">Clan</td>
+            <td style="text-align: center;">Family</td>
+            <td style="text-align: center;">School</td>
+            <td style="text-align: center;">Rank</td>
         </tr>
         <tr>
-            <td><img src="@pc.Clan.Icon" alt="@pc.Clan.Name" style="width: 30px; height: auto;" /> @pc.Clan.Name</td>
-            <td>@pc.Family</td>
-            <td>@pc.School</td>
-            <td>@pc.Rank</td>
+            <td style="text-align: center;"><img src="@pc.Clan.Icon" alt="@pc.Clan.Name" style="width: 30px; height: auto;" /> @pc.Clan.Name</td>
+            <td style="text-align: center;">@pc.Family</td>
+            <td style="text-align: center;">@pc.School</td>
+            <td style="text-align: center;">@pc.Rank</td>
         </tr>
     </table>
-    <h2>Description</h2>
+    <h4>Description</h4>
     <p>@pc.Description</p>
+
+
+@if (_privateRights)
+{
+<Container IsFluid="true">
+    <Row>
+        <BlazorCol>
+            <TabContent>
+                <BlazorNav IsTabs="true">
+                    <BlazorNavLink @onclick="@(() => OpenTab = "stats")" IsActive="@(OpenTab.Equals("stats"))">Characteristics</BlazorNavLink>
+                    <BlazorNavLink @onclick="@(() => OpenTab = "journals")" IsActive="@(OpenTab.Equals("journals"))">Journals</BlazorNavLink>
+                    <BlazorNavLink @onclick="@(() => OpenTab = "gear")" IsActive="@(OpenTab.Equals("gear"))">Gear</BlazorNavLink>
+                </BlazorNav>
+
+                <TabPane IsOpen="@(OpenTab.Equals("journals"))">
+                    <BlazorTable>
+                        @foreach (var jt in new List<string>() { "Honour", "Glory", "Status", "XP" })
+                        {
+                            <tr @onclick="@(() => _openJournals[jt] = !_openJournals[jt])">
+                                <td>
+                                    <h4 style="text-align: center;">@jt</h4>
+                                    <Collapse IsOpen="@(_openJournals[jt])">
+                                        <BlazorTable>
+                                            <TableHead TableHeadType="TableHeadType.Dark">
+                                                <tr style="height: 50px;">
+                                                    <th style="width: 300px;">Date</th>
+                                                    <th style="text-align: center; height: 100px;">Amount</th>
+                                                    <th>Reason</th>
+                                                </tr>
+                                            </TableHead>
+                                                <tbody>
+                                                    @foreach (var je in pc.JournalEntries.Where(x => x.Journal.Name.Equals(jt)).OrderByDescending(x => x.EntryDate).ToList())
+                                                    {
+                                                        <tr>
+                                                            <td>@(DateTime.SpecifyKind(je.EntryDate, DateTimeKind.Utc).ToLocalTime().ToString("ddddd dd MMMM yyyy, HH:mm"))</td>
+                                                            <td style="text-align: center;">@je.Amount</td>
+                                                            <td>@je.Reason</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                        </BlazorTable>
+                                </Collapse>
+                            </td>
+                        </tr>
+                    }
+                        </BlazorTable>
+                    </TabPane>
+                    <TabPane IsOpen="@(OpenTab.Equals("stats"))">
+                        <Container IsFluid="true">
+                            <Row>
+                                <BlazorCol>
+                                    <h4>Rings</h4>
+                                    <Container style="width: 300px;">
+                                        <Row>
+                                            <BlazorCol></BlazorCol>
+                                            <BlazorCol style="position: relative;">
+                                                <BlazorStrap.Image Alignment="Alignment.Right" src="img/Earth.png" style="width: 72px; height: 72px;" />
+                                                <span style="width: 30px; position: absolute; left: 65px; top: 50px; z-index: 10; font-size: x-large; text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">@_rings["Earth"]</span>
+                                            </BlazorCol>
+                                            <BlazorCol style="position: relative;">
+                                                <BlazorStrap.Image Alignment="Alignment.Left" src="img/Air.png" style="width: 72px; height: 72px;" />
+                                                <span style="width: 30px; position: absolute; left: 20px; top: 50px; z-index: 10; font-size: x-large; text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">@_rings["Air"]</span>
+                                            </BlazorCol>
+                                            <BlazorCol></BlazorCol>
+                                        </Row>
+                                        <Row>
+                                            <BlazorCol style="position: relative;">
+                                                <BlazorStrap.Image Alignment="Alignment.Center" src="img/Fire.png" style="width: 72px; height: 72px;" />
+                                                <span style="width: 30px; position: absolute; left: 105px; top: 30px; z-index: 10; font-size: x-large; text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">@_rings["Fire"]</span>
+                                            </BlazorCol>
+                                            <BlazorCol style="position: relative;">
+                                                <BlazorStrap.Image Alignment="Alignment.Center" src="img/Water.png" style="width: 72px; height: 72px;" />
+                                                <span style="width: 30px; position: absolute; left: 30px; top: 30px; z-index: 10; font-size: x-large; text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">@_rings["Water"]</span>
+                                            </BlazorCol>
+                                        </Row>
+                                        <Row>
+                                            <BlazorCol style="position: relative;">
+                                                <BlazorStrap.Image Alignment="Alignment.Center" src="img/void.png" style="width: 72px; height: 72px;" />
+                                                <span style="width: 30px; position: absolute; left: 142px; top: -25px; z-index: 10; font-size: x-large; text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">@_rings["Void"]</span>
+                                            </BlazorCol>
+                                        </Row>
+                                    </Container>
+                                    <hr />
+                                    <h4>Secondary Characteristics</h4>
+                                    <Container>
+                                        <Row>
+                                            <BlazorCol><span style="font-weight: bold;">Honour</span></BlazorCol><BlazorCol>@pc.Honour</BlazorCol>
+                                            <BlazorCol><span style="font-weight: bold;">Endurance</span></BlazorCol><BlazorCol>@pc.Endurance</BlazorCol>
+                                        </Row>
+                                        <Row>
+                                            <BlazorCol><span style="font-weight: bold;">Glory</span></BlazorCol><BlazorCol>@pc.Glory</BlazorCol>
+                                            <BlazorCol><span style="font-weight: bold;"><img src="img/bulletpoint.png" style="width: 18px; height: auto;" /> Fatigue</span></BlazorCol><BlazorCol>@pc.Fatigue</BlazorCol>
+                                        </Row>
+                                        <Row>
+                                            <BlazorCol><span style="font-weight: bold;">Status</span></BlazorCol><BlazorCol>@pc.Status</BlazorCol>
+                                            <BlazorCol><span style="font-weight: bold;">Composure</span></BlazorCol><BlazorCol>@pc.Composure</BlazorCol>
+                                        </Row>
+                                        <Row>
+                                            <BlazorCol><span style="font-weight: bold;">XP</span></BlazorCol><BlazorCol>@pc.XP</BlazorCol>
+                                            <BlazorCol><span style="font-weight: bold;"><img src="img/bulletpoint.png" style="width: 18px; height: auto;" /> Strife</span></BlazorCol><BlazorCol>@pc.Strife</BlazorCol>
+                                        </Row>
+                                    </Container>
+                                    <hr />
+                                    <h4>Advantages</h4>
+                                    <Container>
+                                        <Row>
+                                            <BlazorCol>
+                                                <BlazorTable IsSmall="true">
+                                                    <TableHead TableHeadType="TableHeadType.Dark">
+                                                        <th>Distinctions</th>
+                                                        <th style="width: 75px;"></th>
+                                                    </TableHead>
+                                                    <tbody>
+                                                        @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Distinction")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@a.Name</td>
+                                                                <td>
+                                                                    <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </BlazorTable>
+                                            </BlazorCol>
+                                            <BlazorCol>
+                                                <BlazorTable IsSmall="true">
+                                                    <TableHead TableHeadType="TableHeadType.Dark">
+                                                        <th>Adversities</th>
+                                                        <th style="width: 75px;"></th>
+                                                    </TableHead>
+                                                    <tbody>
+                                                        @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Adversity")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@a.Name</td>
+                                                                <td>
+                                                                    <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </BlazorTable>
+                                            </BlazorCol>
+                                        </Row>
+                                        <Row>
+                                            <BlazorCol>
+                                                <BlazorTable IsSmall="true">
+                                                    <TableHead TableHeadType="TableHeadType.Dark">
+                                                        <th>Passions</th>
+                                                        <th style="width: 75px;"></th>
+                                                    </TableHead>
+                                                    <tbody>
+                                                        @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Passion")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@a.Name</td>
+                                                                <td>
+                                                                    <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </BlazorTable>
+                                            </BlazorCol>
+                                            <BlazorCol>
+                                                <BlazorTable IsSmall="true">
+                                                    <TableHead TableHeadType="TableHeadType.Dark">
+                                                        <th>Anxieties</th>
+                                                        <th style="width: 75px;"></th>
+                                                    </TableHead>
+                                                    <tbody>
+                                                        @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Anxiety")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@a.Name</td>
+                                                                <td>
+                                                                    <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </BlazorTable>
+                                            </BlazorCol>
+                                        </Row>
+                                    </Container>
+                                    <h4>Techniques</h4>
+                                    <Container>
+                                        <Row>
+                                            <BlazorCol>
+                                                @foreach (var tt in _ctx.TechniqueTypes.OrderBy(x => x.Name).ToList())
+                                                {
+                                                    @if (pc.Techniques.Select(x => x.Technique).Any(x => x.Type.ID == tt.ID))
+                                                    {
+                                                        <BlazorTable IsSmall="true">
+                                                            <TableHead TableHeadType="TableHeadType.Dark">
+                                                                <th>@tt.Name</th>
+                                                                <th style="width: 75px;"></th>
+                                                            </TableHead>
+                                                            <tbody>
+                                                                @foreach (var t in pc.Techniques.Where(x => x.Technique.Type.ID == tt.ID).Select(x => x.Technique).OrderBy(x => x.Name).ToList())
+                                                                {
+                                                                    <tr>
+                                                                        <td>@t.Name</td>
+                                                                        <td>
+                                                                            <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{t.ID}"))">View</BlazorButton>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </BlazorTable>
+                                                    }
+                                                }
+                                            </BlazorCol>
+                                        </Row>
+                                    </Container>
+                                </BlazorCol>
+                                <BlazorCol>
+                                    <h4>Skills</h4>
+                                    @foreach (var g in _ctx.SkillGroups.OrderBy(x => x.Name))
+                                    {
+                                        <BlazorTable IsSmall="true">
+                                            <TableHead TableHeadType="TableHeadType.Dark">
+                                                <tr>
+                                                    <th>@g.Name</th>
+                                                    <th>Ranks</th>
+                                                </tr>
+                                            </TableHead>
+                                            <tbody>
+                                                @foreach (var s in _ctx.Skills.Where(x => x.Group.ID == g.ID).OrderBy(x => x.Name).ToList())
+                                                {
+                                                    <tr>
+                                                        <td>@s.Name</td>
+                                                        <td style="width: 50px; text-align: center;">
+                                                            @if (pc.Skills.SingleOrDefault(x => x.Skill.ID == s.ID) is PCSkill pcs && pcs != null)
+                                                            {
+                                                                @(pcs.Value)
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </BlazorTable>
+                                    }
+                                </BlazorCol>
+                            </Row>
+                        </Container>
+                    </TabPane>
+                    <TabPane IsOpen="@(OpenTab.Equals("gear"))">
+
+                    </TabPane>
+                </TabContent>
+            </BlazorCol>
+        </Row>
+    </Container>
+        }
 }
 
 @code {
+    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
     [Parameter] private int id { get; set; }
     private PC pc;
+    private Dictionary<string, string> _rings;
+    private bool _privateRights = false;
+    private string OpenTab = "stats";
+    private Dictionary<string, bool> _openJournals;
 
     protected override void OnInit()
     {
         pc = _ctx.PCs.SingleOrDefault(x => x.ID == id);
+        _rings = pc.Rings.ToDictionary(x => x.Ring.Name, x => $"{x.Value}");
+
+        var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+        var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == pc.Server.ID) != null;
+        _privateRights = pc.Player.ID == UserID || isAdmin || isGM;
+
+        _openJournals = new Dictionary<string, bool>() {
+            { "Honour", false},
+            { "Glory", false},
+            { "Status", false},
+            { "XP", false}
+        };
     }
 }

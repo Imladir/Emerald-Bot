@@ -45,8 +45,8 @@ else
 <BlazorTable IsHovarable="true">
     <TableHead TableHeadType="TableHeadType.Dark">
         <tr>
-            <td>Message</td>
-            <td style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/send"))">New Message</BlazorButton></td>
+            <th>Message</th>
+            <th style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"messages/send"))">New Message</BlazorButton></th>
         </tr>
     </TableHead>
     <tbody>

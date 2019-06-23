@@ -1,0 +1,73 @@
+﻿@page  "/advantages/{id:int}"
+@using Microsoft.AspNetCore.Html
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+@inject IUriHelper _uri
+
+
+<RedirectToLoginIfNotAuthorized />
+
+@if (_advantage == null)
+{
+<p><em>The requested technique wasn't found.</em></p>
+}
+else
+{
+<Container IsFluid="true">
+    <Row><BlazorCol><h1>@_advantage.Name</h1></BlazorCol></Row>
+    <Row><BlazorCol><h2><Image src="@(GetRingImage())" alt="@_advantage.Ring.Name" style="width: 40px; height: auto;" /> @_advantage.AdvantageClass.Name</h2></BlazorCol></Row>
+    <Row>
+        <BlazorCol><p><span style="font-weight: bold">Discord Alias</span>: @_advantage.Alias</p></BlazorCol>
+        @if (_advantage.Source != null) {
+        <BlazorCol><p><span style="font-weight: bold">Source</span>: @(Source())</p></BlazorCol>
+        }
+    </Row>
+    <Row><BlazorCol><h4>Types</h4></BlazorCol></Row>
+    <Row><BlazorCol><p>@(string.Join(", ", _advantage.AdvantageTypes.Select(x => x.AdvantageType.Name).OrderBy(x => x)))</p></BlazorCol></Row>
+    <Row><BlazorCol><h4>Permanent Effect</h4></BlazorCol></Row>
+    <Row><BlazorCol><p>@((MarkupString)_advantage.PermanentEffect.ReplaceSymbols())</p></BlazorCol></Row>
+    <Row><BlazorCol><h4>Roll Effect</h4></BlazorCol></Row>
+    <Row><BlazorCol><p>@((MarkupString)_advantage.RollEffect.ReplaceSymbols())</p></BlazorCol></Row>
+    <Row>
+        <BlazorCol>
+            <BlazorButton IsOutline="true" Color="Color.Secondary"Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/"))">Back</BlazorButton>
+            @if (_isGM || _isAdmin)
+            {
+                <BlazorButton IsOutline="true" Color="Color.Success" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{_advantage.ID}/edit"))">Edit</BlazorButton>
+                @if (_advantage.Server.DiscordID != 0 || _isAdmin)
+{
+                    <BlazorButton IsOutline="true" Color="Color.Danger" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{_advantage.ID}/delete"))">Delete</BlazorButton>
+                }
+            }
+        </BlazorCol>
+    </Row>
+</Container>
+}
+
+@code {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private int id { get; set; }
+private Advantage _advantage;
+private bool _isGM;
+private bool _isAdmin;
+
+protected override void OnInit()
+{
+    _advantage = _ctx.Advantages.SingleOrDefault(x => x.ID == id);
+    _isGM = _ctx.HasPrivilege(id, UserID);
+    _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+}
+
+private string GetRingImage()
+{
+    return $"img/{_advantage.Ring.Name}.png";
+}
+
+private string Source() {
+    string res = _advantage.Source.Book;
+    if (_advantage.Source.Page > 0) res += $", p{_advantage.Source.Page}";
+    return res;
+}
+}

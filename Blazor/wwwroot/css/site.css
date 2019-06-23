@@ -212,3 +212,8 @@ app {
             box-shadow: 0 1px 8px rgba(0,0,0,0.5);
         }
 
+.table .thead-dark th {
+    color: #fff;
+    background-color: #006900;
+    border-color: #454d55
+}

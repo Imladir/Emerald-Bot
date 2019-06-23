@@ -1,0 +1,69 @@
+﻿@inherits AddOrEditBase
+
+@if (IsEdit)
+{
+    <h1>Advantage Edition</h1>
+} else
+{
+<h1>Advantage creation</h1>
+}
+<BlazorForm>
+    <Container IsFluid="true">
+        <Row>
+            <BlazorCol><ServerSelector IncludeAdmin="true" @bind-ServerID="@ServerID" /></BlazorCol>
+            <BlazorCol><AdvantageClassSelector @bind-Class="@Advantage.AdvantageClass" /></BlazorCol>
+            <BlazorCol><RingSelector AllowAny="true" @bind-Ring="@Advantage.Ring" /></BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol><AdvantageTypeSelector @bind-Types="@Advantage.AdvantageTypes" /></BlazorCol>
+            <BlazorCol><SourceInput @bind-Source="@Advantage.Source" /></BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="AdvantageName">Name</BlazorLabel>
+                <BlazorInput Id="AdvantageName" InputType="InputType.Text" @bind-Value="@Advantage.Name" PlaceHolder="Name" />
+            </BlazorCol>
+            <BlazorCol>
+                <BlazorLabel For="AdvantageAlias">Alias</BlazorLabel>
+                <BlazorInput Id="AdvantageAlias" InputType="InputType.Text" @bind-Value="@Advantage.Alias" PlaceHolder="Alias" />
+            </BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="AdvantagePermanentEffectText">Activation</BlazorLabel>
+                <BlazorInput Id="AdvantagePermanentEffectText" InputType="InputType.TextArea" @bind-Value="@Advantage.PermanentEffect" Rows="3" @onkeyup="@UpdatePermanentEffectCharacterCount" />
+                @if (PermanentEffectLength < 1024)
+                {
+                    <Alert Color="Color.Success">
+                        @PermanentEffectLength Characters
+                    </Alert>
+                }
+                else
+                {
+                    <Alert Color="Color.Danger">
+                        @PermanentEffectLength Characters
+                    </Alert>
+                }
+            </BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="RollEffectText">Effect</BlazorLabel>
+                <BlazorInput Id="RollEffectText" InputType="InputType.TextArea" @bind-Value="@Advantage.RollEffect" Rows="5" @onkeyup="@UpdateRollEffectCharacterCount" />
+                @if (RollEffectLength < 1024)
+                {
+                    <Alert Color="Color.Success">
+                        @RollEffectLength Characters
+                    </Alert>
+                }
+                else
+                {
+                    <Alert Color="Color.Danger">
+                        @RollEffectLength Characters
+                    </Alert>
+                }
+                <BlazorButton Color="Color.Success" @onclick="@Save">Save Advantage</BlazorButton>
+            </BlazorCol>
+        </Row>
+    </Container>
+</BlazorForm>

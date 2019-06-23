@@ -6,38 +6,38 @@
 <FormGroup>
     <BlazorLabel For="ClassSelector">Advantage Class</BlazorLabel>
     <Dropdown Id="ClassSelector" IsOpen="@IsOpen">
-        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">@(_classes.Count > 0 ? _classes.Find(x => x.ID == ClassID).Name : "Loading...")</DropdownToggle>
+        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">@(_classes.Count > 0 ? _classes.Find(x => x.ID == Class.ID).Name : "Loading...")</DropdownToggle>
         <DropdownMenu IsOpen="@IsOpen">
             @foreach (var c in _classes)
             {
-                <DropdownItem @key="@c.ID" @onclick="@((e) => ClassSelected(c.ID))">@c.Name</DropdownItem>
+                <DropdownItem @key="@c.ID" @onclick="@((e) => ClassSelected(c))">@c.Name</DropdownItem>
             }
         </DropdownMenu>
     </Dropdown>
 </FormGroup>
 
 @code  {
-    [Parameter] private EventCallback<int> ClassIDChanged { get; set; }
-    [Parameter] private int ClassID { get; set; }
+    [Parameter] private EventCallback<AdvantageClass> ClassChanged { get; set; }
+    [Parameter] private AdvantageClass Class { get; set; }
     private bool IsOpen = false;
     private List<AdvantageClass> _classes = new List<AdvantageClass>();
 
     protected override async Task OnInitAsync()
     {
         _classes = _ctx.AdvantageClasses.OrderBy(x => x.Name).ToList();
-        if (ClassID <= 0)
+        if (Class == null)
         {
-            ClassID = _classes[0].ID;
-            await ClassIDChanged.InvokeAsync(ClassID);
+            Class = _classes[0];
+            await ClassChanged.InvokeAsync(Class);
         }
     }
 
-    protected async Task ClassSelected(int newSelection)
+    protected async Task ClassSelected(AdvantageClass c)
     {
-        if (newSelection != ClassID)
+        if (Class != c)
         {
-            ClassID = newSelection;
-            await ClassIDChanged.InvokeAsync(ClassID);
+            Class = c;
+            await ClassChanged.InvokeAsync(Class);
         }
         IsOpen = false;
     }

@@ -286,6 +286,15 @@ namespace EmeraldBot.Model
                     }
                 }
 
+                var userChanges = ChangeTracker.Entries<User>().Where(x => x.State != EntityState.Unchanged).ToList();
+                if (userChanges != null)
+                {
+                    for (int i = 0; i < userChanges.Count; i++)
+                    {
+                        userChanges[i].Entity.LastUpdate = DateTime.UtcNow;
+                    }
+                }
+
                 var res = base.SaveChanges();
 
                 return res;

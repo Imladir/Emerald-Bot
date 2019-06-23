@@ -38,7 +38,7 @@ namespace EmeraldBot.Blazor
             s = WebUtility.HtmlEncode(s);
             s = Regex.Replace(s, boldPattern, BoldFormatter).Replace("**", "");
             s = s.Replace("{r}", "<img src=\"img/black.gif\" style=\"width: 20px\" />");
-            s = s.Replace("{r-}", "<img src=\"img/black.png\" style=\"width: 20px\" />");
+            s = s.Replace("{r-}", "<img src=\"img/black.png\" alt=\"Ring die\" style=\"width: 20px\" />");
             s = s.Replace("{ret}", "<img src=\"img/blacket.png\" style=\"width: 20px\" />");
             s = s.Replace("{ro}", "<img src=\"img/blacko.png\" style=\"width: 20px\" />");
             s = s.Replace("{rot}", "<img src=\"img/blackot.png\" style=\"width: 20px\" />");
@@ -46,7 +46,7 @@ namespace EmeraldBot.Blazor
             s = s.Replace("{rst}", "<img src=\"img/blackst.png\" style=\"width: 20px\" />");
 
             s = s.Replace("{s}", "<img src=\"img/white.gif\" style=\"width: 20px\" />");
-            s = s.Replace("{s-}", "<img src=\"img/white.png\" style=\"width: 20px\" />");
+            s = s.Replace("{s-}", "<img src=\"img/white.png\" alt=\"Skill die\" style=\"width: 20px\" />");
             s = s.Replace("{se}", "<img src=\"img/white.png\" style=\"width: 20px\" />");
             s = s.Replace("{set}", "<img src=\"img/white.png\" style=\"width: 20px\" />");
             s = s.Replace("{so}", "<img src=\"img/white.png\" style=\"width: 20px\" />");
@@ -54,10 +54,10 @@ namespace EmeraldBot.Blazor
             s = s.Replace("{sso}", "<img src=\"img/white.png\" style=\"width: 20px\" />");
             s = s.Replace("{sst}", "<img src=\"img/white.png\" style=\"width: 20px\" />");
 
-            s = s.Replace("{success}", "<img src=\"img/success.png\" style=\"width: 20px\" />");
-            s = s.Replace("{opportunity}", "<img src=\"img/opportunity.png\" style=\"width: 20px\" />");
-            s = s.Replace("{strife}", "<img src=\"img/strife.png\" style=\"width: 20px\" />");
-            s = s.Replace("{explosive}", "<img src=\"img/explosive.png\" style=\"width: 20px\" />");
+            s = s.Replace("{success}", "<img src=\"img/success.png\" alt=\"Success\" style=\"width: 20px\" />");
+            s = s.Replace("{opportunity}", "<img src=\"img/opportunity.png\" alt=\"Opportunity\" style=\"width: 20px\" />");
+            s = s.Replace("{strife}", "<img src=\"img/strife.png\" alt=\"Strife\" style=\"width: 20px\" />");
+            s = s.Replace("{explosive}", "<img src=\"img/explosive.png\" alt=\"Explosive Success\" style=\"width: 20px\" />");
 
             s = s.Replace("\n", "<br />\n");
             return s;

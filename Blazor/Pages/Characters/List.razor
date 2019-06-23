@@ -1,41 +1,173 @@
-﻿@page "/servers/{id}/characters/{filter}"
+﻿@page "/characters"
 @using  EmeraldBot.Model
 @using  EmeraldBot.Model.Characters
+@using  EmeraldBot.Model.Servers
 @inject EmeraldBotContext _ctx
+@inject IUriHelper _uri
 
-<table>
-    <thead>
-        <tr>
-            <td>Name</td>
-            <td>Clan</td>
-            <td>Family</td>
-            <td>School</td>
-            <td>Player</td>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var pc in PCs)
-        {
-            <tr>
-                <td><NavLink href="@($"characters/{pc.ID}")">@pc.Name</NavLink></td>
-                <td>@pc.Clan.Name</td>
-                <td>@pc.Family</td>
-                <td>@pc.School</td>
-                <td><a href="#">@pc.Player.UserName</a></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<h1>Characters</h1>
+<ServerSelector ServerIDChanged="@ServerSelected" />
+
+@if (_pcs.Count == 0)
+{
+    <p>Page is loading...</p>
+}
+else
+{
+    <BlazorNav IsPills="true">
+        <BlazorNavLink @onclick="@((e) => _openType = "default")" IsActive="@(_openType == "default")">Main Characters</BlazorNavLink>
+        <BlazorNavLink @onclick="@((e) => _openType = "all")" IsActive="@(_openType == "all")">All Chracters</BlazorNavLink>
+        <BlazorNavLink @onclick="@((e) => _openType = "npc")" IsActive="@(_openType == "npc")">NPCs</BlazorNavLink>
+    </BlazorNav>
+    <TabContent>
+        <TabPane IsOpen="@(_openType == "default")">
+            <BlazorTable IsHovarable="false" IsStriped="true">
+                <TableHead TableHeadType="TableHeadType.Dark">
+                    <tr>
+                        <th></th>
+                        <th style="vertical-align: middle;">Name</th>
+                        <th style="text-align: center; vertical-align: middle;">Clan</th>
+                        <th style="text-align: center; vertical-align: middle;">Family</th>
+                        <th style="text-align: center; vertical-align: middle;">School</th>
+                        <th style="text-align: center; vertical-align: middle;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"characters/add"))">New Character</BlazorButton></th>
+                    </tr>
+                </TableHead>
+                <tbody>
+                    @foreach (var pc in _defaultPcs)
+                    {
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle;"><Image src="@pc.Icon" IsRounded="true" style="width: 64px; height: auto;" /></td>
+                            <td style="vertical-align: middle;">@pc.Name</td>
+                            @if (!pc.Clan.Name.Equals(""))
+                            {
+                                <td style="text-align: center; vertical-align: middle;"><Image src="@pc.Clan.Icon" IsRounded="true" alt="@pc.Clan.Name" style="width: 64px; height: auto;" /></td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center; vertical-align: middle;">Unknown - N/A</td>
+                            }
+                            <td style="text-align: center; vertical-align: middle;">@pc.Family</td>
+                            <td style="text-align: center; vertical-align: middle;">@pc.School</td>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"characters/{pc.ID}"))">View</BlazorButton>
+                                @if (pc.Player.ID == UserID || _isAdmin || _isGM)
+                                {
+                                    <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"characters/{pc.ID}/edit"))">Edit</BlazorButton>
+                                    @if (_isAdmin || _isGM)
+                                    {
+                                        <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"characters/{pc.ID}/delete"))">Delete</BlazorButton>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </BlazorTable>
+        </TabPane>
+
+        <TabPane IsOpen="@(_openType == "all")">
+            <BlazorTable IsHovarable="false" IsStriped="true">
+                <TableHead TableHeadType="TableHeadType.Dark">
+                    <tr>
+                        <th></th>
+                        <th style="vertical-align: middle;">Name</th>
+                        <th style="text-align: center; vertical-align: middle;">Clan</th>
+                        <th style="text-align: center; vertical-align: middle;">Family</th>
+                        <th style="text-align: center; vertical-align: middle;">School</th>
+                        <th style="text-align: center; vertical-align: middle;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"characters/add"))">New Character</BlazorButton></th>
+                    </tr>
+                </TableHead>
+                <tbody>
+                    @foreach (var pc in _pcs)
+                    {
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle;"><Image src="@pc.Icon" IsRounded="true" style="width: 64px; height: auto;" /></td>
+                            <td style="vertical-align: middle;">@pc.Name</td>
+                            @if (!pc.Clan.Name.Equals(""))
+                            {
+                                <td style="text-align: center; vertical-align: middle;"><Image src="@pc.Clan.Icon" IsRounded="true" alt="@pc.Clan.Name" style="width: 64px; height: auto;" /></td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center; vertical-align: middle;">Unknown - N/A</td>
+                            }
+                            <td style="text-align: center; vertical-align: middle;">@pc.Family</td>
+                            <td style="text-align: center; vertical-align: middle;">@pc.School</td>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"characters/{pc.ID}"))">View</BlazorButton>
+                                @if (pc.Player.ID == UserID || _isAdmin || _isGM)
+                                {
+                                    <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"characters/{pc.ID}/edit"))">Edit</BlazorButton>
+                                    @if (_isAdmin || _isGM)
+                                    {
+                                        <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"characters/{pc.ID}/delete"))">Delete</BlazorButton>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </BlazorTable>
+        </TabPane>
+
+        <TabPane IsOpen="@(_openType == "npc")">
+            <BlazorTable IsHovarable="false" IsStriped="true">
+                <TableHead TableHeadType="TableHeadType.Dark">
+                    <tr>
+                        <th style="vertical-align: middle;">Name</th>
+                        <th style="text-align: center; vertical-align: middle;">Type</th>
+                        <th style="text-align: center; vertical-align: middle;">Rank</th>
+                        <th style="text-align: center; vertical-align: middle;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"characters/add?type=npc"))">New NPC</BlazorButton></th>
+                    </tr>
+                </TableHead>
+                <tbody>
+                    @foreach (var npc in _npcs)
+                    {
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle;"><Image src="@npc.Icon" IsRounded="true" style="width: 64px; height: auto;" />@npc.Name</td>
+                            <td style="text-align: center; vertical-align: middle;">@npc.NPCType.Name</td>
+                            <td style="text-align: center; vertical-align: middle;"><Image src="img/military.png" IsRounded="true" style="width: 64px; height: auto;" /> @npc.MartialRank <Image src="img/social.png" IsRounded="true" style="width: 64px; height: auto;" /> @npc.SocialRank</td>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"characters/{npc.ID}"))">View</BlazorButton>
+                                @if (_isAdmin || _isGM)
+                                {
+                                    <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"characters/{npc.ID}/edit"))">Edit</BlazorButton>
+                                    <BlazorButton ButtonType="ButtonType.Button" IsOutline="true" Size="Size.Small" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"characters/{npc.ID}/delete"))">Delete</BlazorButton>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </BlazorTable>
+        </TabPane>
+    </TabContent>
+}
 
 @code {
-[Parameter] public int ServerID { get; set; }
-[Parameter] public string Filter { get; set; }
-List<PC> PCs = new List<PC>();
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+private int _serverID { get; set; }
+List<PC> _pcs = new List<PC>();
+List<PC> _defaultPcs = new List<PC>();
+List<NPC> _npcs = new List<NPC>();
+private bool _isGM;
+private bool _isAdmin;
+private string _openType;
 
 protected override void OnInit()
 {
-    PCs = _ctx.PCs.Where(x => x.Server.ID == ServerID).OrderBy(x => x.Name).ToList();
-    if (Filter.Equals("default", StringComparison.OrdinalIgnoreCase))
-        PCs = PCs.Where(x => x.Player.DefaultCharacters.Any(y => y.Character.ID == x.ID)).ToList();
+    _openType = "default";
+    _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+}
+
+public void ServerSelected(int id)
+{
+    _serverID = id;
+    _pcs = _ctx.PCs.Where(x => x.Server.ID == _serverID && !x.Clan.Name.Equals("GM")).OrderBy(x => x.Name).ToList();
+    _defaultPcs = (from pc in _ctx.PCs
+                   join df in _ctx.Set<DefaultCharacter>() on pc.ID equals df.Character.ID
+                   where df.Server.ID == _serverID && !pc.Clan.Name.Equals("GM")
+                   select pc).OrderBy(x => x.Name).ToList();
+    _npcs = _ctx.NPCs.Where(x => x.Server.ID == _serverID || x.Server.DiscordID == 0).OrderBy(x => x.Name).ToList();
+    _isGM = _ctx.HasPrivilege(_serverID, UserID);
 }
 }

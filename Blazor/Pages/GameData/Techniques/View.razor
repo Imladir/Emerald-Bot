@@ -17,7 +17,7 @@ else
 {
 <Container IsFluid="true">
     <Row><BlazorCol><h1>@_technique.Name</h1></BlazorCol></Row>
-    <Row><BlazorCol><h2><Image src="@(GetRingImage())" style="width: 40px; height: auto;" /> @_technique.Type.Name</h2></BlazorCol></Row>
+    <Row><BlazorCol><h2><Image src="@(GetRingImage())" alt="@_technique.Ring.Name" style="width: 40px; height: auto;" /> @_technique.Type.Name</h2></BlazorCol></Row>
     <Row>
         <BlazorCol><p><span style="font-weight: bold">Discord Alias</span>: @_technique.Alias</p></BlazorCol>
         <BlazorCol><p><span style="font-weight: bold">Rank</span>: @_technique.Rank</p></BlazorCol>
@@ -76,7 +76,7 @@ else
 
     private string Source() {
         string res = _technique.Source.Book;
-        if (_technique.Source.Page != -1) res += $", p{_technique.Source.Page}";
+        if (_technique.Source.Page > 0) res += $", p{_technique.Source.Page}";
         return res;
     }
 }

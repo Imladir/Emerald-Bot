@@ -18,7 +18,7 @@
         <DropdownMenu IsOpen="@IsOpen">
             @foreach (var r in _rings)
             {
-                <DropdownItem @key="@r.ID" @onclick="@((e) => RingSelected(r))"><Image src="@(r.GetImage())" style="width: 24px; height: auto;" /> @r.Name</DropdownItem>
+                <DropdownItem @key="@r.ID" @onclick="@((e) => RingSelected(r))"><Image src="@(r.GetImage())" alt="@r.Name" style="width: 24px; height: auto;" /> @r.Name</DropdownItem>
             }
         </DropdownMenu>
     </Dropdown>
