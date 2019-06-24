@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace EmeraldBot.Model.Game
 {
-    [Table("Advantages")]
     public class Advantage : NameAlias
     {
         [NotMapped]
@@ -22,13 +21,13 @@ namespace EmeraldBot.Model.Game
         public virtual Ring Ring { get; set; }
 
         [MaxLength(1024, ErrorMessage = "Permanent effect is too long")]
-        public string PermanentEffect { get; set; }
+        public string PermanentEffect { get; set; } = "";
 
         [MaxLength(1024, ErrorMessage = "Roll effect is too long")]
-        public string RollEffect { get; set; }
+        public string RollEffect { get; set; } = "";
         public virtual Source Source { get; set; }
 
-        public virtual ICollection<AdvantageTypeAdvantages> AdvantageTypes { get; set; }
+        public virtual ICollection<AdvantageTypeAdvantages> AdvantageTypes { get; set; } = new List<AdvantageTypeAdvantages>();
         public virtual ICollection<PCAdvantage> Characters { get; set; }
 
         public static Advantage Get(EmeraldBotContext ctx, string alias)

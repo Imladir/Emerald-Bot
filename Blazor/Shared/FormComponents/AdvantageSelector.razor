@@ -1,0 +1,59 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBotContext _ctx
+
+<BlazorTable>
+    <TableHead TableHeadType="TableHeadType.Dark">
+        <tr>
+            @foreach (var c in _ctx.AdvantageClasses.OrderBy(x => x.Name).ToList())
+            {
+            <th style="text-align: center;">@c.Name</th>
+}
+        </tr>
+    </TableHead>
+    <tbody>
+        <tr>
+            @foreach (var c in _ctx.AdvantageClasses.OrderBy(x => x.Name).ToList())
+{
+            <td style="flex-direction: column; flex-wrap: wrap;">
+                @foreach (var a in _advantages.Where(x => x.AdvantageClass.ID == c.ID).OrderBy(x => x.Name))
+{
+                <div><input type="checkbox" id="@a.Name" value="@a.Alias" @onchange="@(() => ChangeAdvantage(a))" checked="@(Advantages.Select(x => x.Advantage).Contains(a))" /> <BlazorLabel For="@a.Name">@a.Name</BlazorLabel></div>
+}
+            </td>
+}
+        </tr>
+    </tbody>
+</BlazorTable>
+
+@code {
+[Parameter] private EventCallback<ICollection<PCAdvantage>> AdvantagesChanged { get; set; }
+[Parameter] private ICollection<PCAdvantage> Advantages { get; set; }
+[Parameter] private Server Server { get; set; }
+[Parameter] private PC PC { get; set; }
+private List<Advantage> _advantages = new List<Advantage>();
+private int _lastServer = -1;
+private string openedTab = "Distinction";
+
+protected override void OnParametersSet()
+{
+    if (Server == null || Server.ID == _lastServer) return;
+    _lastServer = Server.ID;
+
+    _advantages = _ctx.Advantages.Where(x => x.Server.ID == Server.ID || x.Server.DiscordID == 0).ToList();
+    foreach (var pca in Advantages)
+    {
+        if (!_advantages.Contains(pca.Advantage)) Advantages.Remove(pca);
+    }
+}
+
+private void ChangeAdvantage(Advantage a)
+{
+    var pca = Advantages.SingleOrDefault(x => x.Advantage.ID == a.ID);
+    if (pca == null) Advantages.Add(new PCAdvantage() { Character = PC, Advantage = a });
+    else Advantages.Remove(pca);
+}
+}

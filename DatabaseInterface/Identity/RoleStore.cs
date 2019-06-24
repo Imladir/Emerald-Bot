@@ -11,7 +11,6 @@ namespace EmeraldBot.Model.Identity
 {
     public class RoleStore : IRoleStore<Role>, IRoleClaimStore<Role>
     {
-        private bool _disposed;
         public Task AddClaimAsync(Role role, Claim claim, CancellationToken cancellationToken = default)
         {
             using var ctx = new EmeraldBotContext();
@@ -45,7 +44,6 @@ namespace EmeraldBot.Model.Identity
 
         public void Dispose()
         {
-            _disposed = true;
         }
 
         public Task<Role> FindByIdAsync(int roleId, CancellationToken cancellationToken)

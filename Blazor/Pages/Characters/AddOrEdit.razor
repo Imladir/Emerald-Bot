@@ -1,0 +1,127 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+
+@inherits AddOrEditBase
+
+@if (IsEdit)
+{
+    <h1>Character edition</h1>
+}
+else
+{
+    <h1>Character Creation</h1>
+}
+
+<BlazorForm>
+    <TabContent>
+        <BlazorNav IsPills="true">
+            <BlazorNavLink @onclick="@(() => OpenTab = "profile")" IsActive="@(OpenTab.Equals("profile"))">Public Profile</BlazorNavLink>
+            <BlazorNavLink @onclick="@(() => OpenTab = "stats")" IsActive="@(OpenTab.Equals("stats"))">Characteristics</BlazorNavLink>
+            <BlazorNavLink @onclick="@(() => OpenTab = "advantages")" IsActive="@(OpenTab.Equals("advantages"))">Advantages</BlazorNavLink>
+            <BlazorNavLink @onclick="@(() => OpenTab = "techniques")" IsActive="@(OpenTab.Equals("techniques"))">Techniques</BlazorNavLink>
+            <BlazorNavLink @onclick="@(() => OpenTab = "journals")" IsActive="@(OpenTab.Equals("journals"))">Journals</BlazorNavLink>
+            <BlazorNavLink @onclick="@(() => OpenTab = "gear")" IsActive="@(OpenTab.Equals("gear"))">Gear</BlazorNavLink>
+        </BlazorNav>
+        <TabPane IsOpen="@(OpenTab.Equals("profile"))">
+            <Container IsFluid="true">
+                <Row>
+                    <BlazorCol><ServerSelector @bind-Server="@PC.Server" IncludeAdmin="true" /></BlazorCol>
+                    <BlazorCol><Image IsRounded="true" Alignment="Alignment.Center" src="@PC.Icon" style="width: 300px; height: auto;" /></BlazorCol>
+                </Row>
+                <Row>
+                    <BlazorCol>
+                        <BlazorLabel For="PCName">Character Name</BlazorLabel>
+                        <BlazorInput Id="PCName" InputType="InputType.Text" @bind-Value="@PC.Name" PlaceHolder="Character Name" />
+                    </BlazorCol>
+                    <BlazorCol>
+                        <BlazorLabel For="PCAlias">Character Alias</BlazorLabel>
+                        <BlazorInput Id="PCAlias" InputType="InputType.Text" @bind-Value="@PC.Alias" PlaceHolder="Shortcut used on Discord" />
+                    </BlazorCol>
+                </Row>
+                <Row>
+                    <BlazorCol>
+                        <BlazorLabel For="PCAge">Age</BlazorLabel>
+                        <BlazorInput Id="PCAge" InputType="InputType.Number" min="0" @bind-Value="@Age" />
+                    </BlazorCol>
+                    <BlazorCol>
+                        <BlazorLabel For="PCIcon">Character Illustration</BlazorLabel>
+                        <BlazorInput Id="PCIcon" InputType="InputType.Text" @bind-Value="@PC.Icon" PlaceHolder="Link to an image" />
+                    </BlazorCol>
+                </Row>
+                <Row>
+                    <BlazorCol><ClanSelector @bind-Clan="PC.Clan" /></BlazorCol>
+                    <BlazorCol>
+                        <BlazorLabel For="PCName">School</BlazorLabel>
+                        <BlazorInput Id="" InputType="InputType.Text" @bind-Value="@PC.School" PlaceHolder="School" />
+                    </BlazorCol>
+                </Row>
+                <Row>
+                    <BlazorCol>
+                        <BlazorLabel For="PCFamily">Family</BlazorLabel>
+                        <BlazorInput Id="PCFamily" InputType="InputType.Text" @bind-Value="@PC.Family" PlaceHolder="Family" />
+                    </BlazorCol>
+                    <BlazorCol>
+                        <BlazorLabel For="PCRank">Rank</BlazorLabel>
+                        <BlazorInput Id="PCRank" InputType="InputType.Number" min="1" max="6" @bind-Value="@Rank" />
+                    </BlazorCol>
+                </Row>
+                <Row>
+                    <BlazorCol>
+                        <BlazorLabel For="PCNinjo">Ninjo</BlazorLabel>
+                        <BlazorInput Id="PCNinjo" InputType="InputType.Text" @bind-Value="@PC.Ninjo" PlaceHolder="Ninjo" />
+                    </BlazorCol>
+                    <BlazorCol>
+                        <BlazorLabel For="PCGiri">Giri</BlazorLabel>
+                        <BlazorInput Id="PCGiris" InputType="InputType.Text" @bind-Value="@PC.Giri" PlaceHolder="Giri" />
+                    </BlazorCol>
+                </Row>
+                <Row>
+                    <BlazorLabel For="DescriptionText">Description</BlazorLabel>
+                    <BlazorInput Id="DescriptionText" InputType="InputType.TextArea" @bind-Value="@PC.Description" Rows="5" @onkeyup="@UpdateDescriptiontCharacterCount" />
+                    @if (DescriptiontLength < 1024)
+                    {
+                        <Alert Color="Color.Success">
+                            @DescriptiontLength Characters
+                        </Alert>
+                    }
+                    else
+                    {
+                        <Alert Color="Color.Danger">
+                            @DescriptiontLength Characters
+                        </Alert>
+                    }
+                </Row>
+            </Container>
+        </TabPane>
+        <TabPane IsOpen="@(OpenTab.Equals("stats"))">
+            <Container>
+                <Row>
+                    <BlazorCol>
+                        <h3>Rings</h3>
+                        <RingInput @bind-Rings="@PC.Rings" />
+                    </BlazorCol>
+                    <BlazorCol><SkillsInput Server="@PC.Server" PC="@PC" Skills="@PC.Skills" /></BlazorCol>
+                </Row>
+            </Container>
+        </TabPane>
+        <TabPane IsOpen="@(OpenTab.Equals("advantages"))">
+            <AdvantageSelector Server="@PC.Server" PC="@PC" @bind-Advantages="@PC.Advantages" />
+        </TabPane>
+        <TabPane IsOpen="@(OpenTab.Equals("techniques"))">
+            <TechniqueSelector Server="@PC.Server" PC="@PC" @bind-Techniques="@PC.Techniques" />
+        </TabPane>
+        <TabPane IsOpen="@(OpenTab.Equals("journals"))">
+            <JournalsInput @bind-JournalEntries="@PC.JournalEntries" />
+        </TabPane>
+        <TabPane IsOpen="@(OpenTab.Equals("gear"))">
+
+        </TabPane>
+    </TabContent>
+    <BlazorButton Color="Color.Success" @onclick="@Save">Save Character</BlazorButton>
+</BlazorForm>
+
+@code {
+private string OpenTab = "profile";
+private string Rank { get { return $"{PC.Rank}"; } set { PC.Rank = int.Parse(value); } }
+private string Age { get { return $"{PC.Age}"; } set { PC.Age = int.Parse(value); } }
+}

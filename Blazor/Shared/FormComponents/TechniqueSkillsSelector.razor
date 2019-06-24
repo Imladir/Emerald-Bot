@@ -1,5 +1,6 @@
 ﻿@using EmeraldBot.Model
 @using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Servers
 @using System.Linq
 
 @inject EmeraldBotContext _ctx
@@ -24,45 +25,49 @@
 </Collapse>
 
 @code {
-    [Parameter] private EventCallback<ICollection<TechniqueSkillGroup>> TechniqueSkillGroupsChanged { get; set; }
-    [Parameter] private ICollection<TechniqueSkillGroup> TechniqueSkillGroups { get; set; }
-    [Parameter] private EventCallback<ICollection<TechniqueSkill>> TechniqueSkillsChanged { get; set; }
-    [Parameter] private ICollection<TechniqueSkill> TechniqueSkills { get; set; }
-    private Dictionary<int, bool> GroupChecked = new Dictionary<int, bool>();
-    private Dictionary<int, bool> SkillChecked = new Dictionary<int, bool>();
-    private bool IsOpen = false;
-    private bool isInit = false;
+[Parameter] private EventCallback<ICollection<TechniqueSkillGroup>> TechniqueSkillGroupsChanged { get; set; }
+[Parameter] private ICollection<TechniqueSkillGroup> TechniqueSkillGroups { get; set; }
+[Parameter] private EventCallback<ICollection<TechniqueSkill>> TechniqueSkillsChanged { get; set; }
+[Parameter] private ICollection<TechniqueSkill> TechniqueSkills { get; set; }
+[Parameter] private Server Server { get; set; }
+private Dictionary<int, bool> GroupChecked = new Dictionary<int, bool>();
+private Dictionary<int, bool> SkillChecked = new Dictionary<int, bool>();
+private bool IsOpen = false;
 
-    protected override void OnParametersSet()
+protected override void OnParametersSet()
+{
+    if (Server != null)
     {
-        if (!isInit)
+        if (TechniqueSkillGroups != null)
         {
-            if (TechniqueSkillGroups != null)
-            {
-                GroupChecked = _ctx.SkillGroups.ToDictionary(x => x.ID, x => false);
-                foreach (var tsg in TechniqueSkillGroups) GroupChecked[tsg.SkillGroup.ID] = true;
-            }
-            if (TechniqueSkills != null)
-            {
-                SkillChecked = _ctx.Skills.ToDictionary(x => x.ID, x => false);
-                foreach (var ts in TechniqueSkills) SkillChecked[ts.Skill.ID] = true;
-            }
+            GroupChecked = _ctx.SkillGroups.ToDictionary(x => x.ID, x => false);
+            foreach (var tsg in TechniqueSkillGroups) GroupChecked[tsg.SkillGroup.ID] = true;
         }
-    }
-
-    private async Task UpdateGroup(SkillGroup group)
+        if (TechniqueSkills != null)
+        {
+            SkillChecked = _ctx.Skills.Where(x => x.Server.ID == Server.ID || x.Server.DiscordID == 0).ToDictionary(x => x.ID, x => false);
+            foreach (var ts in TechniqueSkills) SkillChecked[ts.Skill.ID] = true;
+        }
+    } else
     {
-        var tsg = TechniqueSkillGroups.SingleOrDefault(x => x.SkillGroup.ID == group.ID);
-        if (tsg != null) TechniqueSkillGroups.Remove(tsg);
-        else TechniqueSkillGroups.Add(new TechniqueSkillGroup() { SkillGroup = group });
-        await TechniqueSkillGroupsChanged.InvokeAsync(TechniqueSkillGroups);
+        GroupChecked = new Dictionary<int, bool>();
+        SkillChecked = new Dictionary<int, bool>();
     }
+}
 
-    private async Task UpdateSkill(Skill skill)
-    {
-        var ts = TechniqueSkills.SingleOrDefault(x => x.Skill.ID == skill.ID);
-        if (ts != null) TechniqueSkills.Remove(ts);
-        else TechniqueSkills.Add(new TechniqueSkill() { Skill = skill });
-        await TechniqueSkillsChanged.InvokeAsync(TechniqueSkills);
-    }
+private async Task UpdateGroup(SkillGroup group)
+{
+    var tsg = TechniqueSkillGroups.SingleOrDefault(x => x.SkillGroup.ID == group.ID);
+    if (tsg != null) TechniqueSkillGroups.Remove(tsg);
+    else TechniqueSkillGroups.Add(new TechniqueSkillGroup() { SkillGroup = group });
+    await TechniqueSkillGroupsChanged.InvokeAsync(TechniqueSkillGroups);
+}
+
+private async Task UpdateSkill(Skill skill)
+{
+    var ts = TechniqueSkills.SingleOrDefault(x => x.Skill.ID == skill.ID);
+    if (ts != null) TechniqueSkills.Remove(ts);
+    else TechniqueSkills.Add(new TechniqueSkill() { Skill = skill });
+    await TechniqueSkillsChanged.InvokeAsync(TechniqueSkills);
+}
 }

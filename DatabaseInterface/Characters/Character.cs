@@ -12,20 +12,21 @@ using System.Threading.Tasks;
 
 namespace EmeraldBot.Model.Characters
 {
-    [Table("Characters")]
     public abstract class Character : NameAlias
     {
         [NotMapped]
         public static new readonly List<string> AcceptedFields = new List<string>() { "clan", "icon", "description", "any ring name"}.Concat(NameAlias.AcceptedFields).OrderBy(s => s).ToList();
-        public string Icon { get; set; }
-        public string Description { get; set; }
-        public int Endurance { get; set; }
-        public int Composure { get; set; }
-        public int Focus { get; set; }
-        public int Vigilance { get; set; }
+        public string Icon { get; set; } = "";
+        public string Description { get; set; } = "";
+        public int Endurance { get; set; } = 0;
+        public int Composure { get; set; } = 0;
+        public int Focus { get; set; } = 0;
+        public int Vigilance { get; set; } = 0;
+        public virtual MoneySum Money { get; set; } = new MoneySum();
 
         public virtual ICollection<Roll> Rolls { get; set; }
-        public virtual ICollection<CharacterRing> Rings { get; set; }
+        public virtual ICollection<CharacterRing> Rings { get; set; } = new List<CharacterRing>();
+        public virtual ICollection<CharacterGear> Gear { get; set; } = new List<CharacterGear>();
 
         public Character()
         {

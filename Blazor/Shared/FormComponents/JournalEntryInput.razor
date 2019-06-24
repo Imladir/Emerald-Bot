@@ -1,0 +1,11 @@
+﻿@using EmeraldBot.Model.Characters
+
+<td>@(DateTime.SpecifyKind(Entry.EntryDate, DateTimeKind.Utc).ToLocalTime().ToString("ddddd dd MMMM yyyy"))</td>
+<td style="text-align: center;"><input type="number" min="-100" max="100" @bind="@Amount" /></td>
+<td><BlazorInput InputType="InputType.Text" @bind-Value="@Entry.Reason" Placeholder="Change reason" /></td>
+
+@code  {
+[Parameter] private EventCallback<JournalEntry> EntryChanged { get; set; }
+[Parameter] private JournalEntry Entry { get; set; }
+private string Amount { get { return $"{Entry.Amount}"; } set { Entry.Amount = int.Parse(value); } }
+}

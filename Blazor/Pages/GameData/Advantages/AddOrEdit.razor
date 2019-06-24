@@ -10,7 +10,7 @@
 <BlazorForm>
     <Container IsFluid="true">
         <Row>
-            <BlazorCol><ServerSelector IncludeAdmin="true" @bind-ServerID="@ServerID" /></BlazorCol>
+            <BlazorCol><ServerSelector IncludeAdmin="true" @bind-Server="@Advantage.Server" /></BlazorCol>
             <BlazorCol><AdvantageClassSelector @bind-Class="@Advantage.AdvantageClass" /></BlazorCol>
             <BlazorCol><RingSelector AllowAny="true" @bind-Ring="@Advantage.Ring" /></BlazorCol>
         </Row>
@@ -30,8 +30,8 @@
         </Row>
         <Row>
             <BlazorCol>
-                <BlazorLabel For="AdvantagePermanentEffectText">Activation</BlazorLabel>
-                <BlazorInput Id="AdvantagePermanentEffectText" InputType="InputType.TextArea" @bind-Value="@Advantage.PermanentEffect" Rows="3" @onkeyup="@UpdatePermanentEffectCharacterCount" />
+                <BlazorLabel For="PermanentEffectText">Activation</BlazorLabel>
+                <BlazorInput Id="PermanentEffectText" InputType="InputType.TextArea" @bind-Value="@Advantage.PermanentEffect" Rows="3" @onkeyup="@UpdatePermanentEffectCharacterCount" />
                 @if (PermanentEffectLength < 1024)
                 {
                     <Alert Color="Color.Success">

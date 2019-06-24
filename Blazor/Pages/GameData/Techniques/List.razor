@@ -13,7 +13,7 @@
 
 <RedirectToLoginIfNotAuthorized />
 <h1>Techniques</h1>
-<ServerSelector ServerIDChanged="@ServerSelected" />
+<ServerSelector ServerChanged="@ServerSelected" />
 
 @if (_techniques.Count == 0)
 {
@@ -83,15 +83,15 @@ protected override void OnInit()
     _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
 }
 
-public void ServerSelected(int id)
+public void ServerSelected(Server server)
 {
-    _techniques = _ctx.Techniques.Where(x => x.Server.ID == id || x.Server.DiscordID == 0).ToList();
+    _techniques = _ctx.Techniques.Where(x => x.Server.ID == server.ID || x.Server.DiscordID == 0).ToList();
     foreach (var t in _techniques)
     {
         _ctx.Entry(t).Reference(x => x.Ring).Load();
         _ctx.Entry(t).Reference(x => x.Type).Load();
     }
-    _isGM = _ctx.HasPrivilege(id, UserID);
+    _isGM = _ctx.HasPrivilege(server.ID, UserID);
 }
 
 private string TechniqueOrder(Technique t)

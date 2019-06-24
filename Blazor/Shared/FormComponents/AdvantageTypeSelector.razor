@@ -22,15 +22,20 @@ private Dictionary<int, bool> TypesChecked = new Dictionary<int, bool>();
 private bool IsOpen = false;
 private bool isInit = false;
 
+protected override void OnInit()
+{
+    TypesChecked = _ctx.AdvantageTypes.ToDictionary(x => x.ID, x => false);
+}
+
 protected override void OnParametersSet()
 {
     if (!isInit)
     {
         if (Types != null)
         {
-            TypesChecked = _ctx.AdvantageTypes.ToDictionary(x => x.ID, x => false);
             foreach (var at in Types) TypesChecked[at.AdvantageType.ID] = true;
         }
+        isInit = true;
     }
 }
 

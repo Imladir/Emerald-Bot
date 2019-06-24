@@ -37,6 +37,8 @@ namespace EmeraldBot.Model
         public DbSet<NPCSkillGroup> CharacterSkillGroups { get; set; }
 
         // Game
+        public DbSet<GearQuality> GearQualities { get; set; }
+        public DbSet<Gear> Items { get; set; }
         public DbSet<Armour> Armours { get; set; }
         public DbSet<Weapon> Weapons { get; set; }
         public DbSet<WeaponGrip> WeaponGrips { get; set; }
@@ -58,6 +60,7 @@ namespace EmeraldBot.Model
         // Rolls
         public DbSet<DieFace> DieFaces { get; set; }
         public DbSet<Roll> Rolls { get; set; }
+        public DbSet<RollDie> RollDice { get; set; }
 
         //Servers
         public DbSet<NameAlias> NameAliases { get; set; }
@@ -139,6 +142,7 @@ namespace EmeraldBot.Model
             mb.Entity<ConflictAction>().HasKey(x => new { x.ConflictID, x.ActionID });
             mb.Entity<ActionTypeAction>().HasKey(x => new { x.ActionTypeID, x.ActionID });
             mb.Entity<AdvantageTypeAdvantages>().HasKey(x => new { x.AdvantageTypeID, x.AdvantageID });
+            mb.Entity<CharacterGear>().HasKey(x => new { x.GearID, x.CharacterID });
             mb.Entity<GearQualitiesGear>().HasKey(x => new { x.GearID, x.GearQualityID });
             mb.Entity<OpportunityTriggerOpportunity>().HasKey(x => new { x.OpportunityID, x.OpportunityTriggerID });
             mb.Entity<TechniqueSkill>().HasKey(x => new { x.TechniqueID, x.SkillID });

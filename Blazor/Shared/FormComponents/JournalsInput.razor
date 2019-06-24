@@ -1,0 +1,76 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBotContext _ctx
+
+
+@if (JournalEntries != null)
+{
+<BlazorTable>
+    @foreach (var jt in new List<string>() { "Honour", "Glory", "Status", "XP" })
+{
+        <tr>
+            <td>
+                <h4 style="text-align: center;" @onclick="@(() => _openJournals[jt] = !_openJournals[jt])">@jt @($"({JournalEntries.Where(x => x.Journal.Name.Equals(jt)).Sum(x => x.Amount)})")</h4>
+                <Collapse IsOpen="@(_openJournals[jt])">
+                    <BlazorButton Color="Color.Success" @onclick="@(() => AddEntry(jt))">Add @jt Entry</BlazorButton>
+                    <BlazorTable>
+                        <TableHead TableHeadType="TableHeadType.Dark">
+                        <tr style="height: 50px;">
+                            <th style="width: 250px;">Date</th>
+                            <th style="text-align: center; height: 100px;">Amount</th>
+                            <th>Reason</th>
+                        </tr>
+                        </TableHead>
+                        <tbody>
+                            @foreach (var je in JournalEntries.Where(x => x.Journal.Name.Equals(jt)).OrderByDescending(x => x.EntryDate).ToList())
+{
+                                <tr><JournalEntryInput @bind-Entry="@_entries[_journals[jt]][je.ID]" /></tr>
+}
+                        </tbody>
+                    </BlazorTable>
+                </Collapse>
+            </td>
+        </tr>
+}
+</BlazorTable>
+}
+
+@code {
+    [Parameter] private EventCallback<ICollection<JournalEntry>> JournalEntriesChanged { get; set; }
+    [Parameter] private ICollection<JournalEntry> JournalEntries { get; set; }
+    private Dictionary<string, bool> _openJournals;
+    private Dictionary<string, JournalType> _journals;
+    private Dictionary<JournalType, Dictionary<int, JournalEntry>> _entries;
+
+    protected override void OnInit()
+    {
+        _openJournals = new Dictionary<string, bool>() {
+        { "Honour", false},
+        { "Glory", false},
+        { "Status", false},
+        { "XP", false}
+    };
+        _journals = _ctx.JournalTypes.ToDictionary(x => x.Name, x => x);
+    }
+    protected override void OnParametersSet()
+    {
+        _entries = new Dictionary<JournalType, Dictionary<int, JournalEntry>>();
+        foreach (var jt in _ctx.JournalTypes)
+        {
+            _entries[jt] = new Dictionary<int, JournalEntry>();
+            foreach (var je in JournalEntries) _entries[jt][je.ID] = je;
+        }
+    }
+
+    private void AddEntry(string jt)
+    {
+        if (!_entries[_journals[jt]].Keys.Contains(0)) {
+            var newEntry = new JournalEntry() { EntryDate = DateTime.UtcNow, Amount = 0, Journal = _journals[jt], Reason = "" };
+            JournalEntries.Add(newEntry);
+            _entries[_journals[jt]][0] = newEntry;
+        }
+    }
+}

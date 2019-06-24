@@ -11,11 +11,11 @@
 <FormGroup>
     <BlazorLabel For="ServerSelector">Server</BlazorLabel>
     <Dropdown Id="ServerSelector" IsOpen="@IsOpen">
-        <DropdownToggle @onclick="@OnClick">@(Servers.Count > 0 ? Servers.Find(x => x.ID == ServerID).Name : "Loading...")</DropdownToggle>
+        <DropdownToggle @onclick="@OnClick">@(Servers.Count > 0 ? Servers.Find(x => x.ID == Server.ID).Name : "Loading...")</DropdownToggle>
         <DropdownMenu IsOpen="@IsOpen">
             @foreach (var s in Servers)
             {
-                <DropdownItem @key="@s.ID" @onclick="@((e) => Selection(s.ID))">@s.Name</DropdownItem>
+                <DropdownItem @key="@s.ID" @onclick="@((e) => Selection(s))">@s.Name</DropdownItem>
             }
         </DropdownMenu>
     </Dropdown>
@@ -23,8 +23,8 @@
 
 @code  {
 [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-[Parameter] private int ServerID { get; set; }
-[Parameter] private EventCallback<int> ServerIDChanged { get; set; }
+[Parameter] private EventCallback<Server> ServerChanged { get; set; }
+[Parameter] private Server Server { get; set; } = null;
 [Parameter] private bool IncludeAdmin { get; set; } = false;
 private bool IsOpen;
 private List<Server> Servers = new List<Server>();
@@ -52,19 +52,19 @@ protected override async Task OnInitAsync()
     if (IncludeAdmin && _ctx.UserRoles.SingleOrDefault(x => x.Role.Name.Equals("Admin") && x.User.ID == UserID) != null)
         Servers.Insert(0, _ctx.Servers.Single(x => x.DiscordID == 0));
 
-    if (ServerID <= 0)
+    if (Server == null)
     {
-        ServerID = Servers[0].ID;
-        await ServerIDChanged.InvokeAsync(ServerID);
+        Server = Servers[0];
+        await ServerChanged.InvokeAsync(Server);
     }
 }
 
-protected async Task Selection(int newSelection)
+protected async Task Selection(Server selection)
 {
-    if (newSelection != ServerID)
+    if (selection.ID != Server.ID)
     {
-        ServerID = newSelection;
-        await ServerIDChanged.InvokeAsync(ServerID);
+        Server = selection;
+        await ServerChanged.InvokeAsync(Server);
     }
     IsOpen = false;
 }

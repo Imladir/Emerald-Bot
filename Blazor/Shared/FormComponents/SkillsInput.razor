@@ -1,0 +1,79 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBot.Model.EmeraldBotContext _ctx
+<FormGroup>
+    <FormLabel For="SkillsInput">Skill</FormLabel>
+    @foreach (var g in _ctx.SkillGroups.OrderBy(x => x.Name))
+    {
+        <BlazorTable IsSmall="true">
+            <TableHead TableHeadType="TableHeadType.Dark">
+                <tr>
+                    <th>@g.Name</th>
+                    <th>Ranks</th>
+                </tr>
+            </TableHead>
+            <tbody>
+                @foreach (var s in _ctx.Skills.Where(x => x.Group.ID == g.ID && ((Server != null && x.Server.ID == Server.ID) || x.Server.DiscordID == 0)).OrderBy(x => x.Name).ToList())
+                {
+                    <tr>
+                        <td>@s.Name</td>
+                        <td style="width: 50px; text-align: center;">
+                            <input type="number" @bind="_skills[s]" min="0" max="10" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </BlazorTable>
+    }
+</FormGroup>
+
+@code {
+[Parameter] private EventCallback<ICollection<PCSkill>> SkillsChanged { get; set; }
+[Parameter] private ICollection<PCSkill> Skills { get { return _skills.Skills; } set { _skills.Skills = value; } }
+[Parameter] private Server Server { get; set; }
+[Parameter] private PC PC { get; set; }
+private SkillAcessor _skills = new SkillAcessor(null);
+private int _lastServer = -1;
+
+
+protected override void OnParametersSet()
+{
+    if (Server == null || _lastServer == Server.ID) return;
+    _lastServer = Server.ID;
+
+    _skills = new SkillAcessor(PC);
+
+    var skillList = _ctx.Skills.Where(x => x.Server.ID == Server.ID || x.Server.DiscordID == 0).ToList();
+    foreach (var s in Skills)
+    {
+        if (!skillList.Select(x => x.ID).Contains(s.Skill.ID)) _skills[s.Skill] = "0";
+    }
+}
+
+public class SkillAcessor
+{
+    public ICollection<PCSkill> Skills { get; set; } = new List<PCSkill>();
+    private PC _pc;
+    public string this[Skill s]
+    {
+        get
+        {
+            var pcs = Skills.SingleOrDefault(x => x.Skill.ID == s.ID);
+            if (pcs == null) return "0";
+            else return $"{pcs.Value}";
+        }
+        set
+        {
+            int v = int.Parse(value);
+            var pcs = Skills.SingleOrDefault(x => x.Skill.ID == s.ID);
+            if (pcs == null) Skills.Add(new PCSkill() { Skill = s, PC = _pc, Value = v });
+            else if (v > 0) pcs.Value = v;
+            else Skills.Remove(pcs);
+        }
+    }
+    public SkillAcessor(PC pc) { _pc = pc; }
+}
+}

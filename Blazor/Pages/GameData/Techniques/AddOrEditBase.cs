@@ -1,5 +1,6 @@
 ﻿using EmeraldBot.Model;
 using EmeraldBot.Model.Game;
+using EmeraldBot.Model.Servers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
@@ -18,7 +19,6 @@ namespace EmeraldBot.Blazor.Pages.GameData.Techniques
         [Inject] protected IJSRuntime JSRuntime { get; set; }
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
         [Parameter] public int TechniqueID { get; set; }
-        protected int ServerID { get; set; } = -1;
         protected bool IsEdit => TechniqueID == -1 ? false : true;
         protected Technique Technique { get; set; } = new Technique();
         protected int ActivationLength { get; set; } = 0;
@@ -38,10 +38,9 @@ namespace EmeraldBot.Blazor.Pages.GameData.Techniques
                     if (Technique == null) _uri.NavigateTo("techniques/");
 
                     // Test that technique is on the right server
-                    ServerID = Technique.Server.ID;
                     var canEdit = _ctx.UserRoles.Where(x => x.User.ID == UserID  
                                                          && (x.Role.Name.Equals("Admin")
-                                                         || (x.Role.Name.Equals("GM") && x.Server.ID == ServerID))).SingleOrDefault() != null;
+                                                         || (x.Role.Name.Equals("GM") && x.Server.ID == Technique.Server.ID))).SingleOrDefault() != null;
                     if (!canEdit) _uri.NavigateTo("techniques/");
 
                     ActivationLength = Technique.Activation.Length;
@@ -57,7 +56,6 @@ namespace EmeraldBot.Blazor.Pages.GameData.Techniques
 
         protected void Save()
         {
-            Technique.Server = _ctx.Servers.Find(ServerID);
             if (TechniqueID == -1) _ctx.Techniques.Add(Technique);
             _ctx.SaveChanges();
             _uri.NavigateTo($"techniques/{Technique.ID}");

@@ -11,8 +11,6 @@ namespace EmeraldBot.Model.Identity
 {
     public class UserStore : IUserStore<User>, IUserPasswordStore<User>, IUserClaimStore<User>
     {
-        private bool _disposed;
-
         public Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
         {
             using var ctx = new EmeraldBotContext();
@@ -49,7 +47,6 @@ namespace EmeraldBot.Model.Identity
 
         public void Dispose()
         {
-            _disposed = true;
         }
 
         public Task<User> FindByIdAsync(string userId, CancellationToken cancellationToken)

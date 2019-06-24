@@ -1,0 +1,58 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBotContext _ctx
+
+@if (_techniques.Count > 0)
+{
+<Container IsFluid="true">
+    <Row>
+        @foreach (var tt in _ctx.Set<TechniqueType>().ToList().OrderByDescending(x => _techniques.Where(y => y.Type.ID == x.ID).Count()).ToList())
+        {
+            <BlazorCol style="flex-direction: column; flex-wrap: wrap;">
+                <BlazorTable>
+                    <TableHead TableHeadType="TableHeadType.Dark">
+                        <tr><th style="text-align: center;">@tt.Name</th></tr>
+                    </TableHead>
+                    <tbody>
+                        @foreach (var t in _techniques.Where(x => x.Type.ID == tt.ID).OrderBy(x => x.Name))
+                        {
+                            <tr style="white-space: nowrap;"><td><input type="checkbox" id="@t.Name" value="@t.Alias" @onchange="@(() => ChangeTechnique(t))" checked="@(Techniques.Select(x => x.Technique).Contains(t))" /> <BlazorLabel For="@t.Name">@t.Name</BlazorLabel></td></tr>
+                        }
+                    </tbody>
+                </BlazorTable>
+            </BlazorCol>
+        }
+    </Row>
+</Container>
+}
+
+@code {
+[Parameter] private EventCallback<ICollection<PCTechnique>> TechniquesChanged { get; set; }
+[Parameter] private ICollection<PCTechnique> Techniques { get; set; }
+[Parameter] private Server Server { get; set; }
+[Parameter] private PC PC { get; set; }
+private List<Technique> _techniques = new List<Technique>();
+private int _lastServer = -1;
+
+protected override void OnParametersSet()
+{
+    if (Server == null || Server.ID == _lastServer) return;
+    _lastServer = Server.ID;
+
+    _techniques = _ctx.Techniques.Where(x => x.Server.ID == Server.ID || x.Server.DiscordID == 0).ToList();
+    foreach (var pca in Techniques)
+    {
+        if (!_techniques.Contains(pca.Technique)) Techniques.Remove(pca);
+    }
+}
+
+private void ChangeTechnique(Technique t)
+{
+    var pct = Techniques.SingleOrDefault(x => x.Technique.ID == t.ID);
+    if (pct == null) Techniques.Add(new PCTechnique() { Character = PC, Technique = t });
+    else Techniques.Remove(pct);
+}
+}

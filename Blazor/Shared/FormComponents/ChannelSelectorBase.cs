@@ -16,7 +16,7 @@ namespace EmeraldBot.Blazor.Shared.FormComponents
     public class ChannelSelectorBase : ComponentBase
     {
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-        [Parameter] protected int ServerID { get; set; }
+        [Parameter] protected Server Server { get; set; }
         [Parameter] protected EventCallback<long> ChannelIDChanged { get; set; }
         [Parameter] protected long ChannelID { get; set; }
         protected List<DiscordChannel> Channels { get; set; } = new List<DiscordChannel>();
@@ -24,9 +24,9 @@ namespace EmeraldBot.Blazor.Shared.FormComponents
 
         protected override async Task OnParametersSetAsync()
         {
-            if (ServerID == _lastServerChecked) return;
+            if (Server == null || Server.ID == _lastServerChecked) return;
 
-            _lastServerChecked = ServerID;
+            _lastServerChecked = Server.ID;
             await UpdateChannels();
         }
 
@@ -34,7 +34,7 @@ namespace EmeraldBot.Blazor.Shared.FormComponents
         {
             try
             {
-                if (UserID == -1 || ServerID == -1) return;
+                if (UserID == -1 || Server == null) return;
 
                 HubConnection connection = new HubConnectionBuilder()
                         .AddMessagePackProtocol()
@@ -48,7 +48,7 @@ namespace EmeraldBot.Blazor.Shared.FormComponents
                 await connection.StartAsync();
 
                 Channels.Clear();
-                foreach (var c in await connection.InvokeAsync<Dictionary<ulong, string>>("GetUserGuildChannels", UserID, ServerID))
+                foreach (var c in await connection.InvokeAsync<Dictionary<ulong, string>>("GetUserGuildChannels", UserID, Server.ID))
                     Channels.Add(new DiscordChannel() { ID = (long)c.Key, Name = $"#{c.Value}" });
                 await connection.StopAsync();
 

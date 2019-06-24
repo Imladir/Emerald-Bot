@@ -1,15 +1,16 @@
-﻿@inherits CharacterSelectorBase
+﻿@using EmeraldBot.Model.Characters
+@inherits CharacterSelectorBase
 
 @if (PCs.Count > 0)
 {
     <FormGroup>
         <BlazorLabel For="CharacterSelector">Character</BlazorLabel>
         <Dropdown Id="CharacterSelector" IsOpen="@IsOpen">
-            <DropdownToggle @onclick="@OnClick">@((PCs.Count > 0 && CharacterID > 0) ? PCs.Find(x => x.ID == CharacterID).Name : (CharacterID == -1 ? "Unchanged" : "Loading..."))</DropdownToggle>
+            <DropdownToggle @onclick="@OnClick">@((PCs.Count > 0 && PC != null) ? PCs.Find(x => x.ID == PC.ID).Name : (PC == null ? "Unchanged" : "Loading..."))</DropdownToggle>
             <DropdownMenu IsOpen="@IsOpen">
-                @foreach (var s in PCs)
+                @foreach (var pc in PCs)
                 {
-                    <DropdownItem @key="@s.ID" @onclick="@(async (e) => await CharacterSelected(s.ID))">@s.Name</DropdownItem>
+                    <DropdownItem @key="@pc.ID" @onclick="@(async (e) => await CharacterSelected(pc))">@pc.Name</DropdownItem>
     }
             </DropdownMenu>
         </Dropdown>
@@ -21,21 +22,21 @@ else
 }
 
 @code {
-    private bool IsOpen = false;
+private bool IsOpen = false;
 
-    private void OnClick(UIMouseEventArgs e)
-    {
-        IsOpen = !IsOpen;
-        StateHasChanged();
-    }
+private void OnClick(UIMouseEventArgs e)
+{
+    IsOpen = !IsOpen;
+    StateHasChanged();
+}
 
-    protected async Task CharacterSelected(int newSelection)
+protected async Task CharacterSelected(PC pc)
+{
+    if (PC != pc)
     {
-        if (newSelection != CharacterID)
-        {
-            CharacterID = newSelection;
-            await CharacterIDChanged.InvokeAsync(CharacterID);
-        }
-        IsOpen = false;
+        PC = pc;
+        await PCChanged.InvokeAsync(PC);
     }
+    IsOpen = false;
+}
 }

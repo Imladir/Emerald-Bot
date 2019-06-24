@@ -6,11 +6,11 @@
 @inject IUriHelper _uri
 
 <h1>Characters</h1>
-<ServerSelector ServerIDChanged="@ServerSelected" />
+<ServerSelector ServerChanged="@ServerSelected" />
 
 @if (_pcs.Count == 0)
 {
-    <p>Page is loading...</p>
+    <p>No characters were found...</p>
 }
 else
 {
@@ -145,7 +145,7 @@ else
 
 @code {
 [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-private int _serverID { get; set; }
+private Server _server { get; set; }
 List<PC> _pcs = new List<PC>();
 List<PC> _defaultPcs = new List<PC>();
 List<NPC> _npcs = new List<NPC>();
@@ -159,15 +159,15 @@ protected override void OnInit()
     _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
 }
 
-public void ServerSelected(int id)
+public void ServerSelected(Server server)
 {
-    _serverID = id;
-    _pcs = _ctx.PCs.Where(x => x.Server.ID == _serverID && !x.Clan.Name.Equals("GM")).OrderBy(x => x.Name).ToList();
+    _server = server;
+    _pcs = _ctx.PCs.Where(x => x.Server.ID == _server.ID && !x.Clan.Name.Equals("GM")).OrderBy(x => x.Name).ToList();
     _defaultPcs = (from pc in _ctx.PCs
                    join df in _ctx.Set<DefaultCharacter>() on pc.ID equals df.Character.ID
-                   where df.Server.ID == _serverID && !pc.Clan.Name.Equals("GM")
+                   where df.Server.ID == _server.ID && !pc.Clan.Name.Equals("GM")
                    select pc).OrderBy(x => x.Name).ToList();
-    _npcs = _ctx.NPCs.Where(x => x.Server.ID == _serverID || x.Server.DiscordID == 0).OrderBy(x => x.Name).ToList();
-    _isGM = _ctx.HasPrivilege(_serverID, UserID);
+    _npcs = _ctx.NPCs.Where(x => x.Server.ID == _server.ID || x.Server.DiscordID == 0).OrderBy(x => x.Name).ToList();
+    _isGM = _ctx.HasPrivilege(_server.ID, UserID);
 }
 }

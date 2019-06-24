@@ -217,3 +217,10 @@ app {
     background-color: #006900;
     border-color: #454d55
 }
+
+
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #006900
+}

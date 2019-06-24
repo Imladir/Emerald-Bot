@@ -28,14 +28,14 @@
     {
         if (UserID == -1) return;
         _advantage = _ctx.Advantages.SingleOrDefault(x => x.ID == id);
-        if (_advantage == null) _uri.NavigateTo($"advantages/{_advantage.ID}");
+        if (_advantage == null) _uri.NavigateTo($"advantages/");
 
         var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) == null;
 
         // Admin can do whatever
         if (!isAdmin)
         {
-            // Otherwise GM is only able to delete a technique if it's on the right server
+            // Otherwise GM is only able to delete an advantage if it's on the right server
             var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == _advantage.Server.ID) == null;
             if (!isGM)
                 _uri.NavigateTo($"advantages/{_advantage.ID}");

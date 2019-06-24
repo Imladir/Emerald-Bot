@@ -1,0 +1,66 @@
+﻿@page  "/characters/{id:int}/delete"
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Rolls
+@using EmeraldBot.Model.Scenes
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBotContext _ctx;
+@inject IUriHelper _uri;
+
+
+<RedirectToLoginIfNotAuthorized />
+
+<h1>Character deletion</h1>
+<p>Are you sure you want to delete the Character <em>@_character.Name</em>? There is no going back!</p>
+
+<BlazorButton Color="Color.Success" @onclick="@DeleteCharacter">Yes, delete</BlazorButton>
+<BlazorButton Color="Color.Danger" @onclick="@(() => { _uri.NavigateTo($"advantages/{_character.ID}"); })">No, go back</BlazorButton>
+
+@code {
+    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+    [Parameter] private int id { get; set; }
+    private Character _character;
+
+    protected override void OnInit()
+    {
+        if (UserID == -1) return;
+        _character = _ctx.Characters.SingleOrDefault(x => x.ID == id);
+        if (_character == null) _uri.NavigateTo($"characters/");
+
+        var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) == null;
+
+        // Admin can do whatever
+        if (!isAdmin)
+        {
+            // Otherwise GM is only able to delete a character if it's on the right server
+            var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == _character.Server.ID) == null;
+            if (!isGM)
+                _uri.NavigateTo($"characters/{_character.ID}");
+        }
+    }
+
+    private void DeleteCharacter()
+    {
+        foreach (var cr in _ctx.Set<CharacterRing>().Where(x => x.Character.ID == _character.ID)) _ctx.Set<CharacterRing>().Remove(cr);
+        foreach (var cp in _ctx.Set<ConflictParticipant>().Where(x => x.Character.ID == _character.ID)) _ctx.Set<ConflictParticipant>().Remove(cp);
+        foreach (var r in _ctx.Set<Roll>().Where(x => x.Character.ID == _character.ID)) _ctx.Set<Roll>().Remove(r);
+        if (_character is PC pc)
+        {
+            foreach (var apc in _ctx.Set<PCAdvantage>().Where(x => x.Character.ID == pc.ID)) _ctx.Set<PCAdvantage>().Remove(apc);
+            foreach (var tpc in _ctx.Set<PCTechnique>().Where(x => x.Character.ID == pc.ID)) _ctx.Set<PCTechnique>().Remove(tpc);
+            foreach (var pcc in _ctx.Set<PCCondition>().Where(x => x.PC.ID == pc.ID)) _ctx.Set<PCCondition>().Remove(pcc);
+            foreach (var pcs in _ctx.Set<PCSkill>().Where(x => x.PC.ID == pc.ID)) _ctx.Set<PCSkill>().Remove(pcs);
+            foreach (var dfpc in _ctx.Set<DefaultCharacter>().Where(x => x.Character.ID == pc.ID)) _ctx.Set<DefaultCharacter>().Remove(dfpc);
+            _ctx.Set<JournalEntry>().RemoveRange(pc.JournalEntries);
+
+        }
+        else if (_character is NPC npc)
+        {
+            foreach (var npcg in _ctx.Set<NPCSkillGroup>().Where(x => x.NPC.ID == npc.ID)) _ctx.Set<NPCSkillGroup>().Remove(npcg);
+        }
+        _ctx.Characters.Remove(_character);
+        _ctx.SaveChanges();
+        _uri.NavigateTo("characters/");
+    }
+}

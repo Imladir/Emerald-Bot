@@ -34,6 +34,14 @@
     <Compile Remove="Migrations\20190619201209_MovedStuffFromCharacterToPC.Designer.cs" />
     <Compile Remove="Migrations\20190619203438_MovedStuffFromCharacterToPC.cs" />
     <Compile Remove="Migrations\20190619203438_MovedStuffFromCharacterToPC.Designer.cs" />
+    <Compile Remove="Migrations\20190624061454_Gear.cs" />
+    <Compile Remove="Migrations\20190624061454_Gear.Designer.cs" />
+    <Compile Remove="Migrations\20190624065449_Gear.cs" />
+    <Compile Remove="Migrations\20190624065449_Gear.Designer.cs" />
+    <Compile Remove="Migrations\20190624065928_Gear.cs" />
+    <Compile Remove="Migrations\20190624065928_Gear.Designer.cs" />
+    <Compile Remove="Migrations\20190624073314_Gear.cs" />
+    <Compile Remove="Migrations\20190624073314_Gear.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

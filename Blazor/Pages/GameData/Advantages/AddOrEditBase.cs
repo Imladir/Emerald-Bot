@@ -18,7 +18,6 @@ namespace EmeraldBot.Blazor.Pages.GameData.Advantages
         [Inject] protected IJSRuntime JSRuntime { get; set; }
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
         [Parameter] public int AdvantageID { get; set; }
-        protected int ServerID { get; set; } = -1;
         protected bool IsEdit => AdvantageID == -1 ? false : true;
         protected Advantage Advantage { get; set; } = new Advantage();
         protected int PermanentEffectLength { get; set; } = 0;
@@ -38,10 +37,9 @@ namespace EmeraldBot.Blazor.Pages.GameData.Advantages
                     if (Advantage == null) _uri.NavigateTo("advantage/");
 
                     // Test that technique is on the right server
-                    ServerID = Advantage.Server.ID;
                     var canEdit = _ctx.UserRoles.Where(x => x.User.ID == UserID  
                                                          && (x.Role.Name.Equals("Admin")
-                                                         || (x.Role.Name.Equals("GM") && x.Server.ID == ServerID))).SingleOrDefault() != null;
+                                                         || (x.Role.Name.Equals("GM") && x.Server.ID == Advantage.Server.ID))).SingleOrDefault() != null;
                     if (!canEdit) _uri.NavigateTo("advantage/");
 
                     PermanentEffectLength = Advantage.PermanentEffect.Length;
@@ -57,7 +55,6 @@ namespace EmeraldBot.Blazor.Pages.GameData.Advantages
 
         protected void Save()
         {
-            Advantage.Server = _ctx.Servers.Find(ServerID);
             if (AdvantageID == -1) _ctx.Advantages.Add(Advantage);
             _ctx.SaveChanges();
             _uri.NavigateTo($"advantages/{Advantage.ID}");

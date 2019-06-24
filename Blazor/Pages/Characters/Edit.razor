@@ -1,0 +1,7 @@
+﻿@page  "/characters/{id:int}/edit"
+
+<AddOrEdit CharacterID="@id" />
+
+@code {
+[Parameter] private int id { get; set; }
+}

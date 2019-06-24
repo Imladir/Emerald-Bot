@@ -1187,7 +1187,7 @@ namespace EmeraldBot.Model.Migrations
 
                     b.Property<int>("Honour");
 
-                    b.Property<int>("MilitaryRank");
+                    b.Property<int>("MartialRank");
 
                     b.Property<int?>("NPCTypeID");
 

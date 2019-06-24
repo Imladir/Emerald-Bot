@@ -28,7 +28,7 @@ protected override void OnInit()
 {
     if (UserID == -1) return;
     _technique = _ctx.Techniques.SingleOrDefault(x => x.ID == id);
-    if (_technique == null) _uri.NavigateTo($"techniques/{_technique.ID}");
+    if (_technique == null) _uri.NavigateTo($"techniques/");
 
     var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) == null;
 

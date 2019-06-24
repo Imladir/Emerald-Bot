@@ -13,7 +13,7 @@
 
 <RedirectToLoginIfNotAuthorized />
 <h1>Advantages</h1>
-<ServerSelector ServerIDChanged="@ServerSelected" />
+<ServerSelector ServerChanged="@ServerSelected" />
 
 @if (_advantages.Count == 0)
 {
@@ -38,7 +38,7 @@ else
                         <th>Alias</th>
                         <th style="text-align: center;">Ring</th>
                         <th style="text-align: center;">Type</th>
-                        <th style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"advantages/add"))">New Technique</BlazorButton></th>
+                        <th style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"advantages/add"))">New Advantage</BlazorButton></th>
                     </tr>
                 </TableHead>
                 <tbody>
@@ -81,16 +81,16 @@ protected override void OnInit()
     _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
 }
 
-public void ServerSelected(int id)
+public void ServerSelected(Server server)
 {
-    _advantages = _ctx.Advantages.Where(x => x.Server.ID == id || x.Server.DiscordID == 0).ToList();
+    _advantages = _ctx.Advantages.Where(x => x.Server.ID == server.ID || x.Server.DiscordID == 0).ToList();
     foreach (var a in _advantages)
     {
         _ctx.Entry(a).Reference(x => x.Ring).Load();
         _ctx.Entry(a).Reference(x => x.AdvantageClass).Load();
         _ctx.Entry(a).Collection(x => x.AdvantageTypes).Load();
     }
-    _isGM = _ctx.HasPrivilege(id, UserID);
+    _isGM = _ctx.HasPrivilege(server.ID, UserID);
 }
 
 private string GetRingImage(Ring r)

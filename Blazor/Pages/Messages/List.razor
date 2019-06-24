@@ -13,7 +13,7 @@
 <RedirectToLoginIfNotAuthorized />
 
 <h1>Your messages</h1>
-<ServerSelector ServerIDChanged="@ServerSelected" />
+<ServerSelector ServerChanged="@ServerSelected" />
 
 @if (_messages.Count == 0)
 {
@@ -119,9 +119,9 @@ private int _lastPage;
 private List<Message> _messages = new List<Message>();
 private Dictionary<int, bool> IsOpen = new Dictionary<int, bool>();
 
-public void ServerSelected(int id)
+public void ServerSelected(Server server)
 {
-    _messages = _ctx.Messages.Where(x => x.Server.ID == id && x.Player.ID == UserID).OrderByDescending(x => x.CreatedDate).ToList();
+    _messages = _ctx.Messages.Where(x => x.Server.ID == server.ID && x.Player.ID == UserID).OrderByDescending(x => x.CreatedDate).ToList();
     _lastPage = (int)_messages.Count / _messagesPerPage;
     IsOpen = _messages.ToDictionary(x => x.ID, x => false);
 }

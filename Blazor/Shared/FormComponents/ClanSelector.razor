@@ -1,0 +1,54 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<FormGroup>
+    <BlazorLabel For="ClanSelector">Clan</BlazorLabel>
+    <Dropdown Id="ClanSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">
+            @if (Clan != null)
+            {
+                <Image src="@Clan.Icon" style="width: 24px; height: auto;" /> <span>@Clan.Name</span>
+            }
+            else
+            {
+                <span>Loading</span>
+            }
+        </DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var c in _clans)
+            {
+                <DropdownItem @key="@c.ID" @onclick="@((e) => ClanSelected(c))"><Image src="@c.Icon" alt="@c.Name" style="width: 24px; height: auto;" /> @c.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
+
+@code  {
+[Parameter] protected EventCallback<Clan> ClanChanged { get; set; }
+[Parameter] protected Clan Clan { get; set; }
+private bool IsOpen = false;
+private List<Clan> _clans = new List<Clan>();
+
+protected override async Task OnInitAsync()
+{
+
+    _clans = _ctx.Clans.Where(x => !x.Name.Equals("GM")).OrderBy(x => x.Name).ToList();
+    if (Clan == null)
+    {
+        Clan = _clans.Single(x => x.Name.Equals(""));
+        await ClanChanged.InvokeAsync(Clan);
+    }
+}
+
+protected async Task ClanSelected(Clan c)
+{
+    if (Clan == null || c.ID != Clan.ID)
+    {
+        Clan = c;
+        await ClanChanged.InvokeAsync(Clan);
+    }
+    IsOpen = false;
+}
+}

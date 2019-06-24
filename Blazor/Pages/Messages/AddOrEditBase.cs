@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using BlazorStrap;
+using EmeraldBot.Model.Characters;
 
 namespace EmeraldBot.Blazor.Pages.Messages
 {
@@ -23,7 +24,8 @@ namespace EmeraldBot.Blazor.Pages.Messages
         [Inject] protected IJSRuntime JSRuntime { get; set; }
         [Parameter] public int MessageID { get; set; }
         [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-        protected int ServerID { get; set; } = -1;
+        protected Server Server { get; set; } = null;
+        protected PC PC { get; set; } = null;
         protected bool IsEdit => MessageID == -1 ? false : true;
         protected Message Message { get; set; } = new Message();
 
@@ -42,7 +44,7 @@ namespace EmeraldBot.Blazor.Pages.Messages
                     Message = _ctx.Messages.SingleOrDefault(x => x.ID == MessageID);
                     if (Message == null) _uri.NavigateTo("messages/");
                     if (Message.Player.ID != UserID) _uri.NavigateTo("messages/");
-                    ServerID = Message.Server.ID;
+                    Server = Message.Server;
                     TextLength = Message.Text.Length;
                     _oldIcon = Message.Icon;
                     _oldColour = Message.Colour;
@@ -60,7 +62,9 @@ namespace EmeraldBot.Blazor.Pages.Messages
 
         public async Task SaveMessage()
         {
-            if (string.IsNullOrWhiteSpace(Message.Title) || string.IsNullOrWhiteSpace(Message.Text)) return;
+            if (string.IsNullOrWhiteSpace(Message.Text)) return;
+
+            if (string.IsNullOrWhiteSpace(Message.Title)) Message.Title = PC.Name;
 
             //Message.Text = WebUtility.HtmlEncode(Message.Text);
             if (Message.Text.Length >= 2048) return;
@@ -78,10 +82,13 @@ namespace EmeraldBot.Blazor.Pages.Messages
             await connection.StartAsync();
             if (!IsEdit)
             {
-                Message.Server = _ctx.Servers.Find(ServerID);
+                Message.Server = Server;
                 Message.Player = _ctx.Users.Find(UserID);
                 _ctx.Messages.Add(Message);
             }
+
+            if (PC != null) Message.Colour = PC.Clan.Colour;
+
             _ctx.SaveChanges();
 
             await connection.InvokeAsync("SendMessage", Message.ID);
@@ -89,20 +96,19 @@ namespace EmeraldBot.Blazor.Pages.Messages
             _uri.NavigateTo($"messages/{Message.ID}");
         }
 
-        protected void CharacterSelected(int id)
-        {
-            if (id > 0)
-            {
-                var pc = _ctx.PCs.Find(id);
-                    Message.Icon = pc.Icon;
-                if (Message.Title == "")
-                    Message.Title = pc.Name;
-                Message.Colour = (from c in _ctx.Clans join p in _ctx.PCs on c.ID equals p.Clan.ID where p.ID == id select c).Single().Colour;
-            } else
-            {
-                Message.Icon = _oldIcon;
-                Message.Colour = _oldColour;
-            }
-        }
+        //protected void PCSelected(PC pc)
+        //{
+        //    if (pc != null)
+        //    {
+        //            Message.Icon = pc.Icon;
+        //        if (Message.Title == "")
+        //            Message.Title = pc.Name;
+        //        Message.Colour = (from c in _ctx.Clans join p in _ctx.PCs on c.ID equals p.Clan.ID where p.ID == pc.ID select c).Single().Colour;
+        //    } else
+        //    {
+        //        Message.Icon = _oldIcon;
+        //        Message.Colour = _oldColour;
+        //    }
+        //}
     }
 }

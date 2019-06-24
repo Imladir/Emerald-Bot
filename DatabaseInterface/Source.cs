@@ -15,8 +15,8 @@ namespace EmeraldBot.Model
 
         [MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a source without a book name")]
-        public string Book { get; set; }
+        public string Book { get; set; } = "";
 
-        public int Page { get; set; }
+        public int Page { get; set; } = -1;
     }
 }

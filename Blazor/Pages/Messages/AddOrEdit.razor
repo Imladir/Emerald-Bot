@@ -9,16 +9,16 @@
                 @if (IsEdit)
                 {
                 <h1>Message edition</h1>
-                <CharacterSelector ServerID="@ServerID" CharacterIDChanged="@CharacterSelected" AllowEmpty="true" />
+                <CharacterSelector Server="@Server" @bind-PC="@PC" AllowEmpty="true" />
                 }
                 else
                 {
                 <h1>Send a new message</h1>
                 <Container>
                     <Row>
-                        <BlazorCol><ServerSelector @bind-ServerID="@ServerID" /></BlazorCol>
-                        <BlazorCol><ChannelSelector ServerID="@ServerID" @bind-ChannelID="@Message.DiscordChannelID" /></BlazorCol>
-                        <BlazorCol><CharacterSelector ServerID="@ServerID" CharacterIDChanged="@CharacterSelected" AllowEmpty="false" /></BlazorCol>
+                        <BlazorCol><ServerSelector @bind-Server="@Server" /></BlazorCol>
+                        <BlazorCol><ChannelSelector Server="@Server" @bind-ChannelID="@Message.DiscordChannelID" /></BlazorCol>
+                        <BlazorCol><CharacterSelector Server="@Server" @bind-PC="@PC" AllowEmpty="false" /></BlazorCol>
                     </Row>
                 </Container>
                 }
@@ -40,7 +40,7 @@
                 <BlazorButton Color="Color.Success" @onclick="@SaveMessage">Save Message</BlazorButton>
                 </BlazorCol>
                 <BlazorCol>
-                    <Image IsRounded="true" Alignment="Alignment.Center" src="@Message.Icon" style="width: 300px; height: auto; max-width: 20%;" />
+                    <Image IsRounded="true" Alignment="Alignment.Center" src="@(PC != null ? PC.Icon : Message.Icon)" style="width: 300px; height: auto; max-width: 20%;" />
                 </BlazorCol>
             </Row>
 </Container>
