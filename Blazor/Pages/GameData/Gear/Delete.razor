@@ -1,0 +1,56 @@
+﻿@page  "/gear/{id:int}/delete"
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx;
+@inject IUriHelper _uri;
+
+
+<RedirectToLoginIfNotAuthorized />
+
+<h1>Gear deletion</h1>
+<p>Are you sure you want to delete the item <em>@_item.Name</em>? There is no going back!</p>
+@if (associatedCharacter > 0)
+{
+    <Alert Color="Color.Warning">Gear Item <em>@_item.Name</em> is associated to @associatedCharacter character(s). Are you sure, sure?</Alert>
+}
+<BlazorButton Color="Color.Success" @onclick="@DeleteGear">Yes, delete</BlazorButton>
+<BlazorButton Color="Color.Danger" @onclick="@(() => { _uri.NavigateTo($"gear/{_item.ID}"); })">No, go back</BlazorButton>
+
+@code {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private int id { get; set; }
+private Gear _item;
+private int associatedCharacter;
+
+protected override void OnInit()
+{
+    if (UserID == -1) return;
+    _item = _ctx.Items.SingleOrDefault(x => x.ID == id);
+    if (_item == null) _uri.NavigateTo($"gear/");
+
+    var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) == null;
+
+    // Admin can do whatever
+    if (!isAdmin)
+    {
+        // Otherwise GM is only able to delete aa gear item if it's on the right server
+        var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == _item.Server.ID) == null;
+        if (!isGM)
+            _uri.NavigateTo($"gear/{_item.ID}");
+    }
+    associatedCharacter = _ctx.PCs.Where(x => x.Gear.Select(x => x.Gear.ID).Contains(_item.ID)).Count();
+}
+
+private void DeleteGear()
+{
+    foreach (var cg in _ctx.Set<CharacterGear>().Where(x => x.Gear.ID == _item.ID)) _ctx.Set<CharacterGear>().Remove(cg);
+    _ctx.Set<Source>().Remove(_item.Source);
+    _ctx.Set<MoneySum>().Remove(_item.Cost);
+    _ctx.Set<GearRarity>().Remove(_item.Rarity);
+    _ctx.Items.Remove(_item);
+    _ctx.SaveChanges();
+    _uri.NavigateTo("gear/");
+}
+}

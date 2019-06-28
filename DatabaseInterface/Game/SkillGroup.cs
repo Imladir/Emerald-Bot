@@ -15,7 +15,7 @@ namespace EmeraldBot.Model.Game
 
         [Required(ErrorMessage = "A skill group must have a name")]
         [RegularExpression(@"^\w{4,16}$", ErrorMessage = "Skill group name must be one word of length 4 to 16")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         public virtual ICollection<TechniqueSkillGroup> Techniques { get; set; }
     }

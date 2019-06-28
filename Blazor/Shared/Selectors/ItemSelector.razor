@@ -1,0 +1,54 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<FormGroup>
+    <BlazorLabel For="ItemSelector">Item</BlazorLabel>
+    <Dropdown Id="ItemSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">
+            @if (Item != null)
+            {
+                <span>@Item.Name</span>
+            } else
+            {
+                <span>Pick one.</span>
+            }
+        </DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var i in _items)
+            {
+                <DropdownItem @key="@i.ID" @onclick="@(() => ItemSelected(i))">@i.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
+
+@code  {
+[Parameter] protected EventCallback<Gear> ItemChanged { get; set; }
+[Parameter] protected Gear Item { get; set; }
+[Parameter] protected string Type { get; set; }
+private bool IsOpen = false;
+private List<Gear> _items = new List<Gear> ();
+
+protected override void OnParametersSet()
+{
+    _items = _ctx.Items.ToList();
+    if (Type.Equals("weapon"))
+        _items = _items.Where(x => x is Weapon).OrderBy(x => x.Name).ToList();
+    else if (Type.Equals("armour"))
+        _items = _items.Where(x => x is Armour).OrderBy(x => x.Name).ToList();
+    else
+        _items = _items.Where(x => !(x is Weapon) && !(x is Armour)).OrderBy(x => x.Name).ToList();
+}
+
+protected async Task ItemSelected(Gear i)
+{
+    if (Item == null || i.ID != Item.ID)
+    {
+        Item = i;
+        await ItemChanged.InvokeAsync(Item);
+    }
+    IsOpen = false;
+}
+}

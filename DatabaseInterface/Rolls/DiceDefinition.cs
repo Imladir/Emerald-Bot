@@ -15,12 +15,14 @@ namespace EmeraldBot.Model.Rolls
         public int ID { get; set; }
 
         [Required]
-        public string DieType { get; set; }
+        public string DieType { get; set; } = "";
 
+        [Required]
         [MaxLength(2, ErrorMessage = "Value is too long")]
         //[Required(ErrorMessage = "Can't create a die side without a value")]
-        public string Value { get; set; }
+        public string Value { get; set; } = "";
 
+        [Required]
         public virtual Emote Emote { get; set; }
 
         public bool Success() { return Value.Contains("s"); }

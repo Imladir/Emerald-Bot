@@ -6,11 +6,11 @@
 <FormGroup>
     <BlazorLabel For="ClassSelector">Advantage Class</BlazorLabel>
     <Dropdown Id="ClassSelector" IsOpen="@IsOpen">
-        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">@(_classes.Count > 0 ? _classes.Find(x => x.ID == Class.ID).Name : "Loading...")</DropdownToggle>
+        <DropdownToggle @onclick="@(() => { IsOpen = !IsOpen; StateHasChanged(); })">@(_classes.Count > 0 ? _classes.Find(x => x.ID == Class.ID).Name : "Loading...")</DropdownToggle>
         <DropdownMenu IsOpen="@IsOpen">
             @foreach (var c in _classes)
             {
-                <DropdownItem @key="@c.ID" @onclick="@((e) => ClassSelected(c))">@c.Name</DropdownItem>
+                <DropdownItem @key="@c.ID" @onclick="@(() => ClassSelected(c))">@c.Name</DropdownItem>
             }
         </DropdownMenu>
     </Dropdown>

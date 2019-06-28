@@ -12,8 +12,8 @@ namespace EmeraldBot.Model.Game
     public class Armour : Gear
     {
         [Required]
-        public int Physical { get; set; }
+        public int Physical { get; set; } = 0;
         [Required]
-        public int Spiritual { get; set; }
+        public int Spiritual { get; set; } = 0;
     }
 }

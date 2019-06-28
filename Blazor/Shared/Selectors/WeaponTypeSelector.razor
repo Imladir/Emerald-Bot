@@ -1,0 +1,52 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<FormGroup>
+    <BlazorLabel For="WeaponTypeSelector">Weapon Type</BlazorLabel>
+    <Dropdown Id="WeaponTypeSelector" IsOpen="@IsOpen">
+        <DropdownToggle @onclick="@((e) => { IsOpen = !IsOpen; StateHasChanged(); })">
+            @if (WeaponType != null)
+            {
+                <span>@WeaponType.Name</span>
+            } else
+            {
+                <span>Loading</span>
+            }
+        </DropdownToggle>
+        <DropdownMenu IsOpen="@IsOpen">
+            @foreach (var t in _types)
+            {
+                <DropdownItem @key="@t.ID" @onclick="@(() => TypeSelected(t))">@t.Name</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</FormGroup>
+
+@code  {
+[Parameter] protected EventCallback<WeaponType> WeaponTypeChanged { get; set; }
+[Parameter] protected WeaponType WeaponType { get; set; }
+private bool IsOpen = false;
+private List<WeaponType> _types = new List<WeaponType> ();
+
+protected override async Task OnInitAsync()
+{
+    _types = _ctx.WeaponTypes.OrderBy(x => x.Name).ToList();
+    if (WeaponType == null)
+    {
+        WeaponType = _types.Single(x => x.Name.Equals("Swords"));
+        await WeaponTypeChanged.InvokeAsync(WeaponType);
+    }
+}
+
+protected async Task TypeSelected(WeaponType wt)
+{
+    if (WeaponType == null || wt.ID != WeaponType.ID)
+    {
+        WeaponType = wt;
+        await WeaponTypeChanged.InvokeAsync(WeaponType);
+    }
+    IsOpen = false;
+}
+}

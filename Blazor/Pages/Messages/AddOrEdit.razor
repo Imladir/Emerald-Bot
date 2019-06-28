@@ -39,8 +39,8 @@
             }
                 <BlazorButton Color="Color.Success" @onclick="@SaveMessage">Save Message</BlazorButton>
                 </BlazorCol>
-                <BlazorCol>
-                    <Image IsRounded="true" Alignment="Alignment.Center" src="@(PC != null ? PC.Icon : Message.Icon)" style="width: 300px; height: auto; max-width: 20%;" />
+                <BlazorCol style="width:300px; max-width: 25%;">
+                    <Image IsRounded="true" Alignment="Alignment.Center" src="@(PC != null ? PC.Icon : Message.Icon)" style="width: 100%; height: auto;" />
                 </BlazorCol>
             </Row>
 </Container>

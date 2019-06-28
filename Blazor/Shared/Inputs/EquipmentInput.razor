@@ -1,0 +1,60 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Servers
+
+@inject EmeraldBotContext _ctx
+
+
+@if (Equipment != null)
+{
+<BlazorTable>
+    @foreach (var type in new List<string>() { "armour", "weapon", "personal effect" })
+    {
+        <tr>
+            <td>
+                <h4 style="text-align: center;" @onclick="@(() => _openType[type] = !_openType[type])">@type.Capitalize()</h4>
+                <Collapse IsOpen="@(_openType[type])">
+                    <BlazorButton Color="Color.Success" @onclick="@(() => AddEntry(type))">Add @type.Capitalize()</BlazorButton>
+                    
+                            @for (int i = 0; i < _items[type].Count; i++)
+                            {
+                                <CharacterItemInput Type="@type" @bind-Item="@_items[type][i]" />
+                            }
+                </Collapse>
+            </td>
+        </tr>
+}
+</BlazorTable>
+}
+
+@code {
+[Parameter] private EventCallback<ICollection<CharacterGear>> EquipmentChanged { get; set; }
+[Parameter] private ICollection<CharacterGear> Equipment { get; set; }
+private Dictionary<string, bool> _openType;
+private Dictionary<string, List<CharacterGear>> _items;
+
+protected override void OnInit()
+{
+    _openType = new Dictionary<string, bool>() {
+            { "personal effect", false},
+            { "weapon", false},
+            { "armour", false}
+        };
+}
+
+protected override void OnParametersSet()
+{
+    _items = new Dictionary<string, List<CharacterGear>>();
+    _items["weapon"] = Equipment.Where(x => x.Gear is Weapon).OrderBy(x => x.Gear.Name).ToList();
+    _items["armour"] = Equipment.Where(x => x.Gear is Armour).OrderBy(x => x.Gear.Name).ToList();
+    _items["personal effect"] = Equipment.Where(x => !(x.Gear is Weapon) && !(x.Gear is Armour)).OrderBy(x => x.Gear.Name).ToList();
+}
+
+private void AddEntry(string type)
+{
+    var newGear = new CharacterGear();
+    Equipment.Add(newGear);
+    _items[type].Insert(0, newGear);
+}
+}

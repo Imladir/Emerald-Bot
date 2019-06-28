@@ -12,5 +12,6 @@ namespace EmeraldBot.Model.Characters
         public int GearID { get; set; }
         public virtual Gear Gear { get; set; }
         public int Quantity { get; set; } = 1;
+        public string Description { get; set; } = "";
     }
 }

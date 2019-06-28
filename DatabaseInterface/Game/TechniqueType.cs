@@ -15,7 +15,7 @@ namespace EmeraldBot.Model.Game
 
         [MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a technique type without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public virtual ICollection<Technique> Techniques { get; set; }
     }
 }

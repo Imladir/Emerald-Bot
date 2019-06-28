@@ -17,7 +17,6 @@ namespace EmeraldBot.Bot
         CommandHandler _handler;
         WebServiceServer _webService;
 
-
         static void Main(string[] args)
         => new Program().MainAsync(args).GetAwaiter().GetResult();
 
@@ -53,7 +52,7 @@ namespace EmeraldBot.Bot
                 .BuildServiceProvider();
 
             _handler = new CommandHandler(commands, client, services);
-            await _handler.SetupAsync(client);
+            //await _handler.SetupAsync(client);
 
             string url = "http://localhost:5050/";
             _webService = WebServiceServer.Get(url, client, args);

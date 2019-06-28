@@ -1,0 +1,7 @@
+﻿@page  "/gear/{id:int}/edit"
+
+<AddOrEdit GearID="@id" />
+
+@code {
+[Parameter] private int id { get; set; }
+}

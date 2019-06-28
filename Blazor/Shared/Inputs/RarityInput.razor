@@ -1,0 +1,21 @@
+﻿@using EmeraldBot.Model.Game
+
+<Container>
+    <Row>
+        <BlazorCol>
+            <BlazorLabel For="RarityMin">Rarity Min</BlazorLabel>
+            <BlazorInput Id="RarityMin" InputType="InputType.Number" min="0" @bind-Value="@Min" />
+        </BlazorCol>
+        <BlazorCol>
+            <BlazorLabel For="RarityMax">Rarity Max</BlazorLabel>
+            <BlazorInput Id="RarityMax" InputType="InputType.Number" min="0" @bind-Value="@Max" />
+        </BlazorCol>
+    </Row>
+</Container>
+
+@code  {
+[Parameter] private EventCallback<GearRarity> RarityChanged { get; set; }
+[Parameter] private GearRarity Rarity { get; set; }
+private string Min { get { return $"{Rarity.MinRarity}"; } set { Rarity.MinRarity = int.Parse(value); if (Rarity.MaxRarity < Rarity.MinRarity) Rarity.MaxRarity = Rarity.MinRarity; } }
+private string Max { get { return $"{Rarity.MaxRarity}"; } set { Rarity.MaxRarity = int.Parse(value);  if (Rarity.MinRarity > Rarity.MaxRarity) Rarity.MinRarity = Rarity.MaxRarity;} }
+}

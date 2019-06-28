@@ -15,6 +15,6 @@ namespace EmeraldBot.Model.Characters
 
         [MinLength(5, ErrorMessage = "Name is too short"), MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create an NPC type without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
     }
 }

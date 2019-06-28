@@ -14,18 +14,13 @@ namespace EmeraldBot.Model.Rolls
         public static Dictionary<string, List<DieFace>> Realisations;
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
+        public int ID { get; set; } = 0;
 
         public virtual DieFace Face { get; set; }
 
-        public bool Exploded { get; set; }
+        public bool Exploded { get; set; } = false;
 
         public virtual Roll Roll { get; set; }
-
-        public RollDie()
-        {
-            Exploded = false;
-        }
 
         public RollResult Score() { return Face.Score(); }
     }

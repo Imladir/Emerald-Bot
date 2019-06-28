@@ -56,6 +56,7 @@ namespace EmeraldBot.Model
         public DbSet<TechniqueType> TechniqueTypes { get; set; }
         public DbSet<Opportunity> Opportunities { get; set; }
         public DbSet<OpportunityTrigger> OpportunityTriggers { get; set; }
+        public DbSet<MoneySum> MoneySums { get; set; }
 
         // Rolls
         public DbSet<DieFace> DieFaces { get; set; }

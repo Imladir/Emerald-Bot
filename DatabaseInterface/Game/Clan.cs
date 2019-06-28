@@ -16,11 +16,11 @@ namespace EmeraldBot.Model.Game
 
         [MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a clan without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
-        public string Icon { get; set; }
+        public string Icon { get; set; } = "";
 
-        public int Colour { get; set; }
+        public int Colour { get; set; } = 0;
 
         public virtual ICollection<PC> PCs { get; set; }
 

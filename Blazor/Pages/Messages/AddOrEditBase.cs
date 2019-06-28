@@ -82,12 +82,21 @@ namespace EmeraldBot.Blazor.Pages.Messages
             await connection.StartAsync();
             if (!IsEdit)
             {
+                Message.Colour = PC.Clan.Colour;
+                Message.Icon = PC.Icon;
                 Message.Server = Server;
                 Message.Player = _ctx.Users.Find(UserID);
                 _ctx.Messages.Add(Message);
             }
-
-            if (PC != null) Message.Colour = PC.Clan.Colour;
+            else if (PC != null)
+            {
+                Message.Colour = PC.Clan.Colour;
+                Message.Icon = PC.Icon;
+            } else
+            {
+                Message.Colour = _oldColour;
+                Message.Icon = _oldIcon;
+            }
 
             _ctx.SaveChanges();
 

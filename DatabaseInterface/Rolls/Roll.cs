@@ -32,34 +32,28 @@ namespace EmeraldBot.Model.Rolls
         public virtual Character Character { get; set; }
 
         [MaxLength(128, ErrorMessage = "Name is too long")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public virtual Technique Technique { get; set; }
         public virtual Skill Skill { get; set; }
         public virtual Ring Ring { get; set; }
-        public int TN { get; set; }
+        public int TN { get; set; } = 0;
         [NotMapped]
         public bool Initial { get; set; }
         [Required]
         public bool Locked { get; set; }
         [Required]
-        public long DiscordChannelID { get; set; }
-        public long DiscordMessageID { get; set; }
-        public string Log { get; set; }
+        public long DiscordChannelID { get; set; } = 0;
+        public long DiscordMessageID { get; set; } = 0;
+        public string Log { get; set; } = "";
         [Required]
-        public DateTime LastUpdated { get; set; }
+        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
         [Required]
         public virtual ICollection<RollDie> Dice { get; set; }
 
 
         public Roll()
         {
-            Name = "";
-            TN = 0;
             Locked = false;
-            DiscordChannelID = 0;
-            DiscordMessageID = 0;
-            Log = "";
-            LastUpdated = DateTime.UtcNow;
             Dice = new List<RollDie>();
         }
 

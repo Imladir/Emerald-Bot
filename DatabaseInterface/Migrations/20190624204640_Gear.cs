@@ -98,7 +98,8 @@ namespace EmeraldBot.Model.Migrations
                 {
                     CharacterID = table.Column<int>(nullable: false),
                     GearID = table.Column<int>(nullable: false),
-                    Quantity = table.Column<int>(nullable: false)
+                    Quantity = table.Column<int>(nullable: false),
+                    Description = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

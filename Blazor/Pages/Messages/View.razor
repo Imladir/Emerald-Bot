@@ -24,8 +24,8 @@ else
                 <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) =>_uri.NavigateTo($"messages/{_message.ID}/delete"))">Delete</BlazorButton>
                 <p>@((MarkupString)_message.Text.ToHTML())</p>
             </BlazorCol>
-            <BlazorCol>
-                <Image IsRounded="true" Alignment="Alignment.Center" src="@_message.Icon" style="width: 300px; height: auto; max-width: 20%;" />
+            <BlazorCol style="width:300px; max-width: 25%;">
+                <Image IsRounded="true" Alignment="Alignment.Center" src="@_message.Icon" style="width: 100%; height: auto;" />
             </BlazorCol>
         </Row>
     </Container>

@@ -1,0 +1,91 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+
+<Container>
+    <Row>
+        <BlazorCol>
+            <BlazorLabel For="OneHandGrip">One Hand Grip</BlazorLabel>
+            <Dropdown Id="OneHandGrip" IsOpen="@IsOneHandOpen">
+                <DropdownToggle @onclick="@(() => { IsOneHandOpen = !IsOneHandOpen; StateHasChanged(); })">
+                    @if (OneHand != null)
+                    {
+                        <span>@OneHand.GetString()</span>
+                    }
+                    else
+                    {
+                        <span>N / A</span>
+                    }
+                </DropdownToggle>
+                <DropdownMenu IsOpen="@IsOneHandOpen">
+                    <DropdownItem @key="0" @onclick="@(() => OneHandSelected(null))">N / A</DropdownItem>
+                    @foreach (var g in _grips.Where(x => x.Hands == 1))
+                    {
+                        <DropdownItem @key="@g.ID" @onclick="@(() => OneHandSelected(g))">@g.GetString()</DropdownItem>
+                    }
+                </DropdownMenu>
+            </Dropdown>
+        </BlazorCol>
+        <BlazorCol>
+            <BlazorLabel For="TwoHandsGrip">Two Hands Grip</BlazorLabel>
+            <Dropdown Id="TwoHandsGrip" IsOpen="@IsTwoHandsOpen">
+                <DropdownToggle @onclick="@(() => { IsTwoHandsOpen = !IsTwoHandsOpen; StateHasChanged(); })">
+                    @if (TwoHands != null)
+                    {
+                        <span>@TwoHands.GetString()</span>
+                    }
+                    else
+                    {
+                        <span>N / A</span>
+                    }
+                </DropdownToggle>
+                <DropdownMenu IsOpen="@IsTwoHandsOpen">
+                    <DropdownItem @key="0" @onclick="@(() => TwoHandsSelected(null))">N / A</DropdownItem>
+                    @foreach (var g in _grips.Where(x => x.Hands == 2))
+                    {
+                        <DropdownItem @key="@g.ID" @onclick="@(() => TwoHandsSelected(g))">@g.GetString()</DropdownItem>
+                    }
+                </DropdownMenu>
+            </Dropdown>
+        </BlazorCol>
+    </Row>
+</Container>
+
+@code  {
+[Parameter] protected EventCallback<ICollection<WeaponGripsWeapon>> GripsChanged { get; set; }
+[Parameter] protected ICollection<WeaponGripsWeapon> Grips { get; set; }
+private WeaponGrip OneHand {get;set;} = null;
+private WeaponGrip TwoHands {get;set;} = null;
+private bool IsOneHandOpen = false;
+private bool IsTwoHandsOpen = false;
+private List<WeaponGrip> _grips = new List<WeaponGrip>();
+
+protected override void OnInit()
+{
+
+    _grips = _ctx.Set<WeaponGrip>().ToList().OrderBy(x => x.GetString()).ToList();
+}
+
+protected async Task OneHandSelected(WeaponGrip g)
+{
+    OneHand = g;
+    await SelectionChanged();
+    IsOneHandOpen = false;
+}
+
+protected async Task TwoHandsSelected(WeaponGrip g)
+{
+    TwoHands = g;
+    await SelectionChanged();
+    IsTwoHandsOpen = false;
+}
+
+protected async Task SelectionChanged()
+{
+    ICollection<WeaponGripsWeapon> Grips = new List<WeaponGripsWeapon>();
+    if (OneHand != null) Grips.Add(new WeaponGripsWeapon() { WeaponGrip = OneHand });
+    if (TwoHands != null) Grips.Add(new WeaponGripsWeapon() { WeaponGrip = TwoHands });
+    await GripsChanged.InvokeAsync(Grips);
+}
+}

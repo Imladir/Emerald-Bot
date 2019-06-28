@@ -17,6 +17,6 @@ namespace EmeraldBot.Model
         [Required(ErrorMessage = "Can't create a source without a book name")]
         public string Book { get; set; } = "";
 
-        public int Page { get; set; } = -1;
+        public int Page { get; set; } = 0;
     }
 }

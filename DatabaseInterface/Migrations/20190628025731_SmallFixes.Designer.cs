@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmeraldBot.Model.Migrations
 {
     [DbContext(typeof(EmeraldBotContext))]
-    [Migration("20190624074925_Gear")]
-    partial class Gear
+    [Migration("20190628025731_SmallFixes")]
+    partial class SmallFixes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,6 +26,8 @@ namespace EmeraldBot.Model.Migrations
                     b.Property<int>("GearID");
 
                     b.Property<int>("CharacterID");
+
+                    b.Property<string>("Description");
 
                     b.Property<int>("Quantity");
 
@@ -83,6 +85,8 @@ namespace EmeraldBot.Model.Migrations
                     b.Property<int>("Amount");
 
                     b.Property<DateTime>("EntryDate");
+
+                    b.Property<bool>("IsCurriculum");
 
                     b.Property<int>("JournalID");
 
@@ -329,7 +333,7 @@ namespace EmeraldBot.Model.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("MoneySum");
+                    b.ToTable("MoneySums");
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Game.Opportunity", b =>
@@ -683,9 +687,10 @@ namespace EmeraldBot.Model.Migrations
                     b.Property<string>("DieType")
                         .IsRequired();
 
-                    b.Property<int?>("EmoteID");
+                    b.Property<int>("EmoteID");
 
                     b.Property<string>("Value")
+                        .IsRequired()
                         .HasMaxLength(2);
 
                     b.HasKey("ID");
@@ -1677,7 +1682,8 @@ namespace EmeraldBot.Model.Migrations
                     b.HasOne("EmeraldBot.Model.Servers.Emote", "Emote")
                         .WithMany("DieFaces")
                         .HasForeignKey("EmoteID")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EmeraldBot.Model.Rolls.Roll", b =>

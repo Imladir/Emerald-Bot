@@ -1,0 +1,170 @@
+﻿@page  "/gear/"
+
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Servers
+@using EmeraldBot.Model.Game
+@using Microsoft.AspNetCore.Http;
+@using  System.Linq;
+
+@inject EmeraldBotContext _ctx
+@inject IHttpContextAccessor _ca
+@inject IUriHelper _uri
+
+<RedirectToLoginIfNotAuthorized />
+<h1>Gear</h1>
+<ServerSelector ServerChanged="@ServerSelected" />
+
+@if (_items.Count == 0)
+{
+    <p>Page is loading...</p>
+}
+else
+{
+<BlazorNav IsPills="true">
+    <BlazorNavLink @onclick="@((e) => _openTab = "general")" IsActive="@( _openTab == "general")">Personal Effects</BlazorNavLink>
+    <BlazorNavLink @onclick="@((e) => _openTab = "weapons")" IsActive="@( _openTab == "weapons")">Weapons</BlazorNavLink>
+    <BlazorNavLink @onclick="@((e) => _openTab = "armours")" IsActive="@( _openTab == "armours")">Armours</BlazorNavLink>
+</BlazorNav>
+<TabContent>
+    <TabPane IsOpen="@(_openTab.Equals("general"))">
+        <BlazorTable>
+            <TableHead TableHeadType="TableHeadType.Dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Alias</th>
+                    <th style="text-align: center;">Qualities</th>
+                    <th style="text-align: center;">Rarity</th>
+                    <th style="text-align: center;">Cost</th>
+                    <th style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"gear/add/general"))">New Item</BlazorButton></th>
+                </tr>
+            </TableHead>
+            <tbody>
+                @foreach (var item in _items)
+                {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Alias</td>
+                    <td style="text-align: center;">@(string.Join(", ", item.GearQualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</td>
+                    <td style="text-align: center;">@(item.Rarity.MinRarity == item.Rarity.MaxRarity ? $"{item.Rarity.MinRarity}" : $"{item.Rarity.MinRarity} - {item.Rarity.MaxRarity}")</td>
+                    <td style="text-align: center;">@item.Cost.GetString()</td>
+                    <td style="vertical-align: middle; text-align: center;">
+                        <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}"))">View</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}/edit"))">Edit</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}/delete"))">Delete</BlazorButton>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </BlazorTable>
+    </TabPane>
+    <TabPane IsOpen="@(_openTab.Equals("weapons"))">
+        <BlazorTable>
+            <TableHead TableHeadType="TableHeadType.Dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Alias</th>
+                    <th style="text-align: center;">Type</th>
+                    <th style="text-align: center;">Range</th>
+                    <th style="text-align: center;">Damage</th>
+                    <th style="text-align: center;">Deadliness</th>
+                    <th style="text-align: center;">Qualities</th>
+                    <th style="text-align: center;">Rarity</th>
+                    <th style="text-align: center;">Cost</th>
+                    <th style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"gear/add/weapon"))">New Weapon</BlazorButton></th>
+                </tr>
+            </TableHead>
+            <tbody>
+                @foreach (var item in _weapons)
+                {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Alias</td>
+                    <td style="text-align: center;">@item.WeaponType.Name</td>
+                    <td style="text-align: center;">@(item.RangeMin == item.RangeMax ? $"{item.RangeMin}" : $"{item.RangeMin} - {item.RangeMax}")</td>
+                    <td style="text-align: center;">@item.Damage</td>
+                    <td style="text-align: center;">@item.Deadliness</td>
+                    <td style="text-align: center;">@(string.Join(", ", item.GearQualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</td>
+                    <td style="text-align: center;">@(item.Rarity.MinRarity == item.Rarity.MaxRarity ? $"{item.Rarity.MinRarity}" : $"{item.Rarity.MinRarity} - {item.Rarity.MaxRarity}")</td>
+                    <td style="text-align: center;">@item.Cost.GetString()</td>
+                    <td style="vertical-align: middle; text-align: center;">
+                        <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}"))">View</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}/edit"))">Edit</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}/delete"))">Delete</BlazorButton>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </BlazorTable>
+    </TabPane>
+    <TabPane IsOpen="@(_openTab.Equals("armours"))">
+        <BlazorTable>
+            <TableHead TableHeadType="TableHeadType.Dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Alias</th>
+                    <th style="text-align: center;">Physical</th>
+                    <th style="text-align: center;">Spiritual</th>
+                    <th style="text-align: center;">Qualities</th>
+                    <th style="text-align: center;">Rarity</th>
+                    <th style="text-align: center;">Cost</th>
+                    <th style="text-align: center;"><BlazorButton ButtonType="ButtonType.Button" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"gear/add/armour"))">New Armour</BlazorButton></th>
+                </tr>
+            </TableHead>
+            <tbody>
+                @foreach (var item in _armours)
+                {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Alias</td>
+                    <td style="text-align: center;">@item.Physical</td>
+                    <td style="text-align: center;">@item.Spiritual</td>
+                    <td style="text-align: center;">@(string.Join(", ", item.GearQualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</td>
+                    <td style="text-align: center;">@(item.Rarity.MinRarity == item.Rarity.MaxRarity ? $"{item.Rarity.MinRarity}" : $"{item.Rarity.MinRarity} - {item.Rarity.MaxRarity}")</td>
+                    <td style="text-align: center;">@item.Cost.GetString()</td>
+                    <td style="vertical-align: middle; text-align: center;">
+                        <BlazorButton IsOutline="true" Color="Color.Secondary" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}"))">View</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Success" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}/edit"))">Edit</BlazorButton>
+                        <BlazorButton IsOutline="true" Color="Color.Danger" @onclick="@((e) => _uri.NavigateTo($"gear/{item.ID}/delete"))">Delete</BlazorButton>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </BlazorTable>
+    </TabPane>
+</TabContent>
+}
+
+@code {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+private List<Gear> _items = new List<Gear>();
+private List<Weapon> _weapons = new List<Weapon>();
+private List<Armour> _armours = new List<Armour>();
+private bool _isGM;
+private bool _isAdmin;
+private string _openTab;
+
+protected override void OnInit()
+{
+    _openTab = "general";
+    _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+}
+
+public void ServerSelected(Server server)
+{
+    _items = _ctx.Items.Where(x => x.Server.ID == server.ID || x.Server.DiscordID == 0).ToList();
+    _weapons = _items.OfType<Weapon>().OrderBy(x => x.Name).ToList();
+    _armours = _items.OfType<Armour>().OrderBy(x => x.Name).ToList();
+    _items = _items.Where(x => !_weapons.Select(x => x.ID).Contains(x.ID) && !_armours.Select(x => x.ID).Contains(x.ID)).OrderBy(x => x.Name).ToList();
+    _isGM = _ctx.HasPrivilege(server.ID, UserID);
+}
+
+public string FormatCost(MoneySum cost)
+{
+    List<string> res = new List<string>();
+    if (cost.Koku > 0) res.Add($"{cost.Koku} Koku");
+    if (cost.Bu > 0) res.Add($"{cost.Bu} Bu");
+    if (cost.Zeni > 0) res.Add($"{cost.Zeni} Zeni");
+    return string.Join(", ", res);
+}
+
+}

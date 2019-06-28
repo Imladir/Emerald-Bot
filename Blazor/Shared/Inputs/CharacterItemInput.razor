@@ -1,0 +1,25 @@
+﻿@using EmeraldBot.Model.Game
+@using EmeraldBot.Model.Characters
+
+    <Container>
+        <Row>
+            <BlazorCol><ItemSelector Type="@Type" @bind-Item="@Item.Gear" /></BlazorCol>
+            <BlazorCol>
+                <BlazorLabel For="ItemQuantity">Quantity</BlazorLabel>
+                <BlazorInput Id="ItemQuantity" InputType="InputType.Number" min="1" @bind-Value="@Quantity" />
+            </BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="ItemDescription">Description</BlazorLabel>
+                <BlazorInput Id="ItemDescription" InputType="InputType.Text" @bind-Value="@Item.Description" PlaceHolder="Description" />
+            </BlazorCol>
+        </Row>
+    </Container>
+
+@code  {
+[Parameter] private EventCallback<CharacterGear> ItemChanged { get; set; }
+[Parameter] private CharacterGear Item { get; set; }
+[Parameter] private string Type { get; set; }
+private string Quantity { get { return $"{Item.Quantity}"; } set { Item.Quantity = int.Parse(value); } }
+}

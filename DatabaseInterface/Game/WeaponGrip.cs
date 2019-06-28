@@ -12,21 +12,17 @@ namespace EmeraldBot.Model.Game
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
-        public int Hands { get; set; }
+        public int Hands { get; set; } = 1;
 
-        public int NewRangeMin { get; set; }
-        public int NewRangeMax { get; set; }
-        public int DamageModificator { get; set; }
-        public int DeadlinessModificator { get; set; }
+        public int NewRangeMin { get; set; } = -1;
+        public int NewRangeMax { get; set; } = -1;
+        public int DamageModificator { get; set; } = 0;
+        public int DeadlinessModificator { get; set; } = 0;
         public virtual ICollection<WeaponGripsWeapon> Weapons { get; set; }
 
         public WeaponGrip(int hands)
         {
             Hands = hands;
-            NewRangeMin = -1;
-            NewRangeMax = -1;
-            DamageModificator = 0;
-            DeadlinessModificator = 0;
         }
     }
 }

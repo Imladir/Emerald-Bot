@@ -15,6 +15,6 @@ namespace EmeraldBot.Model.Characters
 
         [MinLength(2, ErrorMessage = "Name is too short"), MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a journal type without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
     }
 }

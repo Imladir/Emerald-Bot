@@ -42,6 +42,8 @@
     <Compile Remove="Migrations\20190624065928_Gear.Designer.cs" />
     <Compile Remove="Migrations\20190624073314_Gear.cs" />
     <Compile Remove="Migrations\20190624073314_Gear.Designer.cs" />
+    <Compile Remove="Migrations\20190624074925_Gear.cs" />
+    <Compile Remove="Migrations\20190624074925_Gear.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

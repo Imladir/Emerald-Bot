@@ -15,6 +15,38 @@ namespace EmeraldBot.Blazor
         {
             return $"img/{r.Name}.png";
         }
+        public static string Capitalize(this string s)
+        {
+            return s.First().ToString().ToUpper() + s.Substring(1).ToLower();
+        }
+
+        public static string GetString(this WeaponGrip g)
+        {
+            string res = "";
+            if (g.DamageModificator > 0) res += $"Damage +{g.DamageModificator} ";
+            else if (g.DamageModificator < 0) res += $"Damage -{g.DamageModificator} ";
+
+            if (g.DeadlinessModificator > 0) res += $"Deadliness +{g.DeadlinessModificator} ";
+            else if (g.DeadlinessModificator < 0) res += $"Deadliness -{g.DeadlinessModificator} ";
+
+            if (g.NewRangeMin != -1 && g.NewRangeMax != -1)
+            {
+                if (g.NewRangeMin == g.NewRangeMax) res += $"Range: {g.NewRangeMin}";
+                else res += $"Range: {g.NewRangeMin}-{g.NewRangeMax}";
+            }
+            if (res == "") res = g.Hands == 1 ? "1 hand: standard profile" : "2 hands: standard profile";
+            else res = (g.Hands == 1 ? "1 hand: " : "2 hands: ") + res;
+            return res;
+        }
+
+        public static string GetString(this MoneySum cost)
+        {
+            List<string> res = new List<string>();
+            if (cost.Koku > 0) res.Add($"{cost.Koku} Koku");
+            if (cost.Bu > 0) res.Add($"{cost.Bu} Bu");
+            if (cost.Zeni > 0) res.Add($"{cost.Zeni} Zeni");
+            return string.Join(", ", res);
+        }
 
         private static string boldPattern = "((\".*?\")|(“.*?”)|(\\*\\*.*?\\*\\*))";
         private static string ItalicPattern = @"[\*~](.*?)[\*~]";

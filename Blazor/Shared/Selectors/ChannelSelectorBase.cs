@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EmeraldBot.Blazor.Shared.FormComponents
+namespace EmeraldBot.Blazor.Shared.Selectors
 {
     public class ChannelSelectorBase : ComponentBase
     {

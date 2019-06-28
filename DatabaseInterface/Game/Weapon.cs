@@ -13,10 +13,10 @@ namespace EmeraldBot.Model.Game
     {
         [Required(ErrorMessage = "A weapon must have a type")]
         public virtual WeaponType WeaponType { get; set; }
-        public int RangeMin { get; set; }
-        public int RangeMax { get; set; }
-        public int Damage { get; set; }
-        public int Deadliness { get; set; }
+        public int RangeMin { get; set; } = 0;
+        public int RangeMax { get; set; } = 0;
+        public int Damage { get; set; } = 0;
+        public int Deadliness { get; set; } = 0;
         public virtual ICollection<WeaponGripsWeapon> WeaponGrips { get; set; }
     }
 }

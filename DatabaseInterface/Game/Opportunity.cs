@@ -20,12 +20,12 @@ namespace EmeraldBot.Model.Game
         public virtual Technique Source { get; set; }
 
         [Required]
-        public bool Variable { get; set; }
+        public bool Variable { get; set; } = false;
         [Required]
-        public int Amount { get; set; }
+        public int Amount { get; set; } = 0;
         [Required]
         [MaxLength(1024, ErrorMessage = "Effect is too long (must be shorter than 1024 characters)")]
-        public string Effect { get; set; }
+        public string Effect { get; set; } = "";
 
         [Required]
         public virtual ICollection<OpportunityTriggerOpportunity> Triggers { get; set; }

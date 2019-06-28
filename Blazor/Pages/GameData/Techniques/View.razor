@@ -57,7 +57,7 @@ else
     protected override void OnInit()
     {
         _technique = _ctx.Techniques.SingleOrDefault(x => x.ID == id);
-        _isGM = _ctx.HasPrivilege(id, UserID);
+        _isGM = _ctx.HasPrivilege(_technique.Server.ID, UserID);
         _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
     }
 

@@ -15,6 +15,6 @@ namespace EmeraldBot.Model.Game
 
         [MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a weapon type without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
     }
 }

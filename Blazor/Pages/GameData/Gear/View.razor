@@ -1,0 +1,161 @@
+﻿@page  "/gear/{id:int}"
+@using Microsoft.AspNetCore.Html
+@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+
+@inject EmeraldBotContext _ctx
+@inject IUriHelper _uri
+
+
+<RedirectToLoginIfNotAuthorized />
+
+@if (_item == null)
+{
+<p><em>The requested item wasn't found.</em></p>
+}
+else
+{
+<Container IsFluid="true">
+    <Row>
+        <BlazorCol>
+            <h1>@_item.Name</h1>
+            <h4>Alias: @_item.Alias</h4>
+        </BlazorCol>
+    </Row>
+    <Row>
+        <BlazorCol>
+            @if (_item is Weapon wep)
+            {
+                <BlazorTable>
+                    <TableHead TableHeadType="TableHeadType.Dark">
+                        <tr>
+                            <th style="text-align: center;">Type</th>
+                            <th style="text-align: center;">Range</th>
+                            <th style="text-align: center;">Damage</th>
+                            <th style="text-align: center;">Deadliness</th>
+                            <th style="text-align: center;">Rarity</th>
+                            <th style="text-align: center;">Cost</th>
+                            <th style="text-align: center;">Source</th>
+                            <th style="text-align: center;">Qualities</th>
+                        </tr>
+                    </TableHead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center;">@wep.WeaponType.Name</td>
+                            <td style="text-align: center;">@(wep.RangeMin == wep.RangeMax ? $"{wep.RangeMin}" : $"{wep.RangeMin} - {wep.RangeMax}")</td>
+                            <td style="text-align: center;">@wep.Damage</td>
+                            <td style="text-align: center;">@wep.Deadliness</td>
+                            <td style="text-align: center;">@(wep.Rarity.MinRarity == wep.Rarity.MaxRarity ? $"{wep.Rarity.MinRarity}" : $"{wep.Rarity.MinRarity} - {wep.Rarity.MaxRarity}")</td>
+                            <td style="text-align: center;">@wep.Cost.GetString()</td>
+                            <td style="text-align: center;">@(Source())</td>
+                            <td style="text-align: center;">@(string.Join(", ", wep.GearQualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</td>
+                        </tr>
+                    </tbody>
+                </BlazorTable>
+            }
+            else if (_item is Armour arm)
+            {
+                <BlazorTable>
+                    <TableHead TableHeadType="TableHeadType.Dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Alias</th>
+                            <th style="text-align: center;">Physical</th>
+                            <th style="text-align: center;">Spiritual</th>
+                            <th style="text-align: center;">Rarity</th>
+                            <th style="text-align: center;">Cost</th>
+                            <th style="text-align: center;">Source</th>
+                            <th style="text-align: center;">Qualities</th>
+                        </tr>
+                    </TableHead>
+                    <tbody>
+                        <tr>
+                            <td>@arm.Name</td>
+                            <td>@arm.Alias</td>
+                            <td style="text-align: center;">@arm.Physical</td>
+                            <td style="text-align: center;">@arm.Spiritual</td>
+                            <td style="text-align: center;">@(arm.Rarity.MinRarity == arm.Rarity.MaxRarity ? $"{arm.Rarity.MinRarity}" : $"{arm.Rarity.MinRarity} - {arm.Rarity.MaxRarity}")</td>
+                            <td style="text-align: center;">@arm.Cost.GetString()</td>
+                            <td style="text-align: center;">@(Source())</td>
+                            <td style="text-align: center;">@(string.Join(", ", arm.GearQualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</td>
+                        </tr>
+                     </tbody>
+                </BlazorTable>
+            }
+            else
+            {
+                <BlazorTable>
+                    <TableHead TableHeadType="TableHeadType.Dark">
+                        <tr>
+                            <th style="text-align: center;">Rarity</th>
+                            <th style="text-align: center;">Cost</th>
+                            <th style="text-align: center;">Source</th>
+                            <th style="text-align: center;">Qualities</th>
+                        </tr>
+                    </TableHead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center;">@(_item.Rarity.MinRarity == _item.Rarity.MaxRarity ? $"{_item.Rarity.MinRarity}" : $"{_item.Rarity.MinRarity} - {_item.Rarity.MaxRarity}")</td>
+                            <td style="text-align: center;">@_item.Cost.GetString()</td>
+                            <td style="text-align: center;">@(Source())</td>
+                            <td style="text-align: center;">@(string.Join(", ", _item.GearQualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</td>
+                        </tr>
+                    </tbody>
+                </BlazorTable>
+            }
+            <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"gear/"))">Back</BlazorButton>
+            @if (_isGM || _isAdmin)
+            {
+                <BlazorButton IsOutline="true" Color="Color.Success" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"gear/{_item.ID}/edit"))">Edit</BlazorButton>
+                @if (_item.Server.DiscordID != 0 || _isAdmin)
+                {
+                    <BlazorButton IsOutline="true" Color="Color.Danger" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"gear/{_item.ID}/delete"))">Delete</BlazorButton>
+                }
+            }
+        </BlazorCol>
+        <Row>
+            <BlazorCol>
+                <h4>Description</h4>
+                <p>@((MarkupString)_item.Description.ToHTML())</p>
+            </BlazorCol>
+        </Row>
+        @if (_item is Weapon wep)
+        {
+            <Row>
+                <BlazorCol>
+                    <h4>Grips</h4>
+                    <ul>
+                        @foreach (var g in wep.WeaponGrips.Select(x => x.WeaponGrip).OrderBy(x => x.Hands))
+                        {
+                            <li>@g.GetString()</li>
+                        }
+                    </ul>
+                </BlazorCol>
+            </Row>
+        }
+        <BlazorCol>
+        </BlazorCol>
+    </Row>
+</Container>
+}
+
+@code {
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private int id { get; set; }
+private Gear _item;
+private bool _isGM;
+private bool _isAdmin;
+
+protected override void OnInit()
+{
+    _item = _ctx.Items.SingleOrDefault(x => x.ID == id);
+    _isGM = _ctx.HasPrivilege(_item.Server.ID, UserID);
+    _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+}
+
+private string Source() {
+    string res = _item.Source.Book;
+    if (_item.Source.Page > 0) res += $", p{_item.Source.Page}";
+    return res;
+}
+}

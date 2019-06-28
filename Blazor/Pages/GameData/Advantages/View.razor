@@ -56,7 +56,7 @@ private bool _isAdmin;
 protected override void OnInit()
 {
     _advantage = _ctx.Advantages.SingleOrDefault(x => x.ID == id);
-    _isGM = _ctx.HasPrivilege(id, UserID);
+    _isGM = _ctx.HasPrivilege(_advantage.Server.ID, UserID);
     _isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
 }
 

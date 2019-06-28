@@ -1,0 +1,116 @@
+﻿@using EmeraldBot.Model.Game
+
+@inherits AddOrEditBase
+
+@if (IsEdit)
+{
+    <h1>Gear Edition</h1>
+} else
+{
+<h1>Gear creation</h1>
+}
+<BlazorForm>
+    <Container IsFluid="true">
+        <Row>
+            <BlazorCol><ServerSelector IncludeAdmin="true" @bind-Server="@Item.Server" /></BlazorCol>
+            @if  (Type.Equals("weapon"))
+            {
+                <BlazorCol><WeaponTypeSelector @bind-WeaponType="@Weapon.WeaponType" /></BlazorCol>
+            }
+            <BlazorCol><ItemQualitiesSelector @bind-Qualities="@Item.GearQualities" /></BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="ItemName">Name</BlazorLabel>
+                <BlazorInput Id="ItemName" InputType="InputType.Text" @bind-Value="@Item.Name" PlaceHolder="Name" />
+            </BlazorCol>
+            <BlazorCol>
+                <BlazorLabel For="ItemAlias">Alias</BlazorLabel>
+                <BlazorInput Id="ItemAlias" InputType="InputType.Text" @bind-Value="@Item.Alias" PlaceHolder="Alias" />
+            </BlazorCol>
+            <BlazorCol><SourceInput @bind-Source="@Item.Source" /></BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="Rarity">Rarity</BlazorLabel>
+                <RarityInput @bind-Rarity="@Item.Rarity" />
+            </BlazorCol>
+            <BlazorCol>
+                <BlazorLabel For="Cost">Cost</BlazorLabel>
+                <MoneySumInput @bind-MoneySum="@Item.Cost" />
+            </BlazorCol>
+        </Row>
+        @if (Type.Equals("armour"))
+        {
+            <Row>
+
+                <BlazorCol>
+                    <BlazorLabel For="ArmourPhysRes">Physical Resistance</BlazorLabel>
+                    <BlazorInput Id="ArmourPhysRes" InputType="InputType.Number" min="0" max="10" @bind-Value="@PhysRes" />
+                </BlazorCol>
+                <BlazorCol>
+                    <BlazorLabel For="ArmourSpiritRes">Spiritual Resistance</BlazorLabel>
+                    <BlazorInput Id="ArmourSpiritRes" InputType="InputType.Number" min="0" max="10" @bind-Value="@SpiritRes" />
+                </BlazorCol>
+            </Row>
+        }
+        else if (Type.Equals("weapon"))
+        {
+            <Row>
+                <BlazorCol>
+                    <BlazorLabel For="RangeMin">Range Min</BlazorLabel>
+                    <BlazorInput Id="RangeMin" InputType="InputType.Number" min="0" max="6" @bind-Value="@RangeMin" />
+                </BlazorCol>
+                <BlazorCol>
+                    <BlazorLabel For="RangeMax">Range Max</BlazorLabel>
+                    <BlazorInput Id="RangeMax" InputType="InputType.Number" min="0" max="6" @bind-Value="@RangeMax" />
+                </BlazorCol>
+                <BlazorCol>
+                    <BlazorLabel For="Damage">Damage</BlazorLabel>
+                    <BlazorInput Id="Damage" InputType="InputType.Number" min="0" max="15" @bind-Value="@Damage" />
+                </BlazorCol>
+                <BlazorCol>
+                    <BlazorLabel For="Deadliness">Deadliness</BlazorLabel>
+                    <BlazorInput Id="Deadliness" InputType="InputType.Number" min="0" max="15" @bind-Value="@Deadliness" />
+                </BlazorCol>
+            </Row>
+            <Row>
+                <BlazorCol>
+                    <WeaponGripSelector @bind-Grips="@Weapon.WeaponGrips" />
+                </BlazorCol>
+            </Row>
+        }
+        <Row>
+            <BlazorCol>
+                <BlazorLabel For="DescriptionText">Description</BlazorLabel>
+                <BlazorInput Id="DescriptionText" InputType="InputType.TextArea" @bind-Value="@Item.Description" Rows="5" @onkeyup="@UpdateDescriptionCharacterCount" />
+                @if (DescriptionLength < 1024)
+                {
+                    <Alert Color="Color.Success">
+                        @DescriptionLength Characters
+                    </Alert>
+                }
+                else
+                {
+                    <Alert Color="Color.Danger">
+                        @DescriptionLength Characters
+                    </Alert>
+                }
+            </BlazorCol>
+        </Row>
+        <Row>
+            <BlazorCol>
+                <BlazorButton Color="Color.Success" @onclick="@Save">Save Item</BlazorButton>
+            </BlazorCol>
+        </Row>
+    </Container>
+</BlazorForm>
+
+@code {
+private string PhysRes { get { return Type.Equals("armour") ? $"{Armour.Physical}" : ""; } set { if (Type.Equals("armour")) Armour.Physical = int.Parse(value); } }
+private string SpiritRes { get { return Type.Equals("armour") ? $"{Armour.Spiritual}" : ""; } set { if (Type.Equals("armour")) Armour.Spiritual = int.Parse(value); } }
+private string RangeMin { get { return Type.Equals("weapon") ? $"{Weapon.RangeMin}" : ""; } set { if (Type.Equals("weapon")) Weapon.RangeMin = int.Parse(value); if (Weapon.RangeMax < Weapon.RangeMin) Weapon.RangeMax = Weapon.RangeMin; } }
+private string RangeMax { get { return Type.Equals("weapon") ? $"{Weapon.RangeMax}" : ""; } set { if (Type.Equals("weapon")) Weapon.RangeMax = int.Parse(value); if (Weapon.RangeMin > Weapon.RangeMax) Weapon.RangeMin = Weapon.RangeMax; } }
+private string Damage { get { return Type.Equals("weapon") ? $"{Weapon.Damage}" : ""; } set { if (Type.Equals("weapon")) Weapon.Damage = int.Parse(value); } }
+private string Deadliness { get { return Type.Equals("weapon") ? $"{Weapon.Deadliness}" : ""; } set { if (Type.Equals("weapon")) Weapon.Deadliness = int.Parse(value); } }
+}

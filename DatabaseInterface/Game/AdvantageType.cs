@@ -15,7 +15,7 @@ namespace EmeraldBot.Model.Game
 
         [MinLength(3, ErrorMessage = "Advantage Type name can't be less than 3 characters")]
         [MaxLength(16, ErrorMessage = "Advantage Type name can't be longer than 8 characters")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public virtual ICollection<AdvantageTypeAdvantages> Advantages { get; set; }
     }
 }

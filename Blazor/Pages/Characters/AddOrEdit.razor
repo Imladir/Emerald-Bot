@@ -114,7 +114,8 @@ else
             <JournalsInput @bind-JournalEntries="@PC.JournalEntries" />
         </TabPane>
         <TabPane IsOpen="@(OpenTab.Equals("gear"))">
-
+            <p style="font-weight: bold;">Current money: </p> <MoneySumInput @bind-MoneySum="@PC.Money" />
+            <EquipmentInput @bind-Equipment="@PC.Gear" />
         </TabPane>
     </TabContent>
     <BlazorButton Color="Color.Success" @onclick="@Save">Save Character</BlazorButton>

@@ -1,0 +1,26 @@
+﻿@using EmeraldBot.Model.Game
+
+<Container>
+    <Row>
+        <BlazorCol>
+            <BlazorLabel For="MoneySumKoku">Koku</BlazorLabel>
+            <BlazorInput Id="MoneySumKoku" InputType="InputType.Number" min="0" @bind-Value="@Koku" />
+        </BlazorCol>
+        <BlazorCol>
+            <BlazorLabel For="MoneySumBu">Bu</BlazorLabel>
+            <BlazorInput Id="MoneySumBu" InputType="InputType.Number" min="0" @bind-Value="@Bu" />
+        </BlazorCol>
+        <BlazorCol>
+            <BlazorLabel For="MoneySumZeni">Zeni</BlazorLabel>
+            <BlazorInput Id="MoneySumZeni" InputType="InputType.Number" min="0" @bind-Value="@Zeni" />
+        </BlazorCol>
+    </Row>
+</Container>
+
+@code  {
+[Parameter] private EventCallback<MoneySum> MoneySumChanged { get; set; }
+[Parameter] private MoneySum MoneySum { get; set; }
+private string Koku { get { return $"{MoneySum.Koku}"; } set { MoneySum.Koku = int.Parse(value); } }
+private string Bu { get { return $"{MoneySum.Bu}"; } set { MoneySum.Bu = int.Parse(value); } }
+private string Zeni { get { return $"{MoneySum.Zeni}"; } set { MoneySum.Zeni = int.Parse(value); } }
+}

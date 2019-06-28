@@ -65,6 +65,7 @@ namespace EmeraldBot.Bot.Modules
 
                 roll.Character.Rolls.Add(roll);
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -112,6 +113,7 @@ namespace EmeraldBot.Bot.Modules
 
                 roll.Character.Rolls.Add(roll);
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -170,6 +172,7 @@ namespace EmeraldBot.Bot.Modules
 
                 roll.Character.Rolls.Add(roll);
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -206,6 +209,7 @@ namespace EmeraldBot.Bot.Modules
                 if (options.Text != "") reason += $": {options.Text}";
 
                 await RollTechnique(ctx, options.Target, t.Ring, t.Skills.First().Skill, tn, reason);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -243,6 +247,7 @@ namespace EmeraldBot.Bot.Modules
                 if (options.Text != "") reason += $": {options.Text}";
 
                 await RollTechnique(ctx, options.Target, r, t.Skills.First().Skill, tn, reason);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -282,6 +287,7 @@ namespace EmeraldBot.Bot.Modules
                 if (options.Text != "") reason += $": {options.Text}";
 
                 await RollTechnique(ctx, options.Target, t.Ring, s, tn, reason);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -322,6 +328,7 @@ namespace EmeraldBot.Bot.Modules
                 if (options.Text != "") reason += $": {options.Text}";
 
                 await RollTechnique(ctx, options.Target, r, s, tn, reason);
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -431,7 +438,7 @@ namespace EmeraldBot.Bot.Modules
                     await Print(roll.EndRoll());
                 }
                 ctx.SaveChanges();
-
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e) {
                 await ReplyAsync($"Failed to add dice: {e.Message}");
@@ -461,6 +468,7 @@ namespace EmeraldBot.Bot.Modules
                 await Print(roll.Keep(ctx, indices, reason));
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -491,6 +499,7 @@ namespace EmeraldBot.Bot.Modules
                 await Print(roll.Drop(ctx, indices, reason));
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -536,6 +545,7 @@ namespace EmeraldBot.Bot.Modules
                 }
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -570,6 +580,7 @@ namespace EmeraldBot.Bot.Modules
                 _ = await Print(roll.EndRoll());
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -601,6 +612,7 @@ namespace EmeraldBot.Bot.Modules
                 await Print(roll.EndRoll());
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -629,6 +641,7 @@ namespace EmeraldBot.Bot.Modules
                 await Print(roll.SetTN(ctx, tn));
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -658,6 +671,7 @@ namespace EmeraldBot.Bot.Modules
                 await Print(roll.SetName(ctx, name));
 
                 ctx.SaveChanges();
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -743,6 +757,7 @@ namespace EmeraldBot.Bot.Modules
                 }
                 ctx.SaveChanges();
                 await ReplyAsync("Roll has been locked.");
+                await Context.Channel.DeleteMessageAsync(Context.Message);
             }
             catch (Exception e)
             {
@@ -757,7 +772,13 @@ namespace EmeraldBot.Bot.Modules
             emd.WithTitle(data.Title);
             emd.AddField("Roll", data.Dice.ReplaceSymbols(Context.Guild.Id));
             emd.AddField("Result", data.Result.ReplaceSymbols(Context.Guild.Id));
-            emd.AddField("Log", data.Log.ReplaceSymbols(Context.Guild.Id));
+
+            var logList = data.Log.FitDiscordMessageSize(1024);
+            for (int i = 0; i < logList.Count; i++)
+            {
+                if (i == 0) emd.AddField("Log", logList[i].ReplaceSymbols(Context.Guild.Id));
+                else emd.AddField("Log (continued)", logList[i].ReplaceSymbols(Context.Guild.Id));
+            }
             if (data.Icon != "") emd.WithThumbnailUrl(data.Icon);
 
             Color color = Color.LightGrey;

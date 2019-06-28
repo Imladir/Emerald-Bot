@@ -16,7 +16,7 @@ namespace EmeraldBot.Model.Game
 
         [MinLength(3, ErrorMessage = "Ring name can't be less than 3 characters")]
         [MaxLength(16, ErrorMessage = "Ring name can't be longer than 8 characters")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         public virtual ICollection<CharacterRing> Characters { get; set; }
         public virtual ICollection<Technique> Techniques { get; set; }

@@ -19,11 +19,11 @@ namespace EmeraldBot.Model.Servers
         public virtual Server Server { get; set; }
 
         [Required]
-        public string Code { get; set; }
+        public string Code { get; set; } = "";
 
         [Required]
         [MaxLength(64, ErrorMessage = "Emote text is too long")]
-        public string Text { get; set; }
+        public string Text { get; set; } = "";
 
         public virtual ICollection<DieFace> DieFaces { get; set; }
     }

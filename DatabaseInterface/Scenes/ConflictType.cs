@@ -15,11 +15,11 @@ namespace EmeraldBot.Model.Scenes
 
         [MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a conflict type without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [Required]
         [MaxLength(1024)]
-        public string Description { get; set; }
+        public string Description { get; set; } = "";
         public virtual ICollection<ConflictAction> Actions { get; set; }
     }
 }

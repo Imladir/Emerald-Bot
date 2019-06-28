@@ -448,7 +448,7 @@ namespace EmeraldBot.Bot.Modules
         }
 
         [RequireOwner]
-        //[Command("gear")]
+        [Command("gear")]
         public async Task Test()
         {
             using var ctx = new EmeraldBotContext();

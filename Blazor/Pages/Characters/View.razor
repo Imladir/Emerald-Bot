@@ -1,6 +1,7 @@
 ﻿@page  "/characters/{id:int}"
 @using EmeraldBot.Model
 @using EmeraldBot.Model.Characters
+@using EmeraldBot.Model.Game
 @inject EmeraldBotContext _ctx
 @inject IUriHelper _uri
 
@@ -44,7 +45,7 @@ else
 
 
 @if (_privateRights)
-{
+    {
 <h5>Ninjo</h5>
 <p>@pc.Ninjo</p>
 
@@ -59,12 +60,13 @@ else
                     <BlazorNavLink @onclick="@(() => OpenTab = "stats")" IsActive="@(OpenTab.Equals("stats"))">Characteristics</BlazorNavLink>
                     <BlazorNavLink @onclick="@(() => OpenTab = "journals")" IsActive="@(OpenTab.Equals("journals"))">Journals</BlazorNavLink>
                     <BlazorNavLink @onclick="@(() => OpenTab = "gear")" IsActive="@(OpenTab.Equals("gear"))">Gear</BlazorNavLink>
+                    <BlazorNavLink @onclick="@(() => OpenTab = "curriculum")" IsActive="@(OpenTab.Equals("curriculum"))">Curriculum</BlazorNavLink>
                 </BlazorNav>
 
                 <TabPane IsOpen="@(OpenTab.Equals("journals"))">
                     <BlazorTable>
                         @foreach (var jt in new List<string>() { "Honour", "Glory", "Status", "XP" })
-                        {
+                                {
                         <tr @onclick="@(() => _openJournals[jt] = !_openJournals[jt])">
                             <td>
                                 <h4 style="text-align: center;">@jt @($"({pc.CurrentJournalValue(jt)})")</h4>
@@ -79,19 +81,19 @@ else
                         </TableHead>
                         <tbody>
                             @foreach (var je in pc.JournalEntries.Where(x => x.Journal.Name.Equals(jt)).OrderByDescending(x => x.EntryDate).ToList())
-                                                    {
+                                        {
                             <tr>
                                 <td>@(DateTime.SpecifyKind(je.EntryDate, DateTimeKind.Utc).ToLocalTime().ToString("ddddd dd MMMM yyyy"))</td>
                                 <td style="text-align: center;">@je.Amount</td>
                                 <td>@je.Reason</td>
                             </tr>
-                                                    }
+                                        }
                         </tbody>
                     </BlazorTable>
                     </Collapse>
                     </td>
                     </tr>
-                    }
+                            }
                         </BlazorTable>
                     </TabPane>
                     <TabPane IsOpen="@(OpenTab.Equals("stats"))">
@@ -171,14 +173,14 @@ else
                                                     </TableHead>
                                                     <tbody>
                                                         @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Distinction")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
-                                                        {
+                                                                {
                                                         <tr>
                                                             <td>@a.Name</td>
                                                             <td>
                                                                 <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
                                                             </td>
                                                         </tr>
-                                                        }
+                                                                }
                                                     </tbody>
                                                 </BlazorTable>
                                             </BlazorCol>
@@ -190,14 +192,14 @@ else
                                                     </TableHead>
                                                     <tbody>
                                                         @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Adversity")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
-                                                        {
+                                                                {
                                                         <tr>
                                                             <td>@a.Name</td>
                                                             <td>
                                                                 <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
                                                             </td>
                                                         </tr>
-                                                        }
+                                                                }
                                                     </tbody>
                                                 </BlazorTable>
                                             </BlazorCol>
@@ -211,14 +213,14 @@ else
                                                     </TableHead>
                                                     <tbody>
                                                         @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Passion")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
-                                                        {
+                                                                {
                                                         <tr>
                                                             <td>@a.Name</td>
                                                             <td>
                                                                 <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
                                                             </td>
                                                         </tr>
-                                                        }
+                                                                }
                                                     </tbody>
                                                 </BlazorTable>
                                             </BlazorCol>
@@ -230,14 +232,14 @@ else
                                                     </TableHead>
                                                     <tbody>
                                                         @foreach (var a in pc.Advantages.Where(x => x.Advantage.AdvantageClass.Name.Equals("Anxiety")).Select(x => x.Advantage).OrderBy(x => x.Name).ToList())
-                                                        {
+                                                                {
                                                         <tr>
                                                             <td>@a.Name</td>
                                                             <td>
                                                                 <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"advantages/{a.ID}"))">View</BlazorButton>
                                                             </td>
                                                         </tr>
-                                                        }
+                                                                }
                                                     </tbody>
                                                 </BlazorTable>
                                             </BlazorCol>
@@ -248,9 +250,9 @@ else
                                         <Row>
                                             <BlazorCol>
                                                 @foreach (var tt in _ctx.TechniqueTypes.OrderBy(x => x.Name).ToList())
-                                                {
+                                                        {
                                                 @if (pc.Techniques.Select(x => x.Technique).Any(x => x.Type.ID == tt.ID))
-                                                    {
+                                                            {
                                                 <BlazorTable IsSmall="true">
                                                     <TableHead TableHeadType="TableHeadType.Dark">
                                                         <th>@tt.Name</th>
@@ -258,18 +260,18 @@ else
                                                     </TableHead>
                                                     <tbody>
                                                         @foreach (var t in pc.Techniques.Where(x => x.Technique.Type.ID == tt.ID).Select(x => x.Technique).OrderBy(x => x.Name).ToList())
-                                                                {
+                                                                        {
                                                         <tr>
                                                             <td>@t.Name</td>
                                                             <td>
                                                                 <BlazorButton IsOutline="true" Color="Color.Secondary" Size="Size.Small" @onclick="@((e) => _uri.NavigateTo($"techniques/{t.ID}"))">View</BlazorButton>
                                                             </td>
                                                         </tr>
-                                                                }
+                                                                        }
                                                     </tbody>
                                                 </BlazorTable>
-                                                    }
-                                                }
+                                                            }
+                                                        }
                                             </BlazorCol>
                                         </Row>
                                     </Container>
@@ -277,7 +279,7 @@ else
                                 <BlazorCol>
                                     <h4>Skills</h4>
                                     @foreach (var g in _ctx.SkillGroups.OrderBy(x => x.Name))
-                                    {
+                                            {
                                     <BlazorTable IsSmall="true">
                                         <TableHead TableHeadType="TableHeadType.Dark">
                                             <tr>
@@ -287,26 +289,123 @@ else
                                         </TableHead>
                                         <tbody>
                                             @foreach (var s in _ctx.Skills.Where(x => x.Group.ID == g.ID).OrderBy(x => x.Name).ToList())
-                                                {
+                                                        {
                                             <tr>
                                                 <td>@s.Name</td>
                                                 <td style="width: 50px; text-align: center;">
                                                     @if (pc.Skills.SingleOrDefault(x => x.Skill.ID == s.ID) is PCSkill pcs && pcs != null)
-                                                            {
+                                                                    {
                                                     @(pcs.Value)
-                                                            }
+                                                                    }
                                                 </td>
                                             </tr>
-                                                }
+                                                        }
                                         </tbody>
                                     </BlazorTable>
-                                    }
+                                            }
                                 </BlazorCol>
                             </Row>
                         </Container>
                     </TabPane>
                     <TabPane IsOpen="@(OpenTab.Equals("gear"))">
-
+                        <h5>Money</h5>
+                        <p>@pc.Money.GetString()</p>
+                        <h5>Armours</h5>
+                        <Container IsFluid="true">
+                            @foreach (var i in pc.Gear.Where(x => x.Gear is Armour).OrderBy(x => x.Gear.Name))
+                                    {
+                            <Row>
+                                <BlazorCol>
+                                    <p>
+                                        <span style="font-weight: bold;">@(i.Quantity == 1 ? $"{i.Gear.Name}" : $"{i.Gear.Name} x{i.Quantity}")</span> - @i.Description
+                                        <img src="img/down.png" @onclick="@(() => { if (i.Quantity > 0) i.Quantity--;  _ctx.SaveChanges();})" style="width: 18px; height: auto" />
+                                        <img src="img/up.png" @onclick="@(() => {i.Quantity++; _ctx.SaveChanges();})" style="width: 18px; height: auto" />
+                                    </p>
+                                </BlazorCol>
+                                <BlazorCol>
+                                    <BlazorButton IsOutline="true" Size="Size.Small" Color="Color.Secondary" @onclick="@(() => _uri.NavigateTo($"gear/{i.Gear.ID}"))">View</BlazorButton>
+                                    <BlazorButton IsOutline="true" Size="Size.Small" Color="Color.Danger" @onclick="@(() => pc.Gear.Remove(i))">Remove</BlazorButton>
+                                </BlazorCol>
+                            </Row>
+                                    }
+                        </Container>
+                        <h5>Weapons</h5>
+                        <Container IsFluid="true">
+                            @foreach (var i in pc.Gear.Where(x => x.Gear is Weapon).OrderBy(x => x.Gear.Name))
+                                    {
+                            <Row>
+                                <BlazorCol>
+                                    <p>
+                                        <span style="font-weight: bold;">@(i.Quantity == 1 ? $"{i.Gear.Name}" : $"{i.Gear.Name} x{i.Quantity}")</span> - @i.Description
+                                        <img src="img/down.png" @onclick="@(() => { if (i.Quantity > 0) i.Quantity--; _ctx.SaveChanges(); })" style="width: 18px; height: auto" />
+                                        <img src="img/up.png" @onclick="@(() => {i.Quantity++; _ctx.SaveChanges();})" style="width: 18px; height: auto" />
+                                    </p>
+                                </BlazorCol>
+                                <BlazorCol>
+                                    <BlazorButton IsOutline="true" Size="Size.Small" Color="Color.Secondary" @onclick="@(() => _uri.NavigateTo($"gear/{i.Gear.ID}"))">View</BlazorButton>
+                                    <BlazorButton IsOutline="true" Size="Size.Small" Color="Color.Danger" @onclick="@(() => pc.Gear.Remove(i))">Remove</BlazorButton>
+                                </BlazorCol>
+                            </Row>
+                                    }
+                        </Container>
+                        <h5>Personnal effects</h5>
+                        <Container IsFluid="true">
+                            @foreach (var i in pc.Gear.Where(x => !(x.Gear is Weapon) && !(x.Gear is Armour)).OrderBy(x => x.Gear.Name))
+                                    {
+                            <Row>
+                                <BlazorCol>
+                                    <p>
+                                        <span style="font-weight: bold;">@(i.Quantity == 1 ? $"{i.Gear.Name}" : $"{i.Gear.Name} x{i.Quantity}")</span> - @i.Description
+                                        <img src="img/down.png" @onclick="@(() => { if (i.Quantity > 0) i.Quantity--; _ctx.SaveChanges(); })" style="width: 18px; height: auto" />
+                                        <img src="img/up.png" @onclick="@(() => {i.Quantity++; _ctx.SaveChanges();})" style="width: 18px; height: auto" />
+                                    </p>
+                                </BlazorCol>
+                                <BlazorCol>
+                                    <BlazorButton IsOutline="true" Size="Size.Small" Color="Color.Secondary" @onclick="@(() => _uri.NavigateTo($"gear/{i.Gear.ID}"))">View</BlazorButton>
+                                    <BlazorButton IsOutline="true" Size="Size.Small" Color="Color.Danger" @onclick="@(() => pc.Gear.Remove(i))">Remove</BlazorButton>
+                                </BlazorCol>
+                            </Row>
+                                    }
+                        </Container>
+                    </TabPane>
+                    <TabPane IsOpen="@(OpenTab.Equals("curriculum"))">
+                        <BlazorTable>
+                            <TableHead TableHeadType="TableHeadType.Dark">
+                                <tr>
+                                    <th style="text-align: center;">Total XP earned</th>
+                                    <th style="text-align: center;">XP Remaining</th>
+                                    <th style="text-align: center;">Total Spent / Counting for Curriculum</th>
+                                    <th style="text-align: center;">Rank</th>
+                                </tr>
+                            </TableHead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: center;">@pc.JournalEntries.Where(x => x.Journal.Name.Equals("XP") && x.Amount > 0).Sum(x => x.Amount)</td>
+                                    <td style="text-align: center;">@(pc.JournalEntries.Where(x => x.Journal.Name.Equals("XP") && x.Amount > 0).Sum(x => x.Amount) + xpExpenses.Sum(x => x.Amount))</td>
+                                    <td style="text-align: center;">@(-xpExpenses.Sum(x => x.Amount)) / @(GetCurriculumScore())</td>
+                                    <td style="text-align: center;">@(GetRank())</td>
+                                </tr>
+                            </tbody>
+                        </BlazorTable>
+                        <BlazorTable>
+                            <TableHead TableHeadType="TableHeadType.Dark">
+                                <tr>
+                                    <th>Expense reason</th>
+                                    <th style="text-align: center;">Amount spent</th>
+                                    <th style="text-align: center;">Is Curriculum?</th>
+                                </tr>
+                            </TableHead>
+                            <tbody>
+                                @foreach (var je in pc.JournalEntries.Where(x => x.Journal.Name.Equals("XP") && x.Amount < 0))
+                                        {
+                                <tr>
+                                    <td>@je.Reason</td>
+                                    <td style="text-align: center;">@(-je.Amount)</td>
+                                    <td style="text-align: center;"><input type="checkbox" id="@($"XpExpense{je.ID}")" value="@($"XpExpense{je.ID}")" @onchange="@(() => SwitchCurriculum(je.ID))" checked="@je.IsCurriculum" /></td>
+                                </tr>
+                                        }
+                            </tbody>
+                        </BlazorTable>
                     </TabPane>
                 </TabContent>
             </BlazorCol>
@@ -316,47 +415,86 @@ else
 }
 
 @code {
-    [CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
-    [Parameter] private int id { get; set; }
-    private PC pc;
-    private Dictionary<string, string> _rings;
-    private bool _privateRights = false;
-    private string OpenTab = "stats";
-    private Dictionary<string, bool> _openJournals;
+[CascadingParameter(Name = "UserID")] protected int UserID { get; set; }
+[Parameter] private int id { get; set; }
+private PC pc;
+private Dictionary<string, string> _rings;
+private bool _privateRights = false;
+private string OpenTab = "stats";
+private Dictionary<string, bool> _openJournals;
+private List<JournalEntry> xpExpenses;
 
-    protected override void OnInit()
-    {
-        pc = _ctx.PCs.SingleOrDefault(x => x.ID == id);
-        _rings = pc.Rings.ToDictionary(x => x.Ring.Name, x => $"{x.Value}");
+protected override void OnInit()
+{
+    pc = _ctx.PCs.SingleOrDefault(x => x.ID == id);
+    _rings = pc.Rings.ToDictionary(x => x.Ring.Name, x => $"{x.Value}");
 
-        var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
-        var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == pc.Server.ID) != null;
-        _privateRights = pc.Player.ID == UserID || isAdmin || isGM;
+    var isAdmin = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("Admin")) != null;
+    var isGM = _ctx.UserRoles.SingleOrDefault(x => x.User.ID == UserID && x.Role.Name.Equals("GM") && x.Server.ID == pc.Server.ID) != null;
+    _privateRights = pc.Player.ID == UserID || isAdmin || isGM;
 
-        _openJournals = new Dictionary<string, bool>() {
+    _openJournals = new Dictionary<string, bool>() {
             { "Honour", false},
             { "Glory", false},
             { "Status", false},
             { "XP", false}
         };
-    }
+    xpExpenses = pc.JournalEntries.Where(x => x.Journal.Name.Equals("XP") && x.Amount < 0).OrderBy(x => x.EntryDate).ToList();
+}
 
-    private void ChangeStrife(int change) {
-        pc.Strife += change;
-        pc.Strife = Math.Max(pc.Strife, 0);
-        _ctx.SaveChanges();
-    }
+private void ChangeStrife(int change)
+{
+    pc.Strife += change;
+    pc.Strife = Math.Max(pc.Strife, 0);
+    _ctx.SaveChanges();
+}
 
-    private void ChangeFatigue(int change) {
-        pc.Fatigue += change;
-        pc.Fatigue = Math.Max(pc.Fatigue, 0);
-        _ctx.SaveChanges();
-    }
+private void ChangeFatigue(int change)
+{
+    pc.Fatigue += change;
+    pc.Fatigue = Math.Max(pc.Fatigue, 0);
+    _ctx.SaveChanges();
+}
 
-    private void ChangeVoid(int change) {
-        pc.CurrentVoid += change;
-        pc.CurrentVoid = Math.Max(pc.CurrentVoid, 0);
-        pc.CurrentVoid = Math.Min(pc.Ring("Void"), pc.CurrentVoid);
-        _ctx.SaveChanges();
+private void ChangeVoid(int change)
+{
+    pc.CurrentVoid += change;
+    pc.CurrentVoid = Math.Max(pc.CurrentVoid, 0);
+    pc.CurrentVoid = Math.Min(pc.Ring("Void"), pc.CurrentVoid);
+    _ctx.SaveChanges();
+}
+
+private int GetRank()
+{
+    var xpInCurriculum = pc.JournalEntries.Where(x => x.Journal.Name.Equals("XP") && x.Amount > 0).Sum(x => x.IsCurriculum ? x.Amount : (int)(x.Amount / 2));
+    if (xpInCurriculum < 20) return 1;
+    else if (xpInCurriculum < 44) return 2;
+    else if (xpInCurriculum < 76) return 3;
+    else if (xpInCurriculum < 120) return 4;
+    else if (xpInCurriculum < 180) return 5;
+    else return 6;
+}
+
+private int GetCurriculumScore()
+{
+    int score = 0;
+    foreach (var je in xpExpenses)
+    {
+        if (je.IsCurriculum) score -= je.Amount;
+        else
+        {
+            double d = -je.Amount;
+            d = d / 2.0;
+            score += (int)Math.Ceiling(d);
+        }
     }
+    return score;
+}
+
+private void SwitchCurriculum(int id)
+{
+    var je = pc.JournalEntries.Single(x => x.ID == id);
+    je.IsCurriculum = !je.IsCurriculum;
+    _ctx.SaveChanges();
+}
 }

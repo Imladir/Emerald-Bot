@@ -1,0 +1,52 @@
+﻿@using EmeraldBot.Model
+@using EmeraldBot.Model.Game
+@using System.Linq
+
+@inject EmeraldBotContext _ctx
+
+<BlazorButton IsOutline="true" Color="Color.None" @onclick="@(() => IsOpen = !IsOpen)">Item Qualities</BlazorButton>
+<Collapse IsOpen="@(!IsOpen)">
+    <p>@(string.Join(", ", Qualities.Select(x => x.GearQuality.Name).OrderBy(x => x)))</p>
+</Collapse>
+<Collapse IsOpen="@IsOpen">
+    <ul>
+        @foreach (var gq in _ctx.GearQualities.OrderBy(x => x.Name).ToList())
+        {
+            @*<li><BlazorInput InputType="InputType.Checkbox" id="@g.Name" @onclick="@(() => UpdateGroup(g))" IsChecked="@GroupChecked[g.ID]" /><BlazorLabel For="@g.Name">@g.Name</BlazorLabel></li>*@
+            <li><input type="checkbox" id="@gq.Name" value="@gq.Name" @onchange="@(() => UpdateQuality(gq))" checked="@QualityChecked[gq.ID]" /> <BlazorLabel For="@gq.Name">@gq.Name</BlazorLabel></li>
+        }
+    </ul>
+</Collapse>
+
+@code {
+[Parameter] private EventCallback<ICollection<GearQualitiesGear>> QualitiesChanged { get; set; }
+[Parameter] private ICollection<GearQualitiesGear> Qualities { get; set; }
+private Dictionary<int, bool> QualityChecked = new Dictionary<int, bool>();
+private bool IsOpen = false;
+private bool isInit = false;
+
+protected override void OnInit()
+{
+    QualityChecked = _ctx.GearQualities.ToDictionary(x => x.ID, x => false);
+}
+
+protected override void OnParametersSet()
+{
+    if (!isInit)
+    {
+        if (Qualities != null)
+        {
+            foreach (var q in Qualities) QualityChecked[q.GearQuality.ID] = true;
+        }
+        isInit = true;
+    }
+}
+
+private async Task UpdateQuality(GearQuality qual)
+{
+    var igq = Qualities.SingleOrDefault(x => x.GearQuality.ID == qual.ID);
+    if (igq != null) Qualities.Remove(igq);
+    else Qualities.Add(new GearQualitiesGear() { GearQuality = qual });
+    await QualitiesChanged.InvokeAsync(Qualities);
+}
+}

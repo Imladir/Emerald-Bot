@@ -12,11 +12,11 @@ namespace EmeraldBot.Model.Characters
     public class Condition : NameAlias
     {
         [MaxLength(1024, ErrorMessage = "Description is too long")]
-        public string Description { get; set; }
+        public string Description { get; set; } = "";
 
-        public string Effect { get; set; }
+        public string Effect { get; set; } = "";
 
-        public string RemovedWhen { get; set; }
+        public string RemovedWhen { get; set; } = "";
 
         public virtual ICollection<PCCondition> Characters { get; set; }
 

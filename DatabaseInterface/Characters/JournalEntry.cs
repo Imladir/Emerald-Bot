@@ -17,10 +17,11 @@ namespace EmeraldBot.Model.Characters
         [Required]
         public virtual JournalType Journal { get; set; }
         [Required]
-        public int Amount { get; set; }
+        public int Amount { get; set; } = 0;
         [Required]
         [MaxLength(1024, ErrorMessage = "Reason is too long (must be less than 1024 characters")]
-        public string Reason { get; set; }
+        public string Reason { get; set; } = "";
+        public bool IsCurriculum { get; set; } = false;
 
         public JournalEntry()
         {

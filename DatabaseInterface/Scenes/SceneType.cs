@@ -15,7 +15,7 @@ namespace EmeraldBot.Model.Scenes
 
         [MaxLength(64, ErrorMessage = "Name is too long")]
         [Required(ErrorMessage = "Can't create a scene type without a name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         public virtual ICollection<ActionScenes> Actions { get; set; }
     }

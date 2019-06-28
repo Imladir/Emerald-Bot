@@ -18,6 +18,6 @@ namespace EmeraldBot.Model.Characters
         public virtual Skill Skill { get; set; }
 
         [Required]
-        public int Value { get; set; }
+        public int Value { get; set; } = 0;
     }
 }

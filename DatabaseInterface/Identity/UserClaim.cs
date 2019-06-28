@@ -12,8 +12,8 @@ namespace EmeraldBot.Model.Identity
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
         public virtual User User { get; set; }
-        public string ClaimType { get; set; }
-        public string ClaimValue { get; set; }
+        public string ClaimType { get; set; } = "";
+        public string ClaimValue { get; set; } = "";
 
         public Claim ToClaim()
         {

@@ -12,9 +12,9 @@ namespace EmeraldBot.Model.Identity
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
         public virtual User User { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [ProtectedPersonalData]
-        public string Value { get; set; }
+        public string Value { get; set; } = "";
     }
 }

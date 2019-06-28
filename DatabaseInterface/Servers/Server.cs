@@ -15,25 +15,21 @@ namespace EmeraldBot.Model.Servers
         public int ID { get; set; }
 
         [Required]
-        public long DiscordID { get; set; }
+        public long DiscordID { get; set; } = 0;
         [MaxLength()]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [Required]
         [RegularExpression(@"^[^#@]{1}$", ErrorMessage = "Prefix can't be @ or #")]
         [MaxLength(1)]
-        public string Prefix { get; set; }
+        public string Prefix { get; set; } = "!";
 
-        public long DiceChannelID { get; set; }
+        public long DiceChannelID { get; set; } = 0;
 
         public virtual ICollection<NameAlias> NameAliases { get; set; }
         public virtual ICollection<DefaultCharacter> DefaultCharacters { get; set; }
         public virtual ICollection<Roll> Rolls { get; set; }
         public virtual ICollection<UserRole> Roles { get; set; }
-
-        public Server() {
-            Prefix = "!";
-        }
 
         public bool IsGM(EmeraldBotContext ctx, ulong userID)
         {
